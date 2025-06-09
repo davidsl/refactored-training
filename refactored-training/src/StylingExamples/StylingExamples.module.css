@@ -1,0 +1,104 @@
+/* StylingExamples.module.css */
+.examplesContainer {
+  padding: 2rem;
+  background: #f8faff;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.07);
+  color: #222;
+}
+.heading {
+  margin-bottom: 1.5rem;
+  text-align: center;
+  font-size: 2rem;
+}
+.section {
+  margin-bottom: 2rem;
+}
+.primaryButton {
+  background: #3399cc;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 18px;
+  margin-right: 8px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.primaryButton:hover {
+  background: #2677a6;
+}
+.secondaryButton {
+  background: #f0f8ff;
+  color: #3399cc;
+  border: 1px solid #3399cc;
+  border-radius: 4px;
+  padding: 8px 18px;
+  margin-right: 8px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.secondaryButton:hover {
+  background: #e0f4ff;
+}
+.dangerButton {
+  background: #ffeaea;
+  color: #b00;
+  border: 1px solid #b00;
+  border-radius: 4px;
+  padding: 8px 18px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.dangerButton:hover {
+  background: #ffcccc;
+  color: #900;
+}
+.exampleTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  font-size: 14px;
+}
+.exampleTable th, .exampleTable td {
+  border: 1px solid #bbb;
+  padding: 6px 10px;
+  text-align: left;
+}
+.statusActive {
+  color: #339900;
+  font-weight: bold;
+}
+.statusInactive {
+  color: #b00;
+  font-weight: bold;
+}
+.modalExample {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 120px;
+}
+.modalBox {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.18);
+  padding: 24px 32px;
+  min-width: 240px;
+  text-align: center;
+}
+.modalText {
+  font-size: 15px;
+  margin-bottom: 18px;
+  color: #222;
+}
+.modalActions {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+}

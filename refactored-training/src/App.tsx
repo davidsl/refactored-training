@@ -8,6 +8,7 @@ import Contact from './Contact/Contact'
 import Minesweeper from './Minesweeper/Minesweeper'
 import Leaderboard from './Leaderboard/Leaderboard'
 import Header from './Header/Header'
+import StylingExamples from './StylingExamples/StylingExamples'
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
           <Route path="/contact" element={<Contact />} />
           <Route path="/game" element={<Minesweeper />} />
           <Route path="/leaderboard" element={<Leaderboard />} />
+          <Route path="/styling-examples" element={<StylingExamples />} />
         </Routes>
     </Router>
   )
