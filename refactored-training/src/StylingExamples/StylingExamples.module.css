@@ -364,3 +364,108 @@
   0%, 100% { height: 10px; }
   50% { height: 22px; }
 }
+/* Spiral Spinner */
+.spinnerSpiral {
+  width: 32px;
+  height: 32px;
+  position: relative;
+}
+.spinnerSpiral::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  margin: auto;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 3px solid transparent;
+  border-top: 3px solid #3399cc;
+  border-right: 3px solid #ffb347;
+  animation: spiralSpin 1.1s linear infinite;
+}
+@keyframes spiralSpin {
+  0% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(180deg) scale(1.15); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+
+/* Spiral Dots Spinner (combines Spiral and Dots) */
+.spinnerSpiralDots {
+  width: 32px;
+  height: 32px;
+  position: relative;
+  animation: spiralSpin 1.1s linear infinite;
+}
+.spinnerSpiralDots span {
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  background: #3399cc;
+  border-radius: 50%;
+}
+.spinnerSpiralDots span:nth-child(1) { top: 0; left: 12px; background: #3399cc; }
+.spinnerSpiralDots span:nth-child(2) { top: 12px; right: 0; background: #ffb347; }
+.spinnerSpiralDots span:nth-child(3) { bottom: 0; left: 12px; background: #3399cc; }
+.spinnerSpiralDots span:nth-child(4) { top: 12px; left: 0; background: #ffb347; }
+.spinnerSpiralDots::before {
+  content: '';
+  position: absolute;
+  top: 2px; left: 2px; right: 2px; bottom: 2px;
+  margin: auto;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 3px solid transparent;
+  border-top: 3px solid #3399cc;
+  border-right: 3px solid #ffb347;
+  opacity: 0.7;
+}
+
+/* Enhanced Wave Dots Spinner (rotation, colors, flip, pulse, horizontal bar motion) */
+.spinnerWaveDots {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 22px;
+  position: relative;
+  animation: waveDotsBarMove 1.2s cubic-bezier(0.4,0.2,0.2,1) infinite;
+  perspective: 80px;
+}
+.spinnerWaveDots span {
+  display: block;
+  width: 10px;
+  height: 10px;
+  background: #3399cc;
+  border-radius: 50%;
+  animation: waveDotBouncePulse 1.1s infinite cubic-bezier(0.4,0.2,0.2,1);
+  will-change: transform;
+}
+.spinnerWaveDots span:nth-child(1) {
+  animation-delay: 0s;
+  background: #3399cc;
+}
+.spinnerWaveDots span:nth-child(2) {
+  animation-delay: 0.12s;
+  background: #ffb347;
+}
+.spinnerWaveDots span:nth-child(3) {
+  animation-delay: 0.24s;
+  background: #e94f37;
+}
+.spinnerWaveDots span:nth-child(4) {
+  animation-delay: 0.36s;
+  background: #43b97f;
+}
+.spinnerWaveDots span:nth-child(5) {
+  animation-delay: 0.48s;
+  background: #3399cc;
+}
+@keyframes waveDotBouncePulse {
+  0%, 100% { transform: translateY(0) scale(1) scaleY(1); opacity: 1; }
+  30% { transform: translateY(-10px) scale(1.2) scaleY(1.2); opacity: 0.7; }
+  50% { transform: translateY(0) scale(0.9) scaleY(0.9); opacity: 1; }
+}
+@keyframes waveDotsBarMove {
+  0% { left: -40px; }
+  100% { left: 60px; }
+}

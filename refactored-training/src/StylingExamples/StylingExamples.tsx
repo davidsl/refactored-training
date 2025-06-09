@@ -108,6 +108,16 @@ const StylingExamples: React.FC = () => {
             </div>
             <div className={styles.spinnerLabel}>Wave + Color Bar</div>
           </div>
+          <div className={styles.spinnerExample}>
+            <div className={styles.spinnerSpiral}></div>
+            <div className={styles.spinnerLabel}>Spiral Spinner</div>
+          </div>
+          <div className={styles.spinnerExample}>
+            <div className={styles.spinnerWaveDots}>
+              <span></span><span></span><span></span><span></span><span></span>
+            </div>
+            <div className={styles.spinnerLabel}>Wave Dots Spinner</div>
+          </div>
         </div>
       </section>
     </div>
