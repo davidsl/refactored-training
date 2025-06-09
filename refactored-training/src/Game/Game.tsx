@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { MouseEvent } from 'react';
 import styles from './Game.module.css';
 
@@ -16,6 +16,14 @@ type Cell = {
 type Board = Cell[][];
 
 type PreReveal = { r: number; c: number } | null;
+
+type WinRecord = {
+  rows: number;
+  cols: number;
+  mines: number;
+  time: number;
+  date: string;
+};
 
 function generateBoard(): { board: Board; preReveal: PreReveal } {
   const board: Board = Array.from({ length: ROWS }, () =>
@@ -77,10 +85,52 @@ function Game() {
   const [gameOver, setGameOver] = useState(false);
   const [won, setWon] = useState(false);
   const [wrongFlags, setWrongFlags] = useState<{ r: number; c: number }[]>([]);
+  const [elapsed, setElapsed] = useState(0);
+  const timerRef = useRef<number | null>(null);
 
   // Count placed flags
   const flagCount = boardState.reduce((acc, row) => acc + row.filter(cell => cell.flagged).length, 0);
   const bombsLeft = MINES - flagCount;
+
+  // Start/stop timer based on game state
+  useEffect(() => {
+    if (!gameOver) {
+      timerRef.current = window.setInterval(() => {
+        setElapsed(e => e + 1);
+      }, 1000);
+    } else if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, [gameOver]);
+
+  useEffect(() => {
+    if (won) {
+      // Save win to sessionStorage
+      const winRecord = {
+        rows: ROWS,
+        cols: COLS,
+        mines: MINES,
+        time: elapsed,
+        date: new Date().toISOString(),
+      };
+      const prev = sessionStorage.getItem('minesweeperWins');
+      let wins: WinRecord[] = [];
+      if (prev) {
+        try {
+          wins = JSON.parse(prev);
+        } catch { /* ignore parse error */ }
+      }
+      wins.push(winRecord);
+      sessionStorage.setItem('minesweeperWins', JSON.stringify(wins));
+    }
+  }, [won, elapsed]);
 
   function reveal(r: number, c: number) {
     if (gameOver) return;
@@ -214,20 +264,27 @@ function Game() {
     setBoard(newBoard);
   }
 
+  // Reset timer on restart
   function reset() {
     const { board, preReveal } = generateBoard();
     setBoard(board);
     setPreReveal(preReveal);
     setGameOver(false);
     setWon(false);
+    setWrongFlags([]);
+    setElapsed(0);
   }
 
   return (
     <div className={styles.gameContainer}>
       <h2>Minesweeper</h2>
+      <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
+        {/* Tab button removed, only Game UI remains */}
+      </div>
+      {/* Only show the game UI, no tab switching */}
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <div style={{ marginBottom: 6, fontWeight: 'bold', fontSize: 16 }}>
-          Bombs left: {bombsLeft}
+          Bombs left: {bombsLeft} | Time: {elapsed}s
         </div>
         <button onClick={reset} style={{ marginBottom: 10 }}>Restart</button>
         <div style={{ display: 'inline-block' }}>

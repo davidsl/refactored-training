@@ -6,6 +6,7 @@ import Events from './Events/Events'
 import Places from './Places/Places'
 import Contact from './Contact/Contact'
 import Game from './Game/Game'
+import Leaderboard from './Leaderboard/Leaderboard'
 import Header from './Header/Header'
 
 function App() {
@@ -19,6 +20,7 @@ function App() {
           <Route path="/places" element={<Places />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/game" element={<Game />} />
+          <Route path="/leaderboard" element={<Leaderboard />} />
         </Routes>
     </Router>
   )
