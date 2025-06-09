@@ -76,12 +76,13 @@ function cloneBoard(board: Board): Board {
 
 function Minesweeper() {
   // Add state for rows, cols, mines
-  const [rows, setRows] = useState(10);
-  const [cols, setCols] = useState(10);
-  const [mines, setMines] = useState(12);
+  const [rows, setRows] = useState(8); // Default to Small
+  const [cols, setCols] = useState(8); // Default to Small
+  const [mines, setMines] = useState(10); // Default to Small
+  const [showCustomize, setShowCustomize] = useState(false);
 
   // Board and preReveal state
-  const [{ board, preReveal: initialPreReveal }, setInitialBoard] = useState(() => generateBoard(10, 10, 12));
+  const [{ board, preReveal: initialPreReveal }, setInitialBoard] = useState(() => generateBoard(8, 8, 10));
   const [boardState, setBoard] = useState<Board>(board);
   const [preReveal, setPreReveal] = useState<PreReveal>(initialPreReveal);
   const [gameOver, setGameOver] = useState(false);
@@ -293,46 +294,81 @@ function Minesweeper() {
   return (
     <div className={styles.gameContainer}>
       <h2>Minesweeper</h2>
-      {/* Controls for board size and mines */}
-      <form
-        style={{ display: 'flex', gap: 8, marginBottom: 16, alignItems: 'center', flexWrap: 'wrap' }}
-        onSubmit={e => { e.preventDefault(); reset(); }}
-      >
-        <label>
-          Rows:
-          <input
-            type="number"
-            min={5}
-            max={30}
-            value={rows}
-            onChange={e => setRows(Math.max(5, Math.min(30, Number(e.target.value))))}
-            style={{ width: 48, marginLeft: 4 }}
-          />
-        </label>
-        <label>
-          Columns:
-          <input
-            type="number"
-            min={5}
-            max={30}
-            value={cols}
-            onChange={e => setCols(Math.max(5, Math.min(30, Number(e.target.value))))}
-            style={{ width: 48, marginLeft: 4 }}
-          />
-        </label>
-        <label>
-          Mines:
-          <input
-            type="number"
-            min={1}
-            max={rows * cols - 1}
-            value={mines}
-            onChange={e => setMines(Math.max(1, Math.min(rows * cols - 1, Number(e.target.value))))}
-            style={{ width: 56, marginLeft: 4 }}
-          />
-        </label>
-        <button type="submit">Apply</button>
-      </form>
+      {/* Customize button and conditional form */}
+      <div className={styles.customizeButtonRow}>
+        <button type="button" onClick={() => setShowCustomize(v => !v)} className={styles.customizeButton}>
+          {showCustomize ? 'Hide Customization' : 'Customize Board'}
+        </button>
+        {/* Default size buttons */}
+        <button
+          type="button"
+          className={
+            styles.customizeButton + (rows === 8 && cols === 8 && mines === 10 ? ' ' + styles.selectedButton : '')
+          }
+          onClick={() => { setRows(8); setCols(8); setMines(10); reset(); }}
+        >
+          Small
+        </button>
+        <button
+          type="button"
+          className={
+            styles.customizeButton + (rows === 16 && cols === 16 && mines === 40 ? ' ' + styles.selectedButton : '')
+          }
+          onClick={() => { setRows(16); setCols(16); setMines(40); reset(); }}
+        >
+          Medium
+        </button>
+        <button
+          type="button"
+          className={
+            styles.customizeButton + (rows === 16 && cols === 30 && mines === 99 ? ' ' + styles.selectedButton : '')
+          }
+          onClick={() => { setRows(16); setCols(30); setMines(99); reset(); }}
+        >
+          Large
+        </button>
+      </div>
+      {showCustomize && (
+        <form
+          style={{ display: 'flex', gap: 8, marginBottom: 16, alignItems: 'center', flexWrap: 'wrap' }}
+          onSubmit={e => { e.preventDefault(); reset(); }}
+        >
+          <label>
+            Rows:
+            <input
+              type="number"
+              min={5}
+              max={30}
+              value={rows}
+              onChange={e => setRows(Math.max(5, Math.min(30, Number(e.target.value))))}
+              style={{ width: 48, marginLeft: 4 }}
+            />
+          </label>
+          <label>
+            Columns:
+            <input
+              type="number"
+              min={5}
+              max={30}
+              value={cols}
+              onChange={e => setCols(Math.max(5, Math.min(30, Number(e.target.value))))}
+              style={{ width: 48, marginLeft: 4 }}
+            />
+          </label>
+          <label>
+            Mines:
+            <input
+              type="number"
+              min={1}
+              max={rows * cols - 1}
+              value={mines}
+              onChange={e => setMines(Math.max(1, Math.min(rows * cols - 1, Number(e.target.value))))}
+              style={{ width: 56, marginLeft: 4 }}
+            />
+          </label>
+          <button type="submit">Apply</button>
+        </form>
+      )}
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <div style={{ marginBottom: 6, fontWeight: 'bold', fontSize: 16 }}>
           Bombs left: {bombsLeft} | Time: {elapsed}s
@@ -347,17 +383,15 @@ function Minesweeper() {
                 return (
                   <button
                     key={c}
-                    className={cell.revealed ? styles.revealedTile : isPreReveal ? styles.preRevealTile : ''}
+                    className={
+                      (cell.revealed ? styles.revealedTile : isPreReveal ? styles.preRevealTile : styles.tile) +
+                      (isWrongFlag ? ' ' + styles.wrongFlagTile : '')
+                    }
                     style={{
                       width: rows > 18 || cols > 18 ? 18 : 24,
                       height: rows > 18 || cols > 18 ? 18 : 24,
-                      fontWeight: 'bold',
                       fontSize: 14,
-                      background: cell.revealed ? (isWrongFlag ? '#ffcccc' : '#eee') : isPreReveal ? '#cceeff' : '#bbb',
-                      border: isPreReveal ? '2px solid #3399cc' : '1px solid #888',
-                      cursor: gameOver ? 'not-allowed' : 'pointer',
                       color: cell.mine ? 'red' : isWrongFlag ? '#b00' : 'black',
-                      padding: 0,
                     }}
                     onClick={() => reveal(r, c)}
                     onContextMenu={e => flagCell(e, r, c)}

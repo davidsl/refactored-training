@@ -2,7 +2,7 @@
 .gameContainer {
   padding: 2rem;
   background: #e6eaff;
-  border-radius: 8px;
+  border-radius: 2px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   color: black;
 }
@@ -27,10 +27,142 @@
 .revealedTile {
   animation: flipReveal 0.4s cubic-bezier(0.4, 0.2, 0.2, 1);
   backface-visibility: hidden;
+  background: #e6f7ff;
+  border: 1px solid #888;
+  font-weight: bold;
+  padding: 0;
 }
 
 .preRevealTile {
   background: #cceeff !important;
   border: 2px solid #3399cc !important;
   box-shadow: 0 0 6px #3399cc;
+  background: #e6f7ff;
+  border: 1px solid #888;
+  font-weight: bold;
+  padding: 0;
+}
+
+.heading {
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+.customizeButtonRow {
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.customizeButton {
+  margin-bottom: 6px;
+  padding: 4px 14px;
+  border-radius: 1px;
+  border: 1px solid #3399cc;
+  background: #f0f8ff;
+  color: #3399cc;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.customizeButton:hover {
+  background: #e0f4ff;
+}
+
+.selectedButton {
+  background: #3399cc !important;
+  color: #fff !important;
+  border: 2px solid #3399cc !important;
+  box-shadow: 0 0 6px #3399cc44;
+}
+
+.customForm {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.customLabel {
+  font-size: 15px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.customInput {
+  width: 48px;
+  margin-left: 4px;
+  padding: 2px 4px;
+  border-radius: 2px;
+  border: 1px solid #bbb;
+  font-size: 15px;
+}
+.applyButton {
+  padding: 4px 12px;
+  border-radius: 2px;
+  border: 1px solid #3399cc;
+  background: #e6f7ff;
+  color: #3399cc;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.applyButton:hover {
+  background: #d0f0ff;
+}
+
+.centerColumn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.statusRow {
+  margin-bottom: 6px;
+  font-weight: bold;
+  font-size: 16px;
+}
+.restartButton {
+  margin-bottom: 10px;
+  padding: 4px 14px;
+  border-radius: 2px;
+  border: 1px solid #3399cc;
+  background: #f0f8ff;
+  color: #3399cc;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.restartButton:hover {
+  background: #e0f4ff;
+}
+
+.boardWrapper {
+  display: inline-block;
+}
+.boardRow {
+  display: flex;
+}
+.tile {
+  background: #bbb;
+  border: 1px solid #888;
+  font-weight: bold;
+  padding: 0;
+  cursor: pointer;
+  transition: background 0.15s, border 0.15s;
+}
+.wrongFlagTile {
+  background: #ffcccc !important;
+}
+.gameOverMsg {
+  margin-top: 10px;
+  font-weight: bold;
+  color: red;
+  text-align: center;
+}
+.instructions {
+  margin-top: 10px;
+  font-size: 12px;
+  text-align: center;
+  color: #444;
 }
