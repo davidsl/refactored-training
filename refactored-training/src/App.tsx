@@ -5,7 +5,7 @@ import About from './About/About'
 import Events from './Events/Events'
 import Places from './Places/Places'
 import Contact from './Contact/Contact'
-import Game from './Game/Game'
+import Minesweeper from './Minesweeper/Minesweeper'
 import Leaderboard from './Leaderboard/Leaderboard'
 import Header from './Header/Header'
 
@@ -19,7 +19,7 @@ function App() {
           <Route path="/events" element={<Events />} />
           <Route path="/places" element={<Places />} />
           <Route path="/contact" element={<Contact />} />
-          <Route path="/game" element={<Game />} />
+          <Route path="/game" element={<Minesweeper />} />
           <Route path="/leaderboard" element={<Leaderboard />} />
         </Routes>
     </Router>

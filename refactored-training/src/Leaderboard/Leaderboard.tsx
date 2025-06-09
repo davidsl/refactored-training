@@ -1,4 +1,5 @@
 import React from 'react';
+import styles from './Leaderboard.module.css';
 
 export type WinRecord = {
   rows: number;
@@ -32,7 +33,7 @@ const Leaderboard: React.FC = () => {
   }, []);
 
   return (
-    <div style={{ marginTop: 12, width: '100%' }}>
+    <div className={styles.leaderContainer}>
       <h3 style={{ marginBottom: 8 }}>Leaderboard</h3>
       {leaderboard.length === 0 ? (
         <div>No wins yet this session.</div>

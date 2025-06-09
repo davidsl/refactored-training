@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import type { MouseEvent } from 'react';
-import styles from './Game.module.css';
+import styles from './Minesweeper.module.css';
 
 const ROWS = 10;
 const COLS = 10;
@@ -78,7 +78,7 @@ function cloneBoard(board: Board): Board {
   return board.map(row => row.map(cell => ({ ...cell })));
 }
 
-function Game() {
+function Minesweeper() {
   const [{ board, preReveal: initialPreReveal }] = useState(() => generateBoard());
   const [boardState, setBoard] = useState<Board>(board);
   const [preReveal, setPreReveal] = useState<PreReveal>(initialPreReveal);
@@ -342,4 +342,4 @@ function Game() {
   );
 }
 
-export default Game;
+export default Minesweeper;
