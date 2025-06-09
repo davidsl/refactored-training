@@ -1,5 +1,6 @@
 import React from 'react';
 import styles from './Leaderboard.module.css';
+import ConfirmModal from './ConfirmModal';
 
 export type WinRecord = {
   rows: number;
@@ -106,17 +107,14 @@ const Leaderboard: React.FC = () => {
       >
         Clear Leaderboard
       </button>
-      {showConfirm && (
-        <div className={styles.confirmModalOverlay}>
-          <div className={styles.confirmModalBox}>
-            <div className={styles.confirmModalText}>Are you sure you want to clear the leaderboard? This cannot be undone.</div>
-            <div className={styles.confirmModalActions}>
-              <button className={styles.confirmButton} onClick={clearLeaderboard}>Yes, clear</button>
-              <button className={styles.cancelButton} onClick={() => setShowConfirm(false)}>Cancel</button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmModal
+        open={showConfirm}
+        message="Are you sure you want to clear the leaderboard? This cannot be undone."
+        onConfirm={clearLeaderboard}
+        onCancel={() => setShowConfirm(false)}
+        confirmText="Yes, clear"
+        cancelText="Cancel"
+      />
       <div className={styles.leaderFlexRow}>
         <div className={styles.leaderCategoryCol}>
           <h4 className={styles.leaderCategoryTitle}>Small (8x8, 10 mines)</h4>
