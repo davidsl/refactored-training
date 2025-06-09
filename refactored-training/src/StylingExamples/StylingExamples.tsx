@@ -47,6 +47,31 @@ const StylingExamples: React.FC = () => {
           </div>
         </div>
       </section>
+      <section className={styles.section}>
+        <h3>Loading Spinners</h3>
+        <div className={styles.spinnerRow}>
+          <div className={styles.spinnerExample}>
+            <div className={styles.spinnerCircle}></div>
+            <div className={styles.spinnerLabel}>Circle Spinner</div>
+          </div>
+          <div className={styles.spinnerExample}>
+            <div className={styles.spinnerDots}>
+              <span></span><span></span><span></span>
+            </div>
+            <div className={styles.spinnerLabel}>Bouncing Dots</div>
+          </div>
+          <div className={styles.spinnerExample}>
+            <div className={styles.spinnerBars}>
+              <span></span><span></span><span></span><span></span>
+            </div>
+            <div className={styles.spinnerLabel}>Bars</div>
+          </div>
+          <div className={styles.spinnerExample}>
+            <div className={styles.spinnerBarHorizontal}></div>
+            <div className={styles.spinnerLabel}>Horizontal Bar</div>
+          </div>
+        </div>
+      </section>
     </div>
   );
 };
