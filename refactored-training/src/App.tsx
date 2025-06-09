@@ -1,11 +1,11 @@
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom'
 import './App.css'
-import Home from './Home'
-import About from './About'
-import Events from './Events'
-import Places from './Places'
-import Contact from './Contact'
-import Game from './Game'
+import Home from './Home/Home'
+import About from './About/About'
+import Events from './Events/Events'
+import Places from './Places/Places'
+import Contact from './Contact/Contact'
+import Game from './Game/Game'
 
 function App() {
   return (
