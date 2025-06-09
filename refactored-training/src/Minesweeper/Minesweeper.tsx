@@ -2,10 +2,6 @@ import { useState, useEffect, useRef } from 'react';
 import type { MouseEvent } from 'react';
 import styles from './Minesweeper.module.css';
 
-const ROWS = 10;
-const COLS = 10;
-const MINES = 12;
-
 type Cell = {
   mine: boolean;
   revealed: boolean;
@@ -25,28 +21,28 @@ type WinRecord = {
   date: string;
 };
 
-function generateBoard(): { board: Board; preReveal: PreReveal } {
-  const board: Board = Array.from({ length: ROWS }, () =>
-    Array.from({ length: COLS }, () => ({ mine: false, revealed: false, adjacent: 0, flagged: false }))
+function generateBoard(rows: number, cols: number, mines: number): { board: Board; preReveal: PreReveal } {
+  const board: Board = Array.from({ length: rows }, () =>
+    Array.from({ length: cols }, () => ({ mine: false, revealed: false, adjacent: 0, flagged: false }))
   );
   let minesPlaced = 0;
-  while (minesPlaced < MINES) {
-    const r = Math.floor(Math.random() * ROWS);
-    const c = Math.floor(Math.random() * COLS);
+  while (minesPlaced < mines) {
+    const r = Math.floor(Math.random() * rows);
+    const c = Math.floor(Math.random() * cols);
     if (!board[r][c].mine) {
       board[r][c] = { ...board[r][c], mine: true };
       minesPlaced++;
     }
   }
-  for (let r = 0; r < ROWS; r++) {
-    for (let c = 0; c < COLS; c++) {
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
       if (board[r][c].mine) continue;
       let count = 0;
       for (let dr = -1; dr <= 1; dr++) {
         for (let dc = -1; dc <= 1; dc++) {
           if (dr === 0 && dc === 0) continue;
           const nr = r + dr, nc = c + dc;
-          if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS && board[nr][nc].mine) count++;
+          if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && board[nr][nc].mine) count++;
         }
       }
       board[r][c] = { ...board[r][c], adjacent: count };
@@ -55,8 +51,8 @@ function generateBoard(): { board: Board; preReveal: PreReveal } {
   // Pick a random free (adjacent === 0) non-mine tile for preReveal
   const freeTiles: { r: number; c: number }[] = [];
   const nonMineTiles: { r: number; c: number }[] = [];
-  for (let r = 0; r < ROWS; r++) {
-    for (let c = 0; c < COLS; c++) {
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
       if (!board[r][c].mine) {
         nonMineTiles.push({ r, c });
         if (board[r][c].adjacent === 0) {
@@ -79,7 +75,13 @@ function cloneBoard(board: Board): Board {
 }
 
 function Minesweeper() {
-  const [{ board, preReveal: initialPreReveal }] = useState(() => generateBoard());
+  // Add state for rows, cols, mines
+  const [rows, setRows] = useState(10);
+  const [cols, setCols] = useState(10);
+  const [mines, setMines] = useState(12);
+
+  // Board and preReveal state
+  const [{ board, preReveal: initialPreReveal }, setInitialBoard] = useState(() => generateBoard(10, 10, 12));
   const [boardState, setBoard] = useState<Board>(board);
   const [preReveal, setPreReveal] = useState<PreReveal>(initialPreReveal);
   const [gameOver, setGameOver] = useState(false);
@@ -88,9 +90,21 @@ function Minesweeper() {
   const [elapsed, setElapsed] = useState(0);
   const timerRef = useRef<number | null>(null);
 
+  // Regenerate board when settings change
+  useEffect(() => {
+    const { board, preReveal } = generateBoard(rows, cols, mines);
+    setBoard(board);
+    setPreReveal(preReveal);
+    setGameOver(false);
+    setWon(false);
+    setWrongFlags([]);
+    setElapsed(0);
+    setInitialBoard({ board, preReveal });
+  }, [rows, cols, mines]);
+
   // Count placed flags
   const flagCount = boardState.reduce((acc, row) => acc + row.filter(cell => cell.flagged).length, 0);
-  const bombsLeft = MINES - flagCount;
+  const bombsLeft = mines - flagCount;
 
   // Start/stop timer based on game state
   useEffect(() => {
@@ -114,9 +128,9 @@ function Minesweeper() {
     if (won) {
       // Save win to sessionStorage
       const winRecord = {
-        rows: ROWS,
-        cols: COLS,
-        mines: MINES,
+        rows,
+        cols,
+        mines,
         time: elapsed,
         date: new Date().toISOString(),
       };
@@ -130,7 +144,7 @@ function Minesweeper() {
       wins.push(winRecord);
       sessionStorage.setItem('minesweeperWins', JSON.stringify(wins));
     }
-  }, [won, elapsed]);
+  }, [won, elapsed, rows, cols, mines]);
 
   function reveal(r: number, c: number) {
     if (gameOver) return;
@@ -143,7 +157,7 @@ function Minesweeper() {
         for (let dc = -1; dc <= 1; dc++) {
           if (dr === 0 && dc === 0) continue;
           const nr = r + dr, nc = c + dc;
-          if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS) {
+          if (nr >= 0 && nr < rows && nc >= 0 && nc < cols) {
             const neighbor = newBoard[nr][nc];
             if (!neighbor.revealed && !neighbor.flagged) {
               if (neighbor.mine) {
@@ -161,8 +175,8 @@ function Minesweeper() {
       if (bombTriggered) {
         // Reveal all bombs and wrong flags, as in direct bomb click
         const wrongs: { r: number; c: number }[] = [];
-        for (let row = 0; row < ROWS; row++) {
-          for (let col = 0; col < COLS; col++) {
+        for (let row = 0; row < rows; row++) {
+          for (let col = 0; col < cols; col++) {
             if (newBoard[row][col].flagged && !newBoard[row][col].mine) {
               newBoard[row][col].revealed = true;
               wrongs.push({ r: row, c: col });
@@ -180,8 +194,8 @@ function Minesweeper() {
       setBoard(newBoard);
       // Check win condition
       let allRevealed = true;
-      for (let row = 0; row < ROWS; row++) {
-        for (let col = 0; col < COLS; col++) {
+      for (let row = 0; row < rows; row++) {
+        for (let col = 0; col < cols; col++) {
           if (!newBoard[row][col].mine && !newBoard[row][col].revealed) allRevealed = false;
         }
       }
@@ -198,7 +212,7 @@ function Minesweeper() {
     }
     const newBoard = cloneBoard(boardState);
     function flood(row: number, col: number) {
-      if (row < 0 || row >= ROWS || col < 0 || col >= COLS) return;
+      if (row < 0 || row >= rows || col < 0 || col >= cols) return;
       if (newBoard[row][col].revealed || newBoard[row][col].flagged) return;
       newBoard[row][col].revealed = true;
       if (newBoard[row][col].adjacent === 0 && !newBoard[row][col].mine) {
@@ -210,7 +224,7 @@ function Minesweeper() {
       }
     }
     function floodReveal(board: Board, row: number, col: number) {
-      if (row < 0 || row >= ROWS || col < 0 || col >= COLS) return;
+      if (row < 0 || row >= rows || col < 0 || col >= cols) return;
       if (board[row][col].revealed || board[row][col].flagged) return;
       board[row][col].revealed = true;
       if (board[row][col].adjacent === 0 && !board[row][col].mine) {
@@ -225,8 +239,8 @@ function Minesweeper() {
       newBoard[r][c].revealed = true;
       // Mark all wrongly placed flags and reveal all bombs (except correctly flagged ones)
       const wrongs: { r: number; c: number }[] = [];
-      for (let row = 0; row < ROWS; row++) {
-        for (let col = 0; col < COLS; col++) {
+      for (let row = 0; row < rows; row++) {
+        for (let col = 0; col < cols; col++) {
           if (newBoard[row][col].flagged && !newBoard[row][col].mine) {
             newBoard[row][col].revealed = true;
             wrongs.push({ r: row, c: col });
@@ -245,8 +259,8 @@ function Minesweeper() {
     flood(r, c);
     setBoard(newBoard);
     let allRevealed = true;
-    for (let row = 0; row < ROWS; row++) {
-      for (let col = 0; col < COLS; col++) {
+    for (let row = 0; row < rows; row++) {
+      for (let col = 0; col < cols; col++) {
         if (!newBoard[row][col].mine && !newBoard[row][col].revealed) allRevealed = false;
       }
     }
@@ -264,24 +278,61 @@ function Minesweeper() {
     setBoard(newBoard);
   }
 
-  // Reset timer on restart
+  // Reset timer and board on restart
   function reset() {
-    const { board, preReveal } = generateBoard();
+    const { board, preReveal } = generateBoard(rows, cols, mines);
     setBoard(board);
     setPreReveal(preReveal);
     setGameOver(false);
     setWon(false);
     setWrongFlags([]);
     setElapsed(0);
+    setInitialBoard({ board, preReveal });
   }
 
   return (
     <div className={styles.gameContainer}>
       <h2>Minesweeper</h2>
-      <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
-        {/* Tab button removed, only Game UI remains */}
-      </div>
-      {/* Only show the game UI, no tab switching */}
+      {/* Controls for board size and mines */}
+      <form
+        style={{ display: 'flex', gap: 8, marginBottom: 16, alignItems: 'center', flexWrap: 'wrap' }}
+        onSubmit={e => { e.preventDefault(); reset(); }}
+      >
+        <label>
+          Rows:
+          <input
+            type="number"
+            min={5}
+            max={30}
+            value={rows}
+            onChange={e => setRows(Math.max(5, Math.min(30, Number(e.target.value))))}
+            style={{ width: 48, marginLeft: 4 }}
+          />
+        </label>
+        <label>
+          Columns:
+          <input
+            type="number"
+            min={5}
+            max={30}
+            value={cols}
+            onChange={e => setCols(Math.max(5, Math.min(30, Number(e.target.value))))}
+            style={{ width: 48, marginLeft: 4 }}
+          />
+        </label>
+        <label>
+          Mines:
+          <input
+            type="number"
+            min={1}
+            max={rows * cols - 1}
+            value={mines}
+            onChange={e => setMines(Math.max(1, Math.min(rows * cols - 1, Number(e.target.value))))}
+            style={{ width: 56, marginLeft: 4 }}
+          />
+        </label>
+        <button type="submit">Apply</button>
+      </form>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <div style={{ marginBottom: 6, fontWeight: 'bold', fontSize: 16 }}>
           Bombs left: {bombsLeft} | Time: {elapsed}s
@@ -298,8 +349,8 @@ function Minesweeper() {
                     key={c}
                     className={cell.revealed ? styles.revealedTile : isPreReveal ? styles.preRevealTile : ''}
                     style={{
-                      width: 24,
-                      height: 24,
+                      width: rows > 18 || cols > 18 ? 18 : 24,
+                      height: rows > 18 || cols > 18 ? 18 : 24,
                       fontWeight: 'bold',
                       fontSize: 14,
                       background: cell.revealed ? (isWrongFlag ? '#ffcccc' : '#eee') : isPreReveal ? '#cceeff' : '#bbb',
@@ -336,7 +387,7 @@ function Minesweeper() {
         </div>
       )}
       <p style={{marginTop: 10, fontSize: 12}}>
-        Left click to reveal. Right click to flag. {MINES} mines on a {ROWS}x{COLS} board.
+        Left click to reveal. Right click to flag. {mines} mines on a {rows}x{cols} board.
       </p>
     </div>
   );
