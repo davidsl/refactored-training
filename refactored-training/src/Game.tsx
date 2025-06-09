@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { MouseEvent } from 'react';
+import styles from './Game.module.css';
 
 const ROWS = 5;
 const COLS = 5;
@@ -103,7 +104,7 @@ function Game() {
   }
 
   return (
-    <div>
+    <div className={styles.gameContainer}>
       <h2>Minesweeper</h2>
       <button onClick={reset}>Restart</button>
       <div style={{ display: 'inline-block', marginTop: 10 }}>
