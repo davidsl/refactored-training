@@ -49,7 +49,7 @@ const StylingExamples: React.FC = () => {
       </section>
       <section className={styles.section}>
         <h3>Loading Spinners</h3>
-        <div className={styles.spinnerRow}>
+        <div className={styles.spinnerGrid}>
           <div className={styles.spinnerExample}>
             <div className={styles.spinnerCircle}></div>
             <div className={styles.spinnerLabel}>Circle Spinner</div>
@@ -61,14 +61,52 @@ const StylingExamples: React.FC = () => {
             <div className={styles.spinnerLabel}>Bouncing Dots</div>
           </div>
           <div className={styles.spinnerExample}>
-            <div className={styles.spinnerBars}>
+            <div className={styles.spinnerRotatingSquare}>
               <span></span><span></span><span></span><span></span>
             </div>
-            <div className={styles.spinnerLabel}>Bars</div>
+            <div className={styles.spinnerLabel}>Rotating Square</div>
           </div>
           <div className={styles.spinnerExample}>
             <div className={styles.spinnerBarHorizontal}></div>
             <div className={styles.spinnerLabel}>Horizontal Bar</div>
+          </div>
+          <div className={styles.spinnerExample}>
+            <div className={styles.spinnerPulse}></div>
+            <div className={styles.spinnerLabel}>Pulse</div>
+          </div>
+          <div className={styles.spinnerExample}>
+            <div className={styles.spinnerDualRing}></div>
+            <div className={styles.spinnerLabel}>Dual Ring</div>
+          </div>
+          <div className={styles.spinnerExample}>
+            <div className={styles.spinnerWave}>
+              <span></span><span></span><span></span><span></span><span></span>
+            </div>
+            <div className={styles.spinnerLabel}>Wave</div>
+          </div>
+          <div className={styles.spinnerExample}>
+            <div className={styles.spinnerFlip}></div>
+            <div className={styles.spinnerLabel}>Flip</div>
+          </div>
+          <div className={styles.spinnerExample}>
+            <div className={styles.spinnerDualColorPulse}></div>
+            <div className={styles.spinnerLabel}>Dual Color Pulse</div>
+          </div>
+          <div className={styles.spinnerExample}>
+            <div className={styles.spinnerDotsOnRing}>
+              <span></span><span></span><span></span><span></span>
+            </div>
+            <div className={styles.spinnerLabel}>Dots on Rotating Ring</div>
+          </div>
+          <div className={styles.spinnerExample}>
+            <div className={styles.spinnerFlipPulse}></div>
+            <div className={styles.spinnerLabel}>Flip & Pulse Combo</div>
+          </div>
+          <div className={styles.spinnerExample}>
+            <div className={styles.spinnerWaveBar}>
+              <span></span><span></span><span></span><span></span><span></span>
+            </div>
+            <div className={styles.spinnerLabel}>Wave + Color Bar</div>
           </div>
         </div>
       </section>
