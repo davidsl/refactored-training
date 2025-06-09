@@ -51,6 +51,8 @@
 .customizeButtonRow {
   margin-bottom: 12px;
   text-align: center;
+  gap: 8px;
+  display: flex;
 }
 
 .customizeButton {

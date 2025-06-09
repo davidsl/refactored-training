@@ -34,3 +34,157 @@
   border: 2px solid #3399cc !important;
   box-shadow: 0 0 6px #3399cc;
 }
+
+.leaderTitle {
+  margin-bottom: 8px;
+  font-size: 18px;
+  text-align: center;
+}
+.leaderFlexRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  justify-content: center;
+  font-size: 10px;
+}
+.leaderCategoryCol {
+  min-width: 220px;
+}
+.leaderCategoryTitle {
+  font-size: 15px;
+  margin-bottom: 4px;
+  text-align: center;
+}
+.leaderTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+.leaderTableHeadRow {
+  background: #f0f0f0;
+}
+.leaderTableHeadCell {
+  padding: 4px;
+  border: 1px solid #bbb;
+  font-weight: 600;
+}
+.leaderTableRow {
+  background: #fff;
+}
+.leaderTableRowAlt {
+  background: #f9f9f9;
+}
+.leaderTableCell {
+  padding: 4px;
+  border: 1px solid #ddd;
+}
+.leaderTableCellNum {
+  text-align: center;
+}
+.leaderTableCellDate {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.leaderDate {
+  display: block;
+  font-weight: 500;
+}
+.leaderTime {
+  color: #888;
+  font-size: 12px;
+}
+.noWins {
+  margin-bottom: 12px;
+  text-align: center;
+  color: #888;
+  font-size: 13px;
+}
+.showCustomButton {
+  background: #f0f8ff;
+  color: #3399cc;
+  border: 1px solid #3399cc;
+  border-radius: 4px;
+  padding: 2px 10px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  margin-left: 4px;
+  transition: background 0.2s;
+}
+.showCustomButton:hover {
+  background: #e0f4ff;
+}
+.clearButton {
+  background: #ffeaea;
+  color: #b00;
+  border: 1px solid #b00;
+  border-radius: 4px;
+  padding: 4px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  margin-bottom: 16px;
+  transition: background 0.2s, color 0.2s;
+}
+.clearButton:hover {
+  background: #ffcccc;
+  color: #900;
+}
+.confirmModalOverlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.25);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.confirmModalBox {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.18);
+  padding: 24px 32px;
+  min-width: 280px;
+  max-width: 90vw;
+  text-align: center;
+}
+.confirmModalText {
+  font-size: 15px;
+  margin-bottom: 18px;
+  color: #222;
+}
+.confirmModalActions {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+}
+.confirmButton {
+  background: #ffeaea;
+  color: #b00;
+  border: 1px solid #b00;
+  border-radius: 4px;
+  padding: 6px 18px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.confirmButton:hover {
+  background: #ffcccc;
+  color: #900;
+}
+.cancelButton {
+  background: #f0f8ff;
+  color: #3399cc;
+  border: 1px solid #3399cc;
+  border-radius: 4px;
+  padding: 6px 18px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.cancelButton:hover {
+  background: #e0f4ff;
+}

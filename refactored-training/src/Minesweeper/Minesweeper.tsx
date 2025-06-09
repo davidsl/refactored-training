@@ -89,6 +89,7 @@ function Minesweeper() {
   const [won, setWon] = useState(false);
   const [wrongFlags, setWrongFlags] = useState<{ r: number; c: number }[]>([]);
   const [elapsed, setElapsed] = useState(0);
+  const [timerActive, setTimerActive] = useState(false);
   const timerRef = useRef<number | null>(null);
 
   // Regenerate board when settings change
@@ -107,9 +108,9 @@ function Minesweeper() {
   const flagCount = boardState.reduce((acc, row) => acc + row.filter(cell => cell.flagged).length, 0);
   const bombsLeft = mines - flagCount;
 
-  // Start/stop timer based on game state
+  // Start/stop timer based on timerActive and game state
   useEffect(() => {
-    if (!gameOver) {
+    if (timerActive && !gameOver) {
       timerRef.current = window.setInterval(() => {
         setElapsed(e => e + 1);
       }, 1000);
@@ -123,7 +124,7 @@ function Minesweeper() {
         timerRef.current = null;
       }
     };
-  }, [gameOver]);
+  }, [timerActive, gameOver]);
 
   useEffect(() => {
     if (won) {
@@ -145,10 +146,12 @@ function Minesweeper() {
       wins.push(winRecord);
       sessionStorage.setItem('minesweeperWins', JSON.stringify(wins));
     }
-  }, [won, elapsed, rows, cols, mines]);
+    if (gameOver) setTimerActive(false);
+  }, [won, elapsed, rows, cols, mines, gameOver]);
 
   function reveal(r: number, c: number) {
     if (gameOver) return;
+    if (!timerActive) setTimerActive(true);
     const cell = boardState[r][c];
     // Chord: if already revealed, open all adjacent unopened, unflagged tiles in one batch
     if (cell.revealed) {
@@ -288,18 +291,14 @@ function Minesweeper() {
     setWon(false);
     setWrongFlags([]);
     setElapsed(0);
+    setTimerActive(false);
     setInitialBoard({ board, preReveal });
   }
 
   return (
     <div className={styles.gameContainer}>
       <h2>Minesweeper</h2>
-      {/* Customize button and conditional form */}
       <div className={styles.customizeButtonRow}>
-        <button type="button" onClick={() => setShowCustomize(v => !v)} className={styles.customizeButton}>
-          {showCustomize ? 'Hide Customization' : 'Customize Board'}
-        </button>
-        {/* Default size buttons */}
         <button
           type="button"
           className={
@@ -326,6 +325,9 @@ function Minesweeper() {
           onClick={() => { setRows(16); setCols(30); setMines(99); reset(); }}
         >
           Large
+        </button>
+                <button type="button" onClick={() => setShowCustomize(v => !v)} className={styles.customizeButton}>
+          {showCustomize ? 'Hide Customization' : 'Customize Board'}
         </button>
       </div>
       {showCustomize && (
@@ -420,9 +422,6 @@ function Minesweeper() {
           {won ? 'You Win!' : 'Game Over!'}
         </div>
       )}
-      <p style={{marginTop: 10, fontSize: 12}}>
-        Left click to reveal. Right click to flag. {mines} mines on a {rows}x{cols} board.
-      </p>
     </div>
   );
 }

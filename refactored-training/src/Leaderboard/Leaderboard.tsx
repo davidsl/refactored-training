@@ -30,6 +30,8 @@ function categorizeWin(win: WinRecord): 'Small' | 'Medium' | 'Large' | 'Custom' 
 
 const Leaderboard: React.FC = () => {
   const [leaderboard, setLeaderboard] = React.useState<WinRecord[]>(getLeaderboard());
+  const [showCustom, setShowCustom] = React.useState(false);
+  const [showConfirm, setShowConfirm] = React.useState(false);
 
   React.useEffect(() => {
     setLeaderboard(getLeaderboard());
@@ -52,44 +54,95 @@ const Leaderboard: React.FC = () => {
 
   function renderTable(wins: WinRecord[]) {
     return wins.length === 0 ? (
-      <div style={{ marginBottom: 12 }}>No wins yet.</div>
+      <div className={styles.noWins}>No wins yet.</div>
     ) : (
-      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14, marginBottom: 16 }}>
+      <table className={styles.leaderTable}>
         <thead>
-          <tr style={{ background: '#f0f0f0' }}>
-            <th style={{ padding: 4, border: '1px solid #bbb' }}>#</th>
-            <th style={{ padding: 4, border: '1px solid #bbb' }}>Date</th>
-            <th style={{ padding: 4, border: '1px solid #bbb' }}>Size</th>
-            <th style={{ padding: 4, border: '1px solid #bbb' }}>Mines</th>
-            <th style={{ padding: 4, border: '1px solid #bbb' }}>Time (s)</th>
+          <tr className={styles.leaderTableHeadRow}>
+            <th className={styles.leaderTableHeadCell}>#</th>
+            <th className={styles.leaderTableHeadCell}>Date</th>
+            <th className={styles.leaderTableHeadCell}>Size</th>
+            <th className={styles.leaderTableHeadCell}>Mines</th>
+            <th className={styles.leaderTableHeadCell}>Time (s)</th>
           </tr>
         </thead>
         <tbody>
-          {wins.map((win, i) => (
-            <tr key={i} style={{ background: i % 2 === 0 ? '#fff' : '#f9f9f9' }}>
-              <td style={{ padding: 4, border: '1px solid #ddd', textAlign: 'center' }}>{i + 1}</td>
-              <td style={{ padding: 4, border: '1px solid #ddd' }}>{new Date(win.date).toLocaleString()}</td>
-              <td style={{ padding: 4, border: '1px solid #ddd' }}>{win.rows}x{win.cols}</td>
-              <td style={{ padding: 4, border: '1px solid #ddd' }}>{win.mines}</td>
-              <td style={{ padding: 4, border: '1px solid #ddd' }}>{win.time}</td>
-            </tr>
-          ))}
+          {wins.map((win, i) => {
+            const d = new Date(win.date);
+            const dateStr = d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+            const timeStr = d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            return (
+              <tr key={i} className={i % 2 === 0 ? styles.leaderTableRow : styles.leaderTableRowAlt}>
+                <td className={styles.leaderTableCell + ' ' + styles.leaderTableCellNum}>{i + 1}</td>
+                <td className={styles.leaderTableCell + ' ' + styles.leaderTableCellDate}>
+                  <span className={styles.leaderDate}>{dateStr}</span>
+                  <span className={styles.leaderTime}>{timeStr}</span>
+                </td>
+                <td className={styles.leaderTableCell}>{win.rows}x{win.cols}</td>
+                <td className={styles.leaderTableCell}>{win.mines}</td>
+                <td className={styles.leaderTableCell}>{win.time}</td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     );
   }
 
+  function clearLeaderboard() {
+    sessionStorage.removeItem('minesweeperWins');
+    setLeaderboard([]);
+    setShowConfirm(false);
+  }
+
   return (
     <div className={styles.leaderContainer}>
-      <h3 style={{ marginBottom: 8 }}>Leaderboard</h3>
-      <h4>Small (8x8, 10 mines)</h4>
-      {renderTable(categorized.Small)}
-      <h4>Medium (16x16, 40 mines)</h4>
-      {renderTable(categorized.Medium)}
-      <h4>Large (16x30, 99 mines)</h4>
-      {renderTable(categorized.Large)}
-      <h4>Custom</h4>
-      {renderTable(categorized.Custom)}
+      <h3 className={styles.leaderTitle}>Leaderboard</h3>
+      <button
+        className={styles.clearButton}
+        type="button"
+        onClick={() => setShowConfirm(true)}
+        style={{ marginBottom: 16 }}
+      >
+        Clear Leaderboard
+      </button>
+      {showConfirm && (
+        <div className={styles.confirmModalOverlay}>
+          <div className={styles.confirmModalBox}>
+            <div className={styles.confirmModalText}>Are you sure you want to clear the leaderboard? This cannot be undone.</div>
+            <div className={styles.confirmModalActions}>
+              <button className={styles.confirmButton} onClick={clearLeaderboard}>Yes, clear</button>
+              <button className={styles.cancelButton} onClick={() => setShowConfirm(false)}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+      <div className={styles.leaderFlexRow}>
+        <div className={styles.leaderCategoryCol}>
+          <h4 className={styles.leaderCategoryTitle}>Small (8x8, 10 mines)</h4>
+          {renderTable(categorized.Small)}
+        </div>
+        <div className={styles.leaderCategoryCol}>
+          <h4 className={styles.leaderCategoryTitle}>Medium (16x16, 40 mines)</h4>
+          {renderTable(categorized.Medium)}
+        </div>
+        <div className={styles.leaderCategoryCol}>
+          <h4 className={styles.leaderCategoryTitle}>Large (16x30, 99 mines)</h4>
+          {renderTable(categorized.Large)}
+        </div>
+        <div className={styles.leaderCategoryCol}>
+          <h4 className={styles.leaderCategoryTitle}>
+            <button
+              className={styles.showCustomButton}
+              type="button"
+              onClick={() => setShowCustom(v => !v)}
+            >
+              {showCustom ? 'Hide' : 'Show'} Custom
+            </button>
+          </h4>
+          {showCustom && renderTable(categorized.Custom)}
+        </div>
+      </div>
     </div>
   );
 };
