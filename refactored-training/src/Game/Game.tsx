@@ -106,41 +106,44 @@ function Game() {
   return (
     <div className={styles.gameContainer}>
       <h2>Minesweeper</h2>
-      <button onClick={reset}>Restart</button>
-      <div style={{ display: 'inline-block', marginTop: 10 }}>
-        {board.map((row, r) => (
-          <div key={r} style={{ display: 'flex' }}>
-            {row.map((cell, c) => (
-              <button
-                key={c}
-                style={{
-                  width: 32,
-                  height: 32,
-                  fontWeight: 'bold',
-                  fontSize: 18,
-                  background: cell.revealed ? '#eee' : '#bbb',
-                  border: '1px solid #888',
-                  cursor: gameOver ? 'not-allowed' : 'pointer',
-                  color: cell.mine ? 'red' : 'black',
-                  padding: 0,
-                }}
-                onClick={() => reveal(r, c)}
-                onContextMenu={e => flagCell(e, r, c)}
-                disabled={gameOver}
-              >
-                {cell.revealed
-                  ? cell.mine
-                    ? '💣'
-                    : cell.adjacent > 0
-                      ? cell.adjacent
-                      : ''
-                  : cell.flagged
-                    ? '🚩'
-                    : ''}
-              </button>
-            ))}
-          </div>
-        ))}
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <button onClick={reset} style={{ marginBottom: 10 }}>Restart</button>
+        <div style={{ display: 'inline-block' }}>
+          {board.map((row, r) => (
+            <div key={r} style={{ display: 'flex' }}>
+              {row.map((cell, c) => (
+                <button
+                  key={c}
+                  className={cell.revealed ? styles.revealedTile : ''}
+                  style={{
+                    width: 32,
+                    height: 32,
+                    fontWeight: 'bold',
+                    fontSize: 18,
+                    background: cell.revealed ? '#eee' : '#bbb',
+                    border: '1px solid #888',
+                    cursor: gameOver ? 'not-allowed' : 'pointer',
+                    color: cell.mine ? 'red' : 'black',
+                    padding: 0,
+                  }}
+                  onClick={() => reveal(r, c)}
+                  onContextMenu={e => flagCell(e, r, c)}
+                  disabled={gameOver}
+                >
+                  {cell.revealed
+                    ? cell.mine
+                      ? '💣'
+                      : cell.adjacent > 0
+                        ? cell.adjacent
+                        : ''
+                    : cell.flagged
+                      ? '🚩'
+                      : ''}
+                </button>
+              ))}
+            </div>
+          ))}
+        </div>
       </div>
       {gameOver && (
         <div style={{ marginTop: 10, fontWeight: 'bold', color: won ? 'green' : 'red' }}>
