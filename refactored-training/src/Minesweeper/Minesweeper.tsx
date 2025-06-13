@@ -390,9 +390,9 @@ function Minesweeper() {
                       (isWrongFlag ? ' ' + styles.wrongFlagTile : '')
                     }
                     style={{
-                      width: rows > 18 || cols > 18 ? 18 : 24,
-                      height: rows > 18 || cols > 18 ? 18 : 24,
-                      fontSize: 14,
+                      width: rows > 18 || cols > 18 ? 36 : 48,
+                      height: rows > 18 || cols > 18 ? 36 : 48,
+                      fontSize: 24,
                       color: cell.mine ? 'red' : isWrongFlag ? '#b00' : 'black',
                     }}
                     onClick={() => reveal(r, c)}

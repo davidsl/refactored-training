@@ -351,7 +351,8 @@
   display: block;
   width: 5px;
   height: 10px;
-  background: linear-gradient(180deg, #3399cc 60%, #ffb347 100%);
+  /* Use a more vibrant multi-color gradient */
+  background: linear-gradient(180deg, #43b97f 0%, #3399cc 40%, #ffb347 80%, #e94f37 100%);
   border-radius: 2px;
   animation: waveBarGrow 1.1s infinite;
 }
@@ -468,4 +469,205 @@
 @keyframes waveDotsBarMove {
   0% { left: -40px; }
   100% { left: 60px; }
+}
+
+/* Circle Wave Bar Spinner (combines Circle Spinner and Wave+Color Bar) */
+.spinnerCircleWaveBar {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.spinnerCircleWaveBar .circle {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #3399cc;
+  border-top: 4px solid #e0f4ff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+.spinnerCircleWaveBar .bars {
+  position: absolute;
+  /* left: 50%; */
+  right: 0;
+  transform: translateY(-50%);
+  top: 50%;
+  height: 24px;
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+}
+.spinnerCircleWaveBar .bars span {
+  display: block;
+  width: 4px;
+  height: 8px;
+  background: linear-gradient(180deg, #43b97f 0%, #3399cc 40%, #ffb347 80%, #e94f37 100%);
+  border-radius: 2px;
+  animation: circleWaveBarGrow 1.1s infinite;
+}
+.spinnerCircleWaveBar .bars span:nth-child(1) { animation-delay: 0s; }
+.spinnerCircleWaveBar .bars span:nth-child(2) { animation-delay: 0.1s; }
+.spinnerCircleWaveBar .bars span:nth-child(3) { animation-delay: 0.2s; }
+.spinnerCircleWaveBar .bars span:nth-child(4) { animation-delay: 0.3s; }
+.spinnerCircleWaveBar .bars span:nth-child(5) { animation-delay: 0.4s; }
+.spinnerCircleWaveBar .bars span:nth-child(6) { animation-delay: 0.5s; }
+@keyframes circleWaveBarGrow {
+  0%, 100% { height: 8px; }
+  50% { height: 20px; }
+}
+
+/* Wave on Rotating Ring Spinner */
+.spinnerWaveOnRing {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.spinnerWaveOnRing .ring {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 4px solid #3399cc;
+  border-top: 4px solid #ffb347;
+  border-bottom: 4px solid #43b97f;
+  border-left: 4px solid #e94f37;
+  position: absolute;
+  top: 0;
+  left: 0;
+  animation: spin 1.2s linear infinite;
+}
+.spinnerWaveOnRing .wave {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none;
+}
+.spinnerWaveOnRing .wave span {
+  position: absolute;
+  width: 6px;
+  height: 14px;
+  background: linear-gradient(180deg, #43b97f 0%, #3399cc 40%, #ffb347 80%, #e94f37 100%);
+  border-radius: 3px;
+  animation: waveOnRingGrow 1.1s infinite;
+  /* Place each bar around the ring using rotate and translate */
+  left: 50%;
+  top: 50%;
+  transform-origin: bottom center;
+}
+.spinnerWaveOnRing .wave span:nth-child(1) {
+  animation-delay: 0s;
+  transform: rotate(-60deg) translateY(-16px);
+}
+.spinnerWaveOnRing .wave span:nth-child(2) {
+  animation-delay: 0.1s;
+  transform: rotate(-36deg) translateY(-16px);
+}
+.spinnerWaveOnRing .wave span:nth-child(3) {
+  animation-delay: 0.2s;
+  transform: rotate(-12deg) translateY(-16px);
+}
+.spinnerWaveOnRing .wave span:nth-child(4) {
+  animation-delay: 0.3s;
+  transform: rotate(12deg) translateY(-16px);
+}
+.spinnerWaveOnRing .wave span:nth-child(5) {
+  animation-delay: 0.4s;
+  transform: rotate(36deg) translateY(-16px);
+}
+.spinnerWaveOnRing .wave span:nth-child(6) {
+  animation-delay: 0.5s;
+  transform: rotate(60deg) translateY(-16px);
+}
+@keyframes waveOnRingGrow {
+  0%, 100% { height: 14px; }
+  50% { height: 28px; }
+}
+
+/* Red Theme Overrides */
+.redTheme .spinnerCircle,
+.redTheme .spinnerDots span,
+.redTheme .spinnerRotatingSquare::before,
+.redTheme .spinnerBarHorizontal::before,
+.redTheme .spinnerPulse,
+.redTheme .spinnerDualRing::after,
+.redTheme .spinnerWave span,
+.redTheme .spinnerFlip,
+.redTheme .spinnerDualColorPulse,
+.redTheme .spinnerDotsOnRing span,
+.redTheme .spinnerFlipPulse,
+.redTheme .spinnerWaveBar span,
+.redTheme .spinnerSpiral::before,
+.redTheme .spinnerSpiralDots span,
+.redTheme .spinnerSpiralDots::before,
+.redTheme .spinnerWaveDots span,
+.redTheme .spinnerCircleWaveBar .circle,
+.redTheme .spinnerCircleWaveBar .bars span,
+.redTheme .spinnerWaveOnRing .ring,
+.redTheme .spinnerWaveOnRing .wave span {
+  /* Replace blue with red and adjust gradients */
+  border-color: #cc3333 !important;
+  border-top-color: #ffcccc !important;
+  background: #ffcccc !important;
+  background-image: linear-gradient(180deg, #e94f37 0%, #cc3333 40%, #ffb347 80%, #3399cc 100%) !important; 
+}
+.redTheme .spinnerDualRing::after {
+  border-color: #cc3333 transparent #cc3333 transparent !important;
+}
+.toggleSliderLabel {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  font-size: 15px;
+}
+.toggleSlider {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  display: inline-block;
+}
+.toggleSlider input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.toggleSliderTrack {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #ccc;
+  border-radius: 24px;
+  transition: background 0.2s;
+}
+.toggleSlider input:checked + .toggleSliderTrack {
+  background: #cc3333;
+}
+.toggleSliderThumb {
+  position: absolute;
+  left: 4px;
+  top: 4px;
+  width: 16px;
+  height: 16px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.2s;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+}
+.toggleSlider input:checked + .toggleSliderTrack .toggleSliderThumb {
+  transform: translateX(20px);
 }

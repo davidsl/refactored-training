@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import styles from './StylingExamples.module.css';
 
 const StylingExamples: React.FC = () => {
+  const [useRed, setUseRed] = useState(false);
+
   return (
     <div className={styles.examplesContainer}>
       <h2 className={styles.heading}>Styling Examples</h2>
@@ -49,7 +51,20 @@ const StylingExamples: React.FC = () => {
       </section>
       <section className={styles.section}>
         <h3>Loading Spinners</h3>
-        <div className={styles.spinnerGrid}>
+        <label className={styles.toggleSliderLabel}>
+          <span>Use Red Theme</span>
+          <span className={styles.toggleSlider}>
+            <input
+              type="checkbox"
+              checked={useRed}
+              onChange={e => setUseRed(e.target.checked)}
+            />
+            <span className={styles.toggleSliderTrack}>
+              <span className={styles.toggleSliderThumb}></span>
+            </span>
+          </span>
+        </label>
+        <div className={styles.spinnerGrid + (useRed ? ' ' + styles.redTheme : '')}>
           <div className={styles.spinnerExample}>
             <div className={styles.spinnerCircle}></div>
             <div className={styles.spinnerLabel}>Circle Spinner</div>
@@ -117,6 +132,23 @@ const StylingExamples: React.FC = () => {
               <span></span><span></span><span></span><span></span><span></span>
             </div>
             <div className={styles.spinnerLabel}>Wave Dots Spinner</div>
+          </div>
+          <div className={styles.spinnerExample}>
+            <div className={styles.spinnerCircleWaveBar}>
+              <div className={styles.circle}></div>
+              <div className={styles.bars}>
+                <span></span><span></span><span></span><span></span><span></span><span></span>
+              </div>
+            </div>
+            <div className={styles.spinnerLabel}>Circle Wave Bar</div>
+          </div>
+          <div className={styles.spinnerExample}>
+            <div className={styles.spinnerWaveOnRing}>
+              <div className={styles.wave}>
+                <span></span><span></span><span></span><span></span><span></span><span></span>
+              </div>
+            </div>
+            <div className={styles.spinnerLabel}>Wave on Rotating Ring</div>
           </div>
         </div>
       </section>
