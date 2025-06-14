@@ -15,14 +15,14 @@ function App() {
     <Router>
       <Header />
         <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/events" element={<Events />} />
-          <Route path="/places" element={<Places />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/game" element={<Minesweeper />} />
-          <Route path="/leaderboard" element={<Leaderboard />} />
-          <Route path="/styling-examples" element={<StylingExamples />} />
+          <Route path="/refactored-training" element={<Home />} />
+          <Route path="/refactored-training/about" element={<About />} />
+          <Route path="/refactored-training/events" element={<Events />} />
+          <Route path="/refactored-training/places" element={<Places />} />
+          <Route path="/refactored-training/contact" element={<Contact />} />
+          <Route path="/refactored-training/game" element={<Minesweeper />} />
+          <Route path="/refactored-training/leaderboard" element={<Leaderboard />} />
+          <Route path="/refactored-training/styling-examples" element={<StylingExamples />} />
         </Routes>
     </Router>
   )

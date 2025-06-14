@@ -1,27 +1,103 @@
 /* Header custom styles */
 .headerContainer {
   width: 100%;
-  background: #222;
+  background: #3399cc;
   color: #fff;
-  padding: 1rem 0.5rem;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   position: fixed;
   top: 0;
   left: 0;
   z-index: 1000;
+  padding: 0.5rem 0rem;
 }
-.headerContainer nav {
+
+.mobileNavBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+}
+.menuButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+}
+.menuIcon {
+  width: 28px;
+  height: 3px;
+  background: #fff;
+  border-radius: 2px;
+  position: relative;
+  display: block;
+}
+.menuIcon::before,
+.menuIcon::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  width: 28px;
+  height: 3px;
+  background: #fff;
+  border-radius: 2px;
+  transition: 0.2s;
+}
+.menuIcon::before { top: -9px; }
+.menuIcon::after { top: 9px; }
+.logo {
+  font-size: 1.2rem;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+nav {
+  margin-top: 0.5rem;
   display: flex;
   gap: 1rem;
 }
-.headerContainer a {
+.navOpen {
+  display: flex !important;
+  flex-direction: column;
+  gap: 12px;
+  background: #3399cc;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  padding: 1rem 0.5rem;
+  border-radius: 0 0 8px 8px;
+}
+.navClosed {
+  display: none !important;
+}
+@media (min-width: 800px) {
+  .mobileNavBar {
+    display: none;
+  }
+  nav, .navOpen, .navClosed {
+    display: flex !important;
+    flex-direction: row;
+    gap: 18px;
+    position: static;
+    background: none;
+    padding: 0;
+    margin-top: 0;
+  }
+}
+nav a, .headerContainer a {
   color: #fff;
   text-decoration: none;
   font-weight: 500;
-  transition: color 0.2s;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background 0.15s, color 0.2s;
 }
-.headerContainer a:hover {
-  color: #90caf9;
+nav a:hover, .headerContainer a:hover {
+  background: #2677a6;
+  color: #fff;
 }

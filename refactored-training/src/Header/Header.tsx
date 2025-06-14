@@ -1,15 +1,30 @@
 import styles from './Header.module.css'
 import { Link } from 'react-router-dom'
+import { useState } from 'react'
 
 function Header() {
+  const [menuOpen, setMenuOpen] = useState(false)
   return (
     <div className={styles.headerContainer}>
-      <nav>
-        <Link to="/">Home</Link> | <Link to="/about">About</Link> |{' '}
-        <Link to="/events">Events</Link> | <Link to="/places">Places</Link> |{' '}
-        <Link to="/contact">Contact</Link> | <Link to="/game">Minesweeper</Link> |{' '}
-        <Link to="/leaderboard">Leaderboard</Link> |{' '}
-        <Link to="/styling-examples">Styling Examples</Link>
+      <div className={styles.mobileNavBar}>
+        <button
+          className={styles.menuButton}
+          onClick={() => setMenuOpen(m => !m)}
+          aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+        >
+          <span className={styles.menuIcon} />
+        </button>
+        <span className={styles.logo}>Menu</span>
+      </div>
+      <nav className={menuOpen ? styles.navOpen : styles.navClosed}>
+        <Link to="/refactored-training" onClick={() => setMenuOpen(false)}>Home</Link> |{' '}
+        <Link to="/refactored-training/about" onClick={() => setMenuOpen(false)}>About</Link> |{' '}
+        <Link to="/refactored-training/events" onClick={() => setMenuOpen(false)}>Events</Link> |{' '}
+        <Link to="/refactored-training/places" onClick={() => setMenuOpen(false)}>Places</Link> |{' '}
+        <Link to="/refactored-training/contact" onClick={() => setMenuOpen(false)}>Contact</Link> |{' '}
+        <Link to="/refactored-training/game" onClick={() => setMenuOpen(false)}>Minesweeper</Link> |{' '}
+        <Link to="/refactored-training/leaderboard" onClick={() => setMenuOpen(false)}>Leaderboard</Link> |{' '}
+        <Link to="/refactored-training/styling-examples" onClick={() => setMenuOpen(false)}>Styling Examples</Link>
       </nav>
     </div>
   )
