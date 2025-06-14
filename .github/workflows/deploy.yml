@@ -23,12 +23,14 @@ jobs:
           node-version: 20
 
       - name: Install dependencies
-        run: npm install
-        working-directory: ./refactored-training
+        run: |
+          cd refactored-training
+          npm install
 
       - name: Build
-        run: npm run build
-        working-directory: ./refactored-training
+        run: |
+          cd refactored-training
+          npm run build
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
