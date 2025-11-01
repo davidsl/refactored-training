@@ -9,6 +9,7 @@ import Minesweeper from './Minesweeper/Minesweeper'
 import Leaderboard from './Leaderboard/Leaderboard'
 import Header from './Header/Header'
 import StylingExamples from './StylingExamples/StylingExamples'
+import Thumbnails from './Thumbnails/Thumbnails'
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
           <Route path="/refactored-training/game" element={<Minesweeper />} />
           <Route path="/refactored-training/leaderboard" element={<Leaderboard />} />
           <Route path="/refactored-training/styling-examples" element={<StylingExamples />} />
+          <Route path="/refactored-training/thumbnails" element={<Thumbnails />} />
         </Routes>
     </Router>
   )

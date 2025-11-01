@@ -24,7 +24,8 @@ function Header() {
         <Link to="/refactored-training/contact" onClick={() => setMenuOpen(false)}>Contact</Link> |{' '}
         <Link to="/refactored-training/game" onClick={() => setMenuOpen(false)}>Minesweeper</Link> |{' '}
         <Link to="/refactored-training/leaderboard" onClick={() => setMenuOpen(false)}>Leaderboard</Link> |{' '}
-        <Link to="/refactored-training/styling-examples" onClick={() => setMenuOpen(false)}>Styling Examples</Link>
+        <Link to="/refactored-training/styling-examples" onClick={() => setMenuOpen(false)}>Styling Examples</Link> |{' '}
+        <Link to="/refactored-training/thumbnails" onClick={() => setMenuOpen(false)}>Thumbnails</Link>
       </nav>
     </div>
   )
