@@ -10,7 +10,6 @@ type Upgrade = {
   description: string;
   baseCost: number;
   costScale: number;
-  gainPerLevel: number;
 };
 
 const SAVE_KEY = 'clickingGameSaveV2';
@@ -19,34 +18,30 @@ const UPGRADES: Upgrade[] = [
   {
     key: 'click',
     title: 'Neural Primer',
-    description: '+1 serotonin per tap',
+    description: '+12% serotonin per tap per level',
     baseCost: 15,
     costScale: 1.5,
-    gainPerLevel: 1,
   },
   {
     key: 'cursor',
     title: 'Micro Drip',
-    description: '+0.3 serotonin per sec',
+    description: 'Base drip + passive efficiency per level',
     baseCost: 35,
     costScale: 1.58,
-    gainPerLevel: 0.3,
   },
   {
     key: 'farm',
     title: 'Mood Greenhouse',
-    description: '+1.2 serotonin per sec',
+    description: '+18% passive and +4% tap boost per level',
     baseCost: 140,
     costScale: 1.64,
-    gainPerLevel: 1.2,
   },
   {
     key: 'factory',
     title: 'Synapse Reactor',
-    description: '+6 serotonin per sec',
+    description: '+10% global serotonin output per level',
     baseCost: 900,
     costScale: 1.72,
-    gainPerLevel: 6,
   },
 ];
 
@@ -56,6 +51,19 @@ type SaveData = {
   levels: Record<UpgradeKey, number>;
   soundEnabled?: boolean;
   hapticsEnabled?: boolean;
+};
+
+type RamSource = 'browser' | 'estimated';
+
+type RamSnapshot = {
+  usedMB: number;
+  totalMB: number;
+  source: RamSource;
+};
+
+type BrowserPerformanceMemory = {
+  usedJSHeapSize: number;
+  jsHeapSizeLimit: number;
 };
 
 const defaultLevels: Record<UpgradeKey, number> = {
@@ -75,9 +83,11 @@ function nextCost(baseCost: number, costScale: number, level: number) {
   return Math.floor(baseCost * Math.pow(costScale, level));
 }
 
-function ClickingGame() {
-  const ADMIN_CHEAT_AMOUNT = 10_000;
+function formatPercent(value: number) {
+  return `${value.toFixed(0)}%`;
+}
 
+function ClickingGame() {
   const audioContextRef = useRef<AudioContext | null>(null);
   const clickToneIndexRef = useRef(0);
   const previousPointsRef = useRef(0);
@@ -141,13 +151,37 @@ function ClickingGame() {
       return true;
     }
   });
+  const [ramSnapshot, setRamSnapshot] = useState<RamSnapshot>({
+    usedMB: 0,
+    totalMB: 0,
+    source: 'estimated',
+  });
 
   const canVibrate = typeof navigator !== 'undefined' && 'vibrate' in navigator;
 
-  const clickPower = 1 + levels.click;
-  const passivePerSecond = useMemo(
-    () => levels.cursor * 0.3 + levels.farm * 1.2 + levels.factory * 6,
-    [levels.cursor, levels.farm, levels.factory]
+  const clickPower = useMemo(() => {
+    const tapMultiplier = (1 + levels.click * 0.12) * (1 + levels.farm * 0.04);
+    const globalMultiplier = 1 + levels.factory * 0.1;
+    return tapMultiplier * globalMultiplier;
+  }, [levels.click, levels.farm, levels.factory]);
+
+  const clickGain = useMemo(() => Number(clickPower.toFixed(2)), [clickPower]);
+
+  const passivePerSecond = useMemo(() => {
+    const basePassive = levels.cursor * 0.4 + levels.farm * 1.4 + levels.factory * 6.5;
+    const passiveMultiplier = (1 + levels.cursor * 0.08) * (1 + levels.farm * 0.18);
+    const globalMultiplier = 1 + levels.factory * 0.1;
+    return basePassive * passiveMultiplier * globalMultiplier;
+  }, [levels.cursor, levels.farm, levels.factory]);
+
+  const upgradeEffectSummary = useMemo(
+    () => ({
+      click: `Tap boost: +${formatPercent(levels.click * 12)}`,
+      cursor: `Drip base: ${formatValue(levels.cursor * 0.4)}/sec | Efficiency: +${formatPercent(levels.cursor * 8)}`,
+      farm: `Passive: +${formatPercent(levels.farm * 18)} | Tap: +${formatPercent(levels.farm * 4)}`,
+      factory: `Global output: +${formatPercent(levels.factory * 10)}`,
+    }),
+    [levels]
   );
 
   const beatDurationSeconds = useMemo(() => {
@@ -197,6 +231,38 @@ function ClickingGame() {
 
     return () => window.clearInterval(tick);
   }, [passivePerSecond]);
+
+  useEffect(() => {
+    const readRamSnapshot = () => {
+      const perfWithMemory = performance as Performance & { memory?: BrowserPerformanceMemory };
+      if (perfWithMemory.memory?.usedJSHeapSize && perfWithMemory.memory?.jsHeapSizeLimit) {
+        setRamSnapshot({
+          usedMB: perfWithMemory.memory.usedJSHeapSize / (1024 * 1024),
+          totalMB: perfWithMemory.memory.jsHeapSizeLimit / (1024 * 1024),
+          source: 'browser',
+        });
+        return;
+      }
+
+      const navWithDeviceMemory = navigator as Navigator & { deviceMemory?: number };
+      const deviceMemoryGB = navWithDeviceMemory.deviceMemory ?? 8;
+      const totalMB = deviceMemoryGB * 1024;
+      const modeledLoad =
+        390 +
+        points / 65 +
+        passivePerSecond * 34 +
+        levels.cursor * 26 +
+        levels.farm * 62 +
+        levels.factory * 118 +
+        (Math.sin(Date.now() / 2800) + 1) * 72;
+      const usedMB = Math.min(totalMB * 0.88, Math.max(280, modeledLoad));
+      setRamSnapshot({ usedMB, totalMB, source: 'estimated' });
+    };
+
+    readRamSnapshot();
+    const ramInterval = window.setInterval(readRamSnapshot, 1200);
+    return () => window.clearInterval(ramInterval);
+  }, [points, passivePerSecond, levels]);
 
   useEffect(() => {
     let flareTimeout: number | null = null;
@@ -316,8 +382,8 @@ function ClickingGame() {
   }
 
   function clickMainButton() {
-    setPoints(prev => prev + clickPower);
-    setLifetime(prev => prev + clickPower);
+    setPoints(prev => prev + clickGain);
+    setLifetime(prev => prev + clickGain);
     setClickBurst(true);
     window.setTimeout(() => setClickBurst(false), 120);
     playClickSound();
@@ -341,8 +407,10 @@ function ClickingGame() {
   }
 
   function applyAdminCheat() {
-    setPoints(prev => prev + ADMIN_CHEAT_AMOUNT);
-    setLifetime(prev => prev + ADMIN_CHEAT_AMOUNT);
+    setPoints(prev => {
+      setLifetime(currentLifetime => currentLifetime + prev);
+      return prev * 2;
+    });
     playUpgradeSound();
     triggerHaptics([20, 24, 20]);
   }
@@ -374,6 +442,15 @@ function ClickingGame() {
     ? `${styles.serotoninFieldReadout} ${styles.serotoninFieldReadoutPulse}`
     : styles.serotoninFieldReadout;
 
+  const ramPercent = ramSnapshot.totalMB > 0 ? Math.min(100, (ramSnapshot.usedMB / ramSnapshot.totalMB) * 100) : 0;
+  const ramUsageClass =
+    ramPercent >= 82
+      ? `${styles.ramFill} ${styles.ramFillHigh}`
+      : ramPercent >= 62
+        ? `${styles.ramFill} ${styles.ramFillMid}`
+        : styles.ramFill;
+  const ramFillStyle = { width: `${ramPercent.toFixed(1)}%` } as CSSProperties;
+
   return (
     <section className={styles.gameCard}>
       <header className={styles.header}>
@@ -394,7 +471,7 @@ function ClickingGame() {
         </div>
         <div>
           <span>Per Tap</span>
-          <strong>{formatValue(clickPower)}</strong>
+          <strong>{formatValue(clickGain)}</strong>
         </div>
         <div>
           <span>Harvest / sec</span>
@@ -405,6 +482,21 @@ function ClickingGame() {
           <strong>{vibeLabel}</strong>
         </div>
       </div>
+
+      <section className={styles.ramSection} aria-label="RAM usage">
+        <div className={styles.ramHeader}>
+          <h3>Runtime RAM</h3>
+          <span>{ramPercent.toFixed(1)}%</span>
+        </div>
+        <div className={styles.ramTrack} role="meter" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Number(ramPercent.toFixed(1))}>
+          <div className={ramUsageClass} style={ramFillStyle} />
+        </div>
+        <div className={styles.ramValues}>
+          <span>Used: {ramSnapshot.usedMB.toFixed(0)} MB</span>
+          <span>Total: {ramSnapshot.totalMB.toFixed(0)} MB</span>
+          <span>Source: {ramSnapshot.source === 'browser' ? 'Browser Heap' : 'Estimated'}</span>
+        </div>
+      </section>
 
       <div className={styles.feedbackControls}>
         <button
@@ -453,7 +545,7 @@ function ClickingGame() {
               className={coreClassName}
               onClick={clickMainButton}
             >
-              +{clickPower.toFixed(0)}
+              +{clickGain}
             </button>
           </div>
           <p className={styles.coreStage}>Canopy stage: {visualStage}</p>
@@ -465,7 +557,7 @@ function ClickingGame() {
             <h3>Cultivation Lab</h3>
             <div className={styles.shopActionButtons}>
               <button type="button" className={styles.adminCheatButton} onClick={applyAdminCheat}>
-                Lab Override +{formatValue(ADMIN_CHEAT_AMOUNT)}
+                Lab Override x2
               </button>
               <button type="button" className={styles.resetButton} onClick={resetProgress}>
                 Reboot
@@ -491,6 +583,7 @@ function ClickingGame() {
                     <span>Lv {level}</span>
                   </div>
                   <p>{upgrade.description}</p>
+                  <span className={styles.shopEffect}>{upgradeEffectSummary[upgrade.key]}</span>
                   <div className={styles.shopBottomRow}>
                     <span>Next Dose Cost</span>
                     <strong>{formatValue(cost)}</strong>
