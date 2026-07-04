@@ -1,16 +1,29 @@
 #root {
   width: 100%;
+  height: 100dvh;
+  max-height: 100dvh;
   margin: 0 auto;
+  overflow: hidden;
 }
 
 .appContent {
   width: min(1160px, calc(100% - 2rem));
+  height: 100dvh;
+  max-height: 100dvh;
   margin: 0 auto;
-  padding: 7.4rem 0 2rem;
+  padding: 7.4rem 0 1rem;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
   animation: contentFadeIn var(--motion-content-fade) ease-out;
 }
 
 .appContent > * {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  overflow: hidden;
   opacity: 0;
   transform: translateY(10px);
   animation: contentStaggerIn var(--motion-content-stagger) cubic-bezier(0.22, 1, 0.36, 1) forwards;
@@ -42,7 +55,7 @@
 @media (max-width: 800px) {
   .appContent {
     width: calc(100% - 1rem);
-    padding-top: 5.6rem;
+    padding: 5.6rem 0 0.6rem;
     animation-duration: var(--motion-content-fade-mobile);
   }
 

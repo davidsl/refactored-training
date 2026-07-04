@@ -1,4 +1,6 @@
 .eventsContainer {
+  height: 100%;
+  max-height: 100%;
   padding: 2rem;
   border-radius: var(--radius-xl);
   background: linear-gradient(145deg, rgba(255, 255, 255, 0.96), rgba(255, 252, 236, 0.92));
@@ -6,6 +8,10 @@
   border-left: 6px solid #f0a434;
   box-shadow: var(--shadow-soft);
   text-align: left;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .eventsContainer h2 {

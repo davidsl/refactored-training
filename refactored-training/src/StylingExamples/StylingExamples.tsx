@@ -105,75 +105,75 @@ const StylingExamples: React.FC = () => {
           </div>
         </div>
         <div className={styles.spinnerGrid + (useRed ? ' ' + styles.redTheme : '')}>
-          <div className={styles.spinnerExample}>
+          <div className={styles.spinnerExample} data-short="Ring">
             <div className={styles.spinnerCircle}></div>
             <div className={styles.spinnerLabel}>Circle Spinner</div>
           </div>
-          <div className={styles.spinnerExample}>
+          <div className={styles.spinnerExample} data-short="Dots">
             <div className={styles.spinnerDots}>
               <span></span><span></span><span></span>
             </div>
             <div className={styles.spinnerLabel}>Bouncing Dots</div>
           </div>
-          <div className={styles.spinnerExample}>
+          <div className={styles.spinnerExample} data-short="Square">
             <div className={styles.spinnerRotatingSquare}>
               <span></span><span></span><span></span><span></span>
             </div>
             <div className={styles.spinnerLabel}>Rotating Square</div>
           </div>
-          <div className={styles.spinnerExample}>
+          <div className={styles.spinnerExample} data-short="Bar">
             <div className={styles.spinnerBarHorizontal}></div>
             <div className={styles.spinnerLabel}>Horizontal Bar</div>
           </div>
-          <div className={styles.spinnerExample}>
+          <div className={styles.spinnerExample} data-short="Pulse">
             <div className={styles.spinnerPulse}></div>
             <div className={styles.spinnerLabel}>Pulse</div>
           </div>
-          <div className={styles.spinnerExample}>
+          <div className={styles.spinnerExample} data-short="DualRing">
             <div className={styles.spinnerDualRing}></div>
             <div className={styles.spinnerLabel}>Dual Ring</div>
           </div>
-          <div className={styles.spinnerExample}>
+          <div className={styles.spinnerExample} data-short="Wave">
             <div className={styles.spinnerWave}>
               <span></span><span></span><span></span><span></span><span></span>
             </div>
             <div className={styles.spinnerLabel}>Wave</div>
           </div>
-          <div className={styles.spinnerExample}>
+          <div className={styles.spinnerExample} data-short="Flip">
             <div className={styles.spinnerFlip}></div>
             <div className={styles.spinnerLabel}>Flip</div>
           </div>
-          <div className={styles.spinnerExample}>
+          <div className={styles.spinnerExample} data-short="DualPulse">
             <div className={styles.spinnerDualColorPulse}></div>
             <div className={styles.spinnerLabel}>Dual Color Pulse</div>
           </div>
-          <div className={styles.spinnerExample}>
+          <div className={styles.spinnerExample} data-short="RingDots">
             <div className={styles.spinnerDotsOnRing}>
               <span></span><span></span><span></span><span></span>
             </div>
             <div className={styles.spinnerLabel}>Dots on Rotating Ring</div>
           </div>
-          <div className={styles.spinnerExample}>
+          <div className={styles.spinnerExample} data-short="Flip+P">
             <div className={styles.spinnerFlipPulse}></div>
             <div className={styles.spinnerLabel}>Flip & Pulse Combo</div>
           </div>
-          <div className={styles.spinnerExample}>
+          <div className={styles.spinnerExample} data-short="WaveBar">
             <div className={styles.spinnerWaveBar}>
               <span></span><span></span><span></span><span></span><span></span>
             </div>
             <div className={styles.spinnerLabel}>Wave + Color Bar</div>
           </div>
-          <div className={styles.spinnerExample}>
+          <div className={styles.spinnerExample} data-short="Spiral">
             <div className={styles.spinnerSpiral}></div>
             <div className={styles.spinnerLabel}>Spiral Spinner</div>
           </div>
-          <div className={styles.spinnerExample}>
+          <div className={styles.spinnerExample} data-short="WaveDots">
             <div className={styles.spinnerWaveDots}>
               <span></span><span></span><span></span><span></span><span></span>
             </div>
             <div className={styles.spinnerLabel}>Wave Dots Spinner</div>
           </div>
-          <div className={styles.spinnerExample}>
+          <div className={styles.spinnerExample} data-short="CircleBar">
             <div className={styles.spinnerCircleWaveBar}>
               <div className={styles.circle}></div>
               <div className={styles.bars}>
@@ -182,7 +182,7 @@ const StylingExamples: React.FC = () => {
             </div>
             <div className={styles.spinnerLabel}>Circle Wave Bar</div>
           </div>
-          <div className={styles.spinnerExample}>
+          <div className={styles.spinnerExample} data-short="RingWave">
             <div className={styles.spinnerWaveOnRing}>
               <div className={styles.wave}>
                 <span></span><span></span><span></span><span></span><span></span><span></span>
