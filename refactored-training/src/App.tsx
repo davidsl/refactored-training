@@ -10,6 +10,7 @@ import Leaderboard from './Leaderboard/Leaderboard'
 import Header from './Header/Header'
 import StylingExamples from './StylingExamples/StylingExamples'
 import Thumbnails from './Thumbnails/Thumbnails'
+import ClickingGame from './ClickingGame/ClickingGame'
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
           <Route path="/refactored-training/leaderboard" element={<Leaderboard />} />
           <Route path="/refactored-training/styling-examples" element={<StylingExamples />} />
           <Route path="/refactored-training/thumbnails" element={<Thumbnails />} />
+          <Route path="/refactored-training/clicking-game" element={<ClickingGame />} />
         </Routes>
       </main>
     </Router>

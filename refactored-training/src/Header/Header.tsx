@@ -28,6 +28,7 @@ function Header() {
         <Link to="/refactored-training/leaderboard" onClick={() => setMenuOpen(false)}>Leaderboard</Link>
         <Link to="/refactored-training/styling-examples" onClick={() => setMenuOpen(false)}>Styling Examples</Link>
         <Link to="/refactored-training/thumbnails" onClick={() => setMenuOpen(false)}>Thumbnails</Link>
+        <Link to="/refactored-training/clicking-game" onClick={() => setMenuOpen(false)}>Clicking Game</Link>
       </nav>
     </div>
   )
