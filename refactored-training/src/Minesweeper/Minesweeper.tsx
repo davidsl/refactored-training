@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import type { MouseEvent } from 'react';
 import styles from './Minesweeper.module.css';
+import { ACTIVE_MOTION_PRESET, MOTION_DELAY_PRESETS } from '../motionPreset';
 
 type Cell = {
   mine: boolean;
@@ -75,34 +76,62 @@ function cloneBoard(board: Board): Board {
 }
 
 function Minesweeper() {
-  // Add state for rows, cols, mines
-  const [rows, setRows] = useState(8); // Default to Small
-  const [cols, setCols] = useState(8); // Default to Small
-  const [mines, setMines] = useState(10); // Default to Small
+  const motion = MOTION_DELAY_PRESETS[ACTIVE_MOTION_PRESET];
+  const [rows, setRows] = useState(8);
+  const [cols, setCols] = useState(8);
+  const [mines, setMines] = useState(10);
+  const [draftRows, setDraftRows] = useState(8);
+  const [draftCols, setDraftCols] = useState(8);
+  const [draftMines, setDraftMines] = useState(10);
   const [showCustomize, setShowCustomize] = useState(false);
 
-  // Board and preReveal state
-  const [{ board, preReveal: initialPreReveal }, setInitialBoard] = useState(() => generateBoard(8, 8, 10));
-  const [boardState, setBoard] = useState<Board>(board);
-  const [preReveal, setPreReveal] = useState<PreReveal>(initialPreReveal);
+  const initialGame = generateBoard(8, 8, 10);
+  const [boardState, setBoard] = useState<Board>(initialGame.board);
+  const [preReveal, setPreReveal] = useState<PreReveal>(initialGame.preReveal);
   const [gameOver, setGameOver] = useState(false);
   const [won, setWon] = useState(false);
   const [wrongFlags, setWrongFlags] = useState<{ r: number; c: number }[]>([]);
   const [elapsed, setElapsed] = useState(0);
   const [timerActive, setTimerActive] = useState(false);
+  const [boardAnimKey, setBoardAnimKey] = useState(0);
   const timerRef = useRef<number | null>(null);
 
-  // Regenerate board when settings change
-  useEffect(() => {
-    const { board, preReveal } = generateBoard(rows, cols, mines);
+  function startNewGame(nextRows: number, nextCols: number, nextMines: number) {
+    const { board, preReveal } = generateBoard(nextRows, nextCols, nextMines);
     setBoard(board);
     setPreReveal(preReveal);
     setGameOver(false);
     setWon(false);
     setWrongFlags([]);
     setElapsed(0);
-    setInitialBoard({ board, preReveal });
-  }, [rows, cols, mines]);
+    setTimerActive(false);
+    setBoardAnimKey(v => v + 1);
+  }
+
+  function applyPreset(nextRows: number, nextCols: number, nextMines: number) {
+    setRows(nextRows);
+    setCols(nextCols);
+    setMines(nextMines);
+    setDraftRows(nextRows);
+    setDraftCols(nextCols);
+    setDraftMines(nextMines);
+    startNewGame(nextRows, nextCols, nextMines);
+  }
+
+  function applyDraftSettings() {
+    const nextRows = Math.max(5, Math.min(30, Number(draftRows)));
+    const nextCols = Math.max(5, Math.min(30, Number(draftCols)));
+    const maxMines = nextRows * nextCols - 1;
+    const nextMines = Math.max(1, Math.min(maxMines, Number(draftMines)));
+
+    setRows(nextRows);
+    setCols(nextCols);
+    setMines(nextMines);
+    setDraftRows(nextRows);
+    setDraftCols(nextCols);
+    setDraftMines(nextMines);
+    startNewGame(nextRows, nextCols, nextMines);
+  }
 
   // Count placed flags
   const flagCount = boardState.reduce((acc, row) => acc + row.filter(cell => cell.flagged).length, 0);
@@ -146,8 +175,7 @@ function Minesweeper() {
       wins.push(winRecord);
       sessionStorage.setItem('minesweeperWins', JSON.stringify(wins));
     }
-    if (gameOver) setTimerActive(false);
-  }, [won, elapsed, rows, cols, mines, gameOver]);
+  }, [won, elapsed, rows, cols, mines]);
 
   function reveal(r: number, c: number) {
     if (gameOver) return;
@@ -192,6 +220,7 @@ function Minesweeper() {
         }
         setBoard(newBoard);
         setWrongFlags(wrongs);
+        setTimerActive(false);
         setGameOver(true);
         return;
       }
@@ -204,6 +233,7 @@ function Minesweeper() {
         }
       }
       if (allRevealed) {
+        setTimerActive(false);
         setGameOver(true);
         setWon(true);
       }
@@ -257,6 +287,7 @@ function Minesweeper() {
       }
       setBoard(newBoard);
       setWrongFlags(wrongs);
+      setTimerActive(false);
       setGameOver(true);
       return;
     }
@@ -269,6 +300,7 @@ function Minesweeper() {
       }
     }
     if (allRevealed) {
+      setTimerActive(false);
       setGameOver(true);
       setWon(true);
     }
@@ -282,17 +314,8 @@ function Minesweeper() {
     setBoard(newBoard);
   }
 
-  // Reset timer and board on restart
   function reset() {
-    const { board, preReveal } = generateBoard(rows, cols, mines);
-    setBoard(board);
-    setPreReveal(preReveal);
-    setGameOver(false);
-    setWon(false);
-    setWrongFlags([]);
-    setElapsed(0);
-    setTimerActive(false);
-    setInitialBoard({ board, preReveal });
+    startNewGame(rows, cols, mines);
   }
 
   return (
@@ -304,7 +327,7 @@ function Minesweeper() {
           className={
             styles.customizeButton + (rows === 8 && cols === 8 && mines === 10 ? ' ' + styles.selectedButton : '')
           }
-          onClick={() => { setRows(8); setCols(8); setMines(10); reset(); }}
+          onClick={() => applyPreset(8, 8, 10)}
         >
           Small
         </button>
@@ -313,7 +336,7 @@ function Minesweeper() {
           className={
             styles.customizeButton + (rows === 16 && cols === 16 && mines === 40 ? ' ' + styles.selectedButton : '')
           }
-          onClick={() => { setRows(16); setCols(16); setMines(40); reset(); }}
+          onClick={() => applyPreset(16, 16, 40)}
         >
           Medium
         </button>
@@ -322,66 +345,80 @@ function Minesweeper() {
           className={
             styles.customizeButton + (rows === 16 && cols === 30 && mines === 99 ? ' ' + styles.selectedButton : '')
           }
-          onClick={() => { setRows(16); setCols(30); setMines(99); reset(); }}
+          onClick={() => applyPreset(16, 30, 99)}
         >
           Large
         </button>
-                <button type="button" onClick={() => setShowCustomize(v => !v)} className={styles.customizeButton}>
+        <button type="button" onClick={() => setShowCustomize(v => !v)} className={styles.customizeButton}>
           {showCustomize ? 'Hide Customization' : 'Customize Board'}
         </button>
       </div>
       {showCustomize && (
         <form
-          style={{ display: 'flex', gap: 8, marginBottom: 16, alignItems: 'center', flexWrap: 'wrap' }}
-          onSubmit={e => { e.preventDefault(); reset(); }}
+          className={styles.customForm}
+          onSubmit={e => {
+            e.preventDefault();
+            applyDraftSettings();
+          }}
         >
-          <label>
+          <label className={styles.customLabel}>
             Rows:
             <input
+              className={styles.customInput}
               type="number"
               min={5}
               max={30}
-              value={rows}
-              onChange={e => setRows(Math.max(5, Math.min(30, Number(e.target.value))))}
-              style={{ width: 48, marginLeft: 4 }}
+              value={draftRows}
+              onChange={e => setDraftRows(Math.max(5, Math.min(30, Number(e.target.value))))}
             />
           </label>
-          <label>
+          <label className={styles.customLabel}>
             Columns:
             <input
+              className={styles.customInput}
               type="number"
               min={5}
               max={30}
-              value={cols}
-              onChange={e => setCols(Math.max(5, Math.min(30, Number(e.target.value))))}
-              style={{ width: 48, marginLeft: 4 }}
+              value={draftCols}
+              onChange={e => setDraftCols(Math.max(5, Math.min(30, Number(e.target.value))))}
             />
           </label>
-          <label>
+          <label className={styles.customLabel}>
             Mines:
             <input
+              className={styles.customInput}
               type="number"
               min={1}
-              max={rows * cols - 1}
-              value={mines}
-              onChange={e => setMines(Math.max(1, Math.min(rows * cols - 1, Number(e.target.value))))}
-              style={{ width: 56, marginLeft: 4 }}
+              max={Math.max(1, draftRows * draftCols - 1)}
+              value={draftMines}
+              onChange={e => {
+                const maxMines = Math.max(1, draftRows * draftCols - 1);
+                setDraftMines(Math.max(1, Math.min(maxMines, Number(e.target.value))));
+              }}
             />
           </label>
-          <button type="submit">Apply</button>
+          <button type="submit" className={styles.applyButton}>Apply</button>
         </form>
       )}
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <div style={{ marginBottom: 6, fontWeight: 'bold', fontSize: 16 }}>
+      <div className={styles.centerColumn}>
+        <div className={styles.statusRow}>
           Bombs left: {bombsLeft} | Time: {elapsed}s
         </div>
-        <button onClick={reset} style={{ marginBottom: 10 }}>Restart</button>
-        <div style={{ display: 'inline-block' }}>
+        <button onClick={reset} className={styles.restartButton}>Restart</button>
+        <div className={styles.boardWrapper} key={boardAnimKey}>
           {boardState.map((row, r) => (
-            <div key={r} style={{ display: 'flex' }}>
+            <div
+              key={r}
+              className={styles.boardRow}
+              style={{ animationDelay: `${Math.min(r * motion.mineRowStepMs, motion.mineRowMaxMs)}ms` }}
+            >
               {row.map((cell, c) => {
                 const isPreReveal = preReveal && preReveal.r === r && preReveal.c === c;
                 const isWrongFlag = wrongFlags.some(f => f.r === r && f.c === c);
+                const tileDelay = Math.min(
+                  r * motion.mineTileRowWeightMs + c * motion.mineTileColWeightMs,
+                  motion.mineTileMaxMs
+                );
                 return (
                   <button
                     key={c}
@@ -394,7 +431,9 @@ function Minesweeper() {
                       height: rows > 18 || cols > 18 ? 36 : 48,
                       fontSize: 24,
                       color: cell.mine ? 'red' : isWrongFlag ? '#b00' : 'black',
+                      animationDelay: cell.revealed || isPreReveal ? `${tileDelay}ms` : undefined,
                     }}
+                    data-tile-index={r * cols + c}
                     onClick={() => reveal(r, c)}
                     onContextMenu={e => flagCell(e, r, c)}
                     disabled={gameOver}
@@ -418,7 +457,7 @@ function Minesweeper() {
         </div>
       </div>
       {gameOver && (
-        <div style={{ marginTop: 10, fontWeight: 'bold', color: won ? 'green' : 'red' }}>
+        <div className={styles.gameOverMsg} style={{ color: won ? '#0f8e5f' : '#cc3040' }}>
           {won ? 'You Win!' : 'Game Over!'}
         </div>
       )}

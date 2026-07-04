@@ -1,0 +1,732 @@
+import { useEffect, useMemo, useRef, useState } from 'react';
+import type { CSSProperties, MouseEvent } from 'react';
+import styles from './ClickingGame.module.css';
+
+type UpgradeKey = 'click' | 'cursor' | 'farm' | 'factory';
+
+type Upgrade = {
+  key: UpgradeKey;
+  title: string;
+  description: string;
+  baseCost: number;
+  costScale: number;
+};
+
+const SAVE_KEY = 'clickingGameSaveV2';
+
+const UPGRADES: Upgrade[] = [
+  {
+    key: 'click',
+    title: 'Neural Primer',
+    description: '+12% serotonin per tap per level',
+    baseCost: 15,
+    costScale: 1.5,
+  },
+  {
+    key: 'cursor',
+    title: 'Micro Drip',
+    description: 'Base drip + passive efficiency per level',
+    baseCost: 35,
+    costScale: 1.58,
+  },
+  {
+    key: 'farm',
+    title: 'Mood Greenhouse',
+    description: '+18% passive and +4% tap boost per level',
+    baseCost: 140,
+    costScale: 1.64,
+  },
+  {
+    key: 'factory',
+    title: 'Synapse Reactor',
+    description: '+10% global serotonin output per level',
+    baseCost: 900,
+    costScale: 1.72,
+  },
+];
+
+type SaveData = {
+  points: number;
+  lifetime: number;
+  cortisol: number;
+  levels: Record<UpgradeKey, number>;
+  soundEnabled?: boolean;
+  hapticsEnabled?: boolean;
+};
+
+type RamSource = 'browser' | 'estimated';
+
+type RamSnapshot = {
+  usedMB: number;
+  totalMB: number;
+  source: RamSource;
+};
+
+type BrowserPerformanceMemory = {
+  usedJSHeapSize: number;
+  jsHeapSizeLimit: number;
+};
+
+const defaultLevels: Record<UpgradeKey, number> = {
+  click: 0,
+  cursor: 0,
+  farm: 0,
+  factory: 0,
+};
+
+function formatValue(value: number) {
+  if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(2)}M`;
+  if (value >= 1_000) return `${(value / 1_000).toFixed(2)}K`;
+  return value.toFixed(1);
+}
+
+function nextCost(baseCost: number, costScale: number, level: number) {
+  return Math.floor(baseCost * Math.pow(costScale, level));
+}
+
+function formatPercent(value: number) {
+  return `${value.toFixed(0)}%`;
+}
+
+function ClickingGame() {
+  const SHORT_VIEWPORT_THRESHOLD = 860;
+  const RECOVERY_MIN_COST = 25;
+  const RECOVERY_DURATION_MS = 18_000;
+
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const clickToneIndexRef = useRef(0);
+  const previousPointsRef = useRef(0);
+  const pointsPulseTimeoutRef = useRef<number | null>(null);
+
+  const [points, setPoints] = useState<number>(() => {
+    const stored = localStorage.getItem(SAVE_KEY);
+    if (!stored) return 0;
+    try {
+      const parsed = JSON.parse(stored) as SaveData;
+      return Number(parsed.points) || 0;
+    } catch {
+      return 0;
+    }
+  });
+  const [lifetime, setLifetime] = useState<number>(() => {
+    const stored = localStorage.getItem(SAVE_KEY);
+    if (!stored) return 0;
+    try {
+      const parsed = JSON.parse(stored) as SaveData;
+      return Number(parsed.lifetime) || 0;
+    } catch {
+      return 0;
+    }
+  });
+  const [cortisol, setCortisol] = useState<number>(() => {
+    const stored = localStorage.getItem(SAVE_KEY);
+    if (!stored) return 0;
+    try {
+      const parsed = JSON.parse(stored) as SaveData;
+      return Number(parsed.cortisol) || 0;
+    } catch {
+      return 0;
+    }
+  });
+  const [levels, setLevels] = useState<Record<UpgradeKey, number>>(() => {
+    const stored = localStorage.getItem(SAVE_KEY);
+    if (!stored) return defaultLevels;
+    try {
+      const parsed = JSON.parse(stored) as SaveData;
+      return {
+        click: Number(parsed.levels?.click) || 0,
+        cursor: Number(parsed.levels?.cursor) || 0,
+        farm: Number(parsed.levels?.farm) || 0,
+        factory: Number(parsed.levels?.factory) || 0,
+      };
+    } catch {
+      return defaultLevels;
+    }
+  });
+  const [clickBurst, setClickBurst] = useState(false);
+  const [flareActive, setFlareActive] = useState(false);
+  const [serotoninPulse, setSerotoninPulse] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState<boolean>(() => {
+    const stored = localStorage.getItem(SAVE_KEY);
+    if (!stored) return true;
+    try {
+      const parsed = JSON.parse(stored) as SaveData;
+      return parsed.soundEnabled ?? true;
+    } catch {
+      return true;
+    }
+  });
+  const [hapticsEnabled, setHapticsEnabled] = useState<boolean>(() => {
+    const stored = localStorage.getItem(SAVE_KEY);
+    if (!stored) return true;
+    try {
+      const parsed = JSON.parse(stored) as SaveData;
+      return parsed.hapticsEnabled ?? true;
+    } catch {
+      return true;
+    }
+  });
+  const [ramSnapshot, setRamSnapshot] = useState<RamSnapshot>({
+    usedMB: 0,
+    totalMB: 0,
+    source: 'estimated',
+  });
+  const [focusBoostMultiplier, setFocusBoostMultiplier] = useState(1);
+  const [focusBoostUntil, setFocusBoostUntil] = useState(0);
+  const [clockNow, setClockNow] = useState(() => Date.now());
+  const [isShortViewport, setIsShortViewport] = useState(() =>
+    typeof window !== 'undefined' ? window.innerHeight < SHORT_VIEWPORT_THRESHOLD : false
+  );
+
+  const canVibrate = typeof navigator !== 'undefined' && 'vibrate' in navigator;
+  const ramPercent = ramSnapshot.totalMB > 0 ? Math.min(100, (ramSnapshot.usedMB / ramSnapshot.totalMB) * 100) : 0;
+
+  const baseClickPower = useMemo(() => {
+    const tapMultiplier = (1 + levels.click * 0.12) * (1 + levels.farm * 0.04);
+    const globalMultiplier = 1 + levels.factory * 0.1;
+    return tapMultiplier * globalMultiplier;
+  }, [levels.click, levels.farm, levels.factory]);
+
+  const basePassivePerSecond = useMemo(() => {
+    const basePassive = levels.cursor * 0.4 + levels.farm * 1.4 + levels.factory * 6.5;
+    const passiveMultiplier = (1 + levels.cursor * 0.08) * (1 + levels.farm * 0.18);
+    const globalMultiplier = 1 + levels.factory * 0.1;
+    return basePassive * passiveMultiplier * globalMultiplier;
+  }, [levels.cursor, levels.farm, levels.factory]);
+
+  const isFocusActive = focusBoostUntil > clockNow;
+  const focusSecondsLeft = Math.max(0, Math.ceil((focusBoostUntil - clockNow) / 1000));
+  const focusMultiplier = isFocusActive ? focusBoostMultiplier : 1;
+
+  const cortisolEfficiency = useMemo(() => {
+    if (cortisol <= 60) return 1;
+    const penalty = Math.min(0.6, (cortisol - 60) / 720);
+    return 1 - penalty;
+  }, [cortisol]);
+
+  const clickGain = useMemo(
+    () => Number((baseClickPower * cortisolEfficiency * focusMultiplier).toFixed(2)),
+    [baseClickPower, cortisolEfficiency, focusMultiplier]
+  );
+
+  const passivePerSecond = useMemo(
+    () => basePassivePerSecond * cortisolEfficiency * focusMultiplier,
+    [basePassivePerSecond, cortisolEfficiency, focusMultiplier]
+  );
+
+  const cortisolPerSecond = useMemo(() => {
+    const baseStress = 0.14 + basePassivePerSecond * 0.02 + ramPercent * 0.004;
+    const mitigation = levels.farm * 0.08 + levels.factory * 0.05;
+    return Math.max(0, baseStress - mitigation);
+  }, [basePassivePerSecond, ramPercent, levels.farm, levels.factory]);
+
+  const upgradeEffectSummary = useMemo(
+    () => ({
+      click: `Tap boost: +${formatPercent(levels.click * 12)}`,
+      cursor: `Drip base: ${formatValue(levels.cursor * 0.4)}/sec | Efficiency: +${formatPercent(levels.cursor * 8)}`,
+      farm: `Passive: +${formatPercent(levels.farm * 18)} | Tap: +${formatPercent(levels.farm * 4)}`,
+      factory: `Global output: +${formatPercent(levels.factory * 10)}`,
+    }),
+    [levels]
+  );
+
+  const beatDurationSeconds = useMemo(() => {
+    const capped = Math.min(passivePerSecond, 120);
+    return 4.2 - (capped / 120) * 2.2;
+  }, [passivePerSecond]);
+
+  const recoveryCost = useMemo(() => {
+    if (cortisol <= 0) return RECOVERY_MIN_COST;
+    return Math.max(RECOVERY_MIN_COST, Math.min(2000, cortisol * 0.45));
+  }, [cortisol]);
+
+  const canRecover = cortisol >= RECOVERY_MIN_COST;
+
+  const vibeLabel = useMemo(() => {
+    if (lifetime >= 25000) return 'Euphoric Flow';
+    if (lifetime >= 7000) return 'Balanced';
+    if (lifetime >= 1500) return 'Stabilizing';
+    if (lifetime >= 300) return 'Regulating';
+    return 'Baseline';
+  }, [lifetime]);
+
+  const visualStage = useMemo(() => {
+    if (levels.factory >= 10) return 'Transcendent Canopy';
+    if (levels.factory >= 3) return 'Prismatic Canopy';
+    if (levels.farm >= 4) return 'Blooming Canopy';
+    if (levels.cursor >= 2) return 'Charged Canopy';
+    return 'Seedling Canopy';
+  }, [levels.cursor, levels.farm, levels.factory]);
+
+  const coreClassName = [
+    styles.mainCore,
+    clickBurst ? styles.mainCoreBurst : '',
+    levels.cursor > 0 ? styles.mainCoreCharged : '',
+    levels.farm > 0 ? styles.mainCoreBloom : '',
+    levels.factory > 0 ? styles.mainCorePrismatic : '',
+    levels.factory >= 10 ? styles.mainCoreAscended : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  useEffect(() => {
+    const saveData: SaveData = { points, lifetime, cortisol, levels, soundEnabled, hapticsEnabled };
+    localStorage.setItem(SAVE_KEY, JSON.stringify(saveData));
+  }, [points, lifetime, cortisol, levels, soundEnabled, hapticsEnabled]);
+
+  useEffect(() => {
+    const tick = window.setInterval(() => {
+      if (passivePerSecond > 0) {
+        const gain = passivePerSecond / 5;
+        setPoints(prev => prev + gain);
+        setLifetime(prev => prev + gain);
+      }
+      setCortisol(prev => Math.max(0, prev + cortisolPerSecond / 5));
+    }, 200);
+
+    return () => window.clearInterval(tick);
+  }, [passivePerSecond, cortisolPerSecond]);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setClockNow(Date.now());
+    }, 500);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsShortViewport(window.innerHeight < SHORT_VIEWPORT_THRESHOLD);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [SHORT_VIEWPORT_THRESHOLD]);
+
+  useEffect(() => {
+    if (focusBoostUntil <= clockNow && focusBoostMultiplier !== 1) {
+      setFocusBoostMultiplier(1);
+    }
+  }, [focusBoostUntil, clockNow, focusBoostMultiplier]);
+
+  useEffect(() => {
+    const readRamSnapshot = () => {
+      const perfWithMemory = performance as Performance & { memory?: BrowserPerformanceMemory };
+      if (perfWithMemory.memory?.usedJSHeapSize && perfWithMemory.memory?.jsHeapSizeLimit) {
+        setRamSnapshot({
+          usedMB: perfWithMemory.memory.usedJSHeapSize / (1024 * 1024),
+          totalMB: perfWithMemory.memory.jsHeapSizeLimit / (1024 * 1024),
+          source: 'browser',
+        });
+        return;
+      }
+
+      const navWithDeviceMemory = navigator as Navigator & { deviceMemory?: number };
+      const deviceMemoryGB = navWithDeviceMemory.deviceMemory ?? 8;
+      const totalMB = deviceMemoryGB * 1024;
+      const modeledLoad =
+        390 +
+        points / 65 +
+        passivePerSecond * 34 +
+        levels.cursor * 26 +
+        levels.farm * 62 +
+        levels.factory * 118 +
+        (Math.sin(Date.now() / 2800) + 1) * 72;
+      const usedMB = Math.min(totalMB * 0.88, Math.max(280, modeledLoad));
+      setRamSnapshot({ usedMB, totalMB, source: 'estimated' });
+    };
+
+    readRamSnapshot();
+    const ramInterval = window.setInterval(readRamSnapshot, 1200);
+    return () => window.clearInterval(ramInterval);
+  }, [points, passivePerSecond, levels]);
+
+  useEffect(() => {
+    let flareTimeout: number | null = null;
+    let flareOffTimeout: number | null = null;
+
+    const scheduleFlare = () => {
+      const nextDelay = 7000 + Math.random() * 9000;
+      flareTimeout = window.setTimeout(() => {
+        if (Math.random() < 0.28) {
+          setFlareActive(true);
+          flareOffTimeout = window.setTimeout(() => {
+            setFlareActive(false);
+          }, 950);
+        }
+        scheduleFlare();
+      }, nextDelay);
+    };
+
+    scheduleFlare();
+
+    return () => {
+      if (flareTimeout) window.clearTimeout(flareTimeout);
+      if (flareOffTimeout) window.clearTimeout(flareOffTimeout);
+    };
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (pointsPulseTimeoutRef.current) {
+        window.clearTimeout(pointsPulseTimeoutRef.current);
+      }
+      if (audioContextRef.current) {
+        void audioContextRef.current.close();
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (points > previousPointsRef.current) {
+      setSerotoninPulse(true);
+      if (pointsPulseTimeoutRef.current) {
+        window.clearTimeout(pointsPulseTimeoutRef.current);
+      }
+      pointsPulseTimeoutRef.current = window.setTimeout(() => {
+        setSerotoninPulse(false);
+      }, 260);
+    }
+    previousPointsRef.current = points;
+  }, [points]);
+
+  function getAudioContext() {
+    if (audioContextRef.current) {
+      if (audioContextRef.current.state === 'suspended') {
+        void audioContextRef.current.resume();
+      }
+      return audioContextRef.current;
+    }
+    const AudioContextCtor =
+      window.AudioContext ?? (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    if (!AudioContextCtor) return null;
+    const ctx = new AudioContextCtor();
+    audioContextRef.current = ctx;
+    if (ctx.state === 'suspended') {
+      void ctx.resume();
+    }
+    return ctx;
+  }
+
+  function playTone(
+    ctx: AudioContext,
+    frequency: number,
+    duration: number,
+    wave: OscillatorType,
+    volume: number,
+    startAt = ctx.currentTime
+  ) {
+    const oscillator = ctx.createOscillator();
+    const gainNode = ctx.createGain();
+    oscillator.type = wave;
+    oscillator.frequency.setValueAtTime(frequency, startAt);
+    gainNode.gain.setValueAtTime(0.0001, startAt);
+    gainNode.gain.exponentialRampToValueAtTime(volume, startAt + 0.01);
+    gainNode.gain.exponentialRampToValueAtTime(0.0001, startAt + duration);
+    oscillator.connect(gainNode);
+    gainNode.connect(ctx.destination);
+    oscillator.start(startAt);
+    oscillator.stop(startAt + duration + 0.02);
+  }
+
+  function playClickSound() {
+    if (!soundEnabled) return;
+    const ctx = getAudioContext();
+    if (!ctx) return;
+
+    clickToneIndexRef.current += 1;
+    const variant = clickToneIndexRef.current % 3;
+    const baseFrequency = 240 + variant * 18 + Math.random() * 24;
+    playTone(ctx, baseFrequency, 0.055, 'triangle', 0.05);
+    playTone(ctx, baseFrequency * 1.85, 0.04, 'sine', 0.02, ctx.currentTime + 0.012);
+  }
+
+  function playUpgradeSound() {
+    if (!soundEnabled) return;
+    const ctx = getAudioContext();
+    if (!ctx) return;
+
+    const root = 300 + Math.random() * 16;
+    const now = ctx.currentTime;
+    playTone(ctx, root, 0.09, 'triangle', 0.05, now);
+    playTone(ctx, root * 1.25, 0.1, 'triangle', 0.05, now + 0.065);
+    playTone(ctx, root * 1.5, 0.14, 'sine', 0.045, now + 0.14);
+  }
+
+  function triggerHaptics(pattern: number | number[]) {
+    if (!hapticsEnabled || !canVibrate) return;
+    navigator.vibrate(pattern);
+  }
+
+  function clickMainButton() {
+    setPoints(prev => prev + clickGain);
+    setLifetime(prev => prev + clickGain);
+    setCortisol(prev => prev + Math.max(0.02, clickGain * 0.06));
+    setClickBurst(true);
+    window.setTimeout(() => setClickBurst(false), 120);
+    playClickSound();
+    triggerHaptics(8);
+  }
+
+  function buyUpgrade(upgrade: Upgrade) {
+    const level = levels[upgrade.key];
+    const cost = nextCost(upgrade.baseCost, upgrade.costScale, level);
+    if (points < cost) return;
+    setPoints(prev => prev - cost);
+    setLevels(prev => ({ ...prev, [upgrade.key]: prev[upgrade.key] + 1 }));
+    playUpgradeSound();
+    triggerHaptics([12, 18, 14]);
+  }
+
+  function resetProgress() {
+    setPoints(0);
+    setLifetime(0);
+    setCortisol(0);
+    setLevels(defaultLevels);
+  }
+
+  function applyAdminCheat() {
+    setPoints(prev => {
+      setLifetime(currentLifetime => currentLifetime + prev);
+      setCortisol(current => current + Math.max(2, prev * 0.012));
+      return prev * 2;
+    });
+    playUpgradeSound();
+    triggerHaptics([20, 24, 20]);
+  }
+
+  function triggerRecovery() {
+    if (!canRecover) return;
+    const boost = 1 + Math.min(0.9, recoveryCost / 320);
+    setCortisol(prev => Math.max(0, prev - recoveryCost));
+    setFocusBoostMultiplier(boost);
+    setFocusBoostUntil(Date.now() + RECOVERY_DURATION_MS);
+    playUpgradeSound();
+    triggerHaptics([10, 14, 10, 14, 10]);
+  }
+
+  function handleParallaxMove(event: MouseEvent<HTMLDivElement>) {
+    const area = event.currentTarget;
+    const rect = area.getBoundingClientRect();
+    const px = ((event.clientX - rect.left) / rect.width - 0.5) * 18;
+    const py = ((event.clientY - rect.top) / rect.height - 0.5) * 18;
+    area.style.setProperty('--parallax-x', `${px.toFixed(2)}px`);
+    area.style.setProperty('--parallax-y', `${py.toFixed(2)}px`);
+  }
+
+  function handleParallaxLeave(event: MouseEvent<HTMLDivElement>) {
+    const area = event.currentTarget;
+    area.style.setProperty('--parallax-x', '0px');
+    area.style.setProperty('--parallax-y', '0px');
+  }
+
+  const clickAreaStyle = {
+    '--beat-duration': `${beatDurationSeconds.toFixed(2)}s`,
+  } as CSSProperties;
+
+  const serotoninDisplayClass = serotoninPulse
+    ? `${styles.serotoninDisplay} ${styles.serotoninDisplayPulse}`
+    : styles.serotoninDisplay;
+
+  const serotoninFieldClass = serotoninPulse
+    ? `${styles.serotoninFieldReadout} ${styles.serotoninFieldReadoutPulse}`
+    : styles.serotoninFieldReadout;
+
+  const ramUsageClass =
+    ramPercent >= 82
+      ? `${styles.ramFill} ${styles.ramFillHigh}`
+      : ramPercent >= 62
+        ? `${styles.ramFill} ${styles.ramFillMid}`
+        : styles.ramFill;
+  const ramFillStyle = { width: `${ramPercent.toFixed(1)}%` } as CSSProperties;
+  const gameCardClass = isShortViewport ? `${styles.gameCard} ${styles.compactHeight}` : styles.gameCard;
+
+  return (
+    <section className={gameCardClass}>
+      <header className={styles.header}>
+        <h2>Serotonin Farm</h2>
+        <p>Cultivate serotonin with each tap, then automate growth through lab upgrades.</p>
+        <div className={styles.headerUtilityRow}>
+          <button
+            type="button"
+            className={soundEnabled ? styles.headerUtilityToggle : `${styles.headerUtilityToggle} ${styles.headerUtilityToggleOff}`}
+            onClick={() => setSoundEnabled(prev => !prev)}
+            aria-label={`Sound ${soundEnabled ? 'on' : 'off'}`}
+            title={`Sound ${soundEnabled ? 'On' : 'Off'}`}
+          >
+            S:{soundEnabled ? 'On' : 'Off'}
+          </button>
+          <button
+            type="button"
+            className={
+              hapticsEnabled && canVibrate
+                ? styles.headerUtilityToggle
+                : `${styles.headerUtilityToggle} ${styles.headerUtilityToggleOff}`
+            }
+            onClick={() => setHapticsEnabled(prev => !prev)}
+            disabled={!canVibrate}
+            aria-label={`Haptics ${canVibrate ? (hapticsEnabled ? 'on' : 'off') : 'unsupported'}`}
+            title={`Haptics ${canVibrate ? (hapticsEnabled ? 'On' : 'Off') : 'Unsupported'}`}
+          >
+            H:{canVibrate ? (hapticsEnabled ? 'On' : 'Off') : 'N/A'}
+          </button>
+        </div>
+      </header>
+
+      <div className={serotoninDisplayClass} aria-live="polite">
+        <span className={styles.serotoninDisplayLabel}>Total Serotonin</span>
+        <strong className={styles.serotoninDisplayValue}>{formatValue(points)}</strong>
+        <span className={styles.serotoninDisplayMeta}>
+          {isShortViewport
+            ? `Harvest: ${formatValue(passivePerSecond)} / sec`
+            : `Harvest: ${formatValue(passivePerSecond)} / sec | Cortisol drift: +${formatValue(cortisolPerSecond)} / sec`}
+        </span>
+      </div>
+
+      <div className={styles.statsBar}>
+        <div>
+          <span>Serotonin</span>
+          <strong>{formatValue(points)}</strong>
+        </div>
+        <div>
+          <span>Per Tap</span>
+          <strong>{formatValue(clickGain)}</strong>
+        </div>
+        <div>
+          <span>Harvest / sec</span>
+          <strong>{formatValue(passivePerSecond)}</strong>
+        </div>
+        <div className={styles.cortisolCard}>
+          <span>Cortisol</span>
+          <strong>{formatValue(cortisol)}</strong>
+        </div>
+        <div className={styles.cortisolRateCard}>
+          <span>Cortisol / sec</span>
+          <strong>+{formatValue(cortisolPerSecond)}</strong>
+        </div>
+        <div>
+          <span>State</span>
+          <strong>{vibeLabel}</strong>
+        </div>
+      </div>
+
+      <section className={styles.cortisolMechanics} aria-label="Cortisol mechanics">
+        <div className={styles.cortisolSummaryRow}>
+          <span>Cortisol Efficiency</span>
+          <strong>{formatPercent(cortisolEfficiency * 100)}</strong>
+        </div>
+        <div className={styles.cortisolSummaryRow}>
+          <span>Focus Boost</span>
+          <strong>{isFocusActive ? `x${focusMultiplier.toFixed(2)} (${focusSecondsLeft}s)` : 'Inactive'}</strong>
+        </div>
+        <button
+          type="button"
+          className={canRecover ? styles.recoveryButton : `${styles.recoveryButton} ${styles.recoveryButtonDisabled}`}
+          onClick={triggerRecovery}
+          disabled={!canRecover}
+        >
+          Recovery Burn ({formatValue(recoveryCost)} cortisol)
+        </button>
+      </section>
+
+      <section className={styles.ramSection} aria-label="RAM usage">
+        <div className={styles.ramHeader}>
+          <h3>Runtime RAM</h3>
+          <span>{ramPercent.toFixed(1)}%</span>
+        </div>
+        <div className={styles.ramTrack} role="meter" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Number(ramPercent.toFixed(1))}>
+          <div className={ramUsageClass} style={ramFillStyle} />
+        </div>
+        {!isShortViewport ? (
+          <div className={styles.ramValues}>
+            <span>Used: {ramSnapshot.usedMB.toFixed(0)} MB</span>
+            <span>Total: {ramSnapshot.totalMB.toFixed(0)} MB</span>
+            <span>Source: {ramSnapshot.source === 'browser' ? 'Browser Heap' : 'Estimated'}</span>
+          </div>
+        ) : (
+          <div className={styles.ramCompactNote}>RAM detail rows hidden on short screens</div>
+        )}
+      </section>
+
+      <div className={styles.mainPanel}>
+        <div
+          className={flareActive ? `${styles.clickArea} ${styles.clickAreaFlare}` : styles.clickArea}
+          style={clickAreaStyle}
+          onMouseMove={handleParallaxMove}
+          onMouseLeave={handleParallaxLeave}
+        >
+          <div className={serotoninFieldClass} aria-hidden="true">
+            {formatValue(points)}
+          </div>
+          <div className={styles.ambientField} aria-hidden="true">
+            <span className={styles.ambientOrb} />
+            <span className={styles.ambientOrb} />
+            <span className={styles.ambientOrb} />
+            <span className={styles.ambientOrb} />
+            <span className={styles.ambientOrb} />
+            <span className={styles.ambientOrb} />
+          </div>
+          <div className={styles.coreWrap}>
+            <button
+              type="button"
+              aria-label="Main click button"
+              className={coreClassName}
+              onClick={clickMainButton}
+            >
+              +{clickGain}
+            </button>
+          </div>
+          <p className={styles.coreStage}>Canopy stage: {visualStage}</p>
+          {!isShortViewport && (
+            <p className={styles.clickHint}>Each tap cultivates serotonin. Upgrades sustain long-term growth.</p>
+          )}
+        </div>
+
+        <aside className={styles.shopPanel}>
+          <div className={styles.shopHeader}>
+            <h3>Cultivation Lab</h3>
+            <div className={styles.shopActionButtons}>
+              <button type="button" className={styles.adminCheatButton} onClick={applyAdminCheat}>
+                Lab Override x2
+              </button>
+              <button type="button" className={styles.resetButton} onClick={resetProgress}>
+                Reboot
+              </button>
+            </div>
+          </div>
+          <div className={styles.shopList}>
+            {UPGRADES.map(upgrade => {
+              const level = levels[upgrade.key];
+              const cost = nextCost(upgrade.baseCost, upgrade.costScale, level);
+              const canBuy = points >= cost;
+
+              return (
+                <button
+                  key={upgrade.key}
+                  type="button"
+                  className={canBuy ? styles.shopItem : `${styles.shopItem} ${styles.shopItemDisabled}`}
+                  onClick={() => buyUpgrade(upgrade)}
+                  disabled={!canBuy}
+                >
+                  <div className={styles.shopTopRow}>
+                    <strong>{upgrade.title}</strong>
+                    <span>Lv {level}</span>
+                  </div>
+                  <p>{upgrade.description}</p>
+                  <span className={styles.shopEffect}>{upgradeEffectSummary[upgrade.key]}</span>
+                  <div className={styles.shopBottomRow}>
+                    <span>Next Dose Cost</span>
+                    <strong>{formatValue(cost)}</strong>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+          <p className={styles.totalLabel}>Lifetime serotonin: {formatValue(lifetime)}</p>
+        </aside>
+      </div>
+    </section>
+  );
+}
+
+export default ClickingGame;
