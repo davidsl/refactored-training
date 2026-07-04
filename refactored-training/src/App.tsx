@@ -15,6 +15,7 @@ function App() {
   return (
     <Router>
       <Header />
+      <main className="appContent">
         <Routes>
           <Route path="/refactored-training" element={<Home />} />
           <Route path="/refactored-training/about" element={<About />} />
@@ -26,6 +27,7 @@ function App() {
           <Route path="/refactored-training/styling-examples" element={<StylingExamples />} />
           <Route path="/refactored-training/thumbnails" element={<Thumbnails />} />
         </Routes>
+      </main>
     </Router>
   )
 }

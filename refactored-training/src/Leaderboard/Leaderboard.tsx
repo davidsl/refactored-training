@@ -35,7 +35,6 @@ const Leaderboard: React.FC = () => {
   const [showConfirm, setShowConfirm] = React.useState(false);
 
   React.useEffect(() => {
-    setLeaderboard(getLeaderboard());
     // Listen for storage changes in case another tab updates
     const handler = () => setLeaderboard(getLeaderboard());
     window.addEventListener('storage', handler);
@@ -103,7 +102,6 @@ const Leaderboard: React.FC = () => {
         className={styles.clearButton}
         type="button"
         onClick={() => setShowConfirm(true)}
-        style={{ marginBottom: 16 }}
       >
         Clear Leaderboard
       </button>

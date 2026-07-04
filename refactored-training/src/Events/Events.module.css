@@ -1,6 +1,20 @@
-/* Events custom styles */
 .eventsContainer {
   padding: 2rem;
-  background: #fffbe6;
-  border-radius: 8px;
+  border-radius: var(--radius-xl);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.96), rgba(255, 252, 236, 0.92));
+  border: 1px solid rgba(233, 173, 53, 0.2);
+  border-left: 6px solid #f0a434;
+  box-shadow: var(--shadow-soft);
+  text-align: left;
+}
+
+.eventsContainer h2 {
+  margin-bottom: 0.55rem;
+  font-size: clamp(1.45rem, 2.4vw, 1.95rem);
+}
+
+.eventsContainer p {
+  max-width: 66ch;
+  font-size: 1.02rem;
+  line-height: 1.65;
 }
