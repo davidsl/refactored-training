@@ -7,14 +7,14 @@
   width: min(1160px, calc(100% - 2rem));
   margin: 0 auto;
   padding: 7.4rem 0 2rem;
-  animation: contentFadeIn 320ms ease-out;
+  animation: contentFadeIn var(--motion-content-fade) ease-out;
 }
 
 .appContent > * {
   opacity: 0;
   transform: translateY(10px);
-  animation: contentStaggerIn 420ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
-  animation-delay: 120ms;
+  animation: contentStaggerIn var(--motion-content-stagger) cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation-delay: var(--motion-content-delay);
 }
 
 @keyframes contentFadeIn {
@@ -43,5 +43,11 @@
   .appContent {
     width: calc(100% - 1rem);
     padding-top: 5.6rem;
+    animation-duration: var(--motion-content-fade-mobile);
+  }
+
+  .appContent > * {
+    animation-duration: var(--motion-content-stagger-mobile);
+    animation-delay: var(--motion-content-delay-mobile);
   }
 }

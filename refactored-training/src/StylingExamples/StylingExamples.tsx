@@ -3,6 +3,13 @@ import styles from './StylingExamples.module.css';
 
 const StylingExamples: React.FC = () => {
   const [useRed, setUseRed] = useState(false);
+  const [spinnerSpeed, setSpinnerSpeed] = useState(1);
+
+  const speedPresets = [
+    { label: 'Slow', value: 0.7 },
+    { label: 'Normal', value: 1 },
+    { label: 'Fast', value: 1.5 },
+  ];
 
   return (
     <div className={styles.examplesContainer}>
@@ -49,21 +56,54 @@ const StylingExamples: React.FC = () => {
           </div>
         </div>
       </section>
-      <section className={styles.section}>
+      <section
+        className={`${styles.section} ${styles.spinnerSection}`}
+        style={{ '--spinner-speed': spinnerSpeed } as React.CSSProperties}
+      >
         <h3>Loading Spinners</h3>
-        <label className={styles.toggleSliderLabel}>
-          <span>Use Red Theme</span>
-          <span className={styles.toggleSlider}>
-            <input
-              type="checkbox"
-              checked={useRed}
-              onChange={e => setUseRed(e.target.checked)}
-            />
-            <span className={styles.toggleSliderTrack}>
-              <span className={styles.toggleSliderThumb}></span>
+        <div className={styles.spinnerControls}>
+          <label className={styles.toggleSliderLabel}>
+            <span>Use Red Theme</span>
+            <span className={styles.toggleSlider}>
+              <input
+                type="checkbox"
+                checked={useRed}
+                onChange={e => setUseRed(e.target.checked)}
+              />
+              <span className={styles.toggleSliderTrack}>
+                <span className={styles.toggleSliderThumb}></span>
+              </span>
             </span>
-          </span>
-        </label>
+          </label>
+          <label className={styles.spinnerSpeedControl}>
+            <span>Spinner Speed</span>
+            <input
+              className={styles.spinnerSpeedRange}
+              type="range"
+              min={0.5}
+              max={2}
+              step={0.1}
+              value={spinnerSpeed}
+              onChange={e => setSpinnerSpeed(Number(e.target.value))}
+            />
+            <span className={styles.spinnerSpeedValue}>{spinnerSpeed.toFixed(1)}x</span>
+          </label>
+          <div className={styles.spinnerSpeedPresets}>
+            {speedPresets.map(preset => (
+              <button
+                key={preset.label}
+                type="button"
+                className={
+                  styles.spinnerSpeedPresetButton +
+                  (Math.abs(spinnerSpeed - preset.value) < 0.01 ? ` ${styles.spinnerSpeedPresetButtonActive}` : '')
+                }
+                onClick={() => setSpinnerSpeed(preset.value)}
+              >
+                {preset.label}
+              </button>
+            ))}
+          </div>
+        </div>
         <div className={styles.spinnerGrid + (useRed ? ' ' + styles.redTheme : '')}>
           <div className={styles.spinnerExample}>
             <div className={styles.spinnerCircle}></div>

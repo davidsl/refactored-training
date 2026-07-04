@@ -7,6 +7,28 @@
   color: var(--text-strong);
 }
 
+@keyframes leaderCardIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes leaderRowIn {
+  from {
+    opacity: 0;
+    transform: translateX(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
 @keyframes flipReveal {
   0% {
     transform: rotateY(90deg);
@@ -56,6 +78,8 @@
   border: 1px solid rgba(16, 33, 59, 0.12);
   background: rgba(255, 255, 255, 0.76);
   padding: 0.8rem;
+  opacity: 0;
+  animation: leaderCardIn var(--motion-leader-card) cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 .leaderCategoryTitle {
@@ -88,10 +112,14 @@
 
 .leaderTableRow {
   background: rgba(255, 255, 255, 0.9);
+  opacity: 0;
+  animation: leaderRowIn var(--motion-leader-row) ease-out forwards;
 }
 
 .leaderTableRowAlt {
   background: rgba(237, 244, 255, 0.72);
+  opacity: 0;
+  animation: leaderRowIn var(--motion-leader-row) ease-out forwards;
 }
 
 .leaderTableCell {
@@ -239,5 +267,20 @@
 
   .leaderCategoryCol {
     min-width: 100%;
+    animation-duration: var(--motion-leader-card-mobile);
+  }
+
+  .leaderTableRow,
+  .leaderTableRowAlt {
+    animation-duration: var(--motion-leader-row-mobile);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .leaderCategoryCol,
+  .leaderTableRow,
+  .leaderTableRowAlt {
+    animation: none !important;
+    opacity: 1;
   }
 }

@@ -1,6 +1,7 @@
 import React from 'react';
 import styles from './Leaderboard.module.css';
 import ConfirmModal from './ConfirmModal';
+import { ACTIVE_MOTION_PRESET, MOTION_DELAY_PRESETS } from '../motionPreset';
 
 export type WinRecord = {
   rows: number;
@@ -30,6 +31,7 @@ function categorizeWin(win: WinRecord): 'Small' | 'Medium' | 'Large' | 'Custom' 
 }
 
 const Leaderboard: React.FC = () => {
+  const motion = MOTION_DELAY_PRESETS[ACTIVE_MOTION_PRESET];
   const [leaderboard, setLeaderboard] = React.useState<WinRecord[]>(getLeaderboard());
   const [showCustom, setShowCustom] = React.useState(false);
   const [showConfirm, setShowConfirm] = React.useState(false);
@@ -72,7 +74,11 @@ const Leaderboard: React.FC = () => {
             const dateStr = d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
             const timeStr = d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', second: '2-digit' });
             return (
-              <tr key={i} className={i % 2 === 0 ? styles.leaderTableRow : styles.leaderTableRowAlt}>
+              <tr
+                key={i}
+                className={i % 2 === 0 ? styles.leaderTableRow : styles.leaderTableRowAlt}
+                style={{ animationDelay: `${Math.min(i * motion.leaderboardRowStepMs, motion.leaderboardRowMaxMs)}ms` }}
+              >
                 <td className={styles.leaderTableCell + ' ' + styles.leaderTableCellNum}>{i + 1}</td>
                 <td className={styles.leaderTableCell + ' ' + styles.leaderTableCellDate}>
                   <span className={styles.leaderDate}>{dateStr}</span>
@@ -114,19 +120,19 @@ const Leaderboard: React.FC = () => {
         cancelText="Cancel"
       />
       <div className={styles.leaderFlexRow}>
-        <div className={styles.leaderCategoryCol}>
+        <div className={styles.leaderCategoryCol} style={{ animationDelay: `${motion.leaderboardCardDelayMs[0]}ms` }}>
           <h4 className={styles.leaderCategoryTitle}>Small (8x8, 10 mines)</h4>
           {renderTable(categorized.Small)}
         </div>
-        <div className={styles.leaderCategoryCol}>
+        <div className={styles.leaderCategoryCol} style={{ animationDelay: `${motion.leaderboardCardDelayMs[1]}ms` }}>
           <h4 className={styles.leaderCategoryTitle}>Medium (16x16, 40 mines)</h4>
           {renderTable(categorized.Medium)}
         </div>
-        <div className={styles.leaderCategoryCol}>
+        <div className={styles.leaderCategoryCol} style={{ animationDelay: `${motion.leaderboardCardDelayMs[2]}ms` }}>
           <h4 className={styles.leaderCategoryTitle}>Large (16x30, 99 mines)</h4>
           {renderTable(categorized.Large)}
         </div>
-        <div className={styles.leaderCategoryCol}>
+        <div className={styles.leaderCategoryCol} style={{ animationDelay: `${motion.leaderboardCardDelayMs[3]}ms` }}>
           <h4 className={styles.leaderCategoryTitle}>
             <button
               className={styles.showCustomButton}

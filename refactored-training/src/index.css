@@ -22,6 +22,30 @@
   --space-md: 1rem;
   --space-lg: 1.5rem;
   --space-xl: 2rem;
+  --motion-content-fade: 280ms;
+  --motion-content-stagger: 360ms;
+  --motion-content-delay: 90ms;
+  --motion-content-fade-mobile: 360ms;
+  --motion-content-stagger-mobile: 520ms;
+  --motion-content-delay-mobile: 140ms;
+  --motion-nav-slide: 300ms;
+  --motion-nav-quick: 160ms;
+  --motion-nav-icon: 180ms;
+  --motion-nav-mobile-open: 340ms;
+  --motion-nav-mobile-fade: 300ms;
+  --motion-nav-mobile-item: 360ms;
+  --motion-leader-card: 340ms;
+  --motion-leader-row: 280ms;
+  --motion-leader-card-mobile: 470ms;
+  --motion-leader-row-mobile: 390ms;
+  --motion-mine-reveal: 320ms;
+  --motion-mine-pulse: 1300ms;
+  --motion-mine-row: 290ms;
+  --motion-mine-result: 220ms;
+  --motion-mine-reveal-mobile: 440ms;
+  --motion-mine-pulse-mobile: 1750ms;
+  --motion-mine-row-mobile: 420ms;
+  --motion-mine-result-mobile: 320ms;
   font-family: 'Outfit', sans-serif;
   line-height: 1.5;
   font-weight: 400;
@@ -30,6 +54,87 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.motion-crisp {
+  --motion-content-fade: 230ms;
+  --motion-content-stagger: 300ms;
+  --motion-content-delay: 60ms;
+  --motion-content-fade-mobile: 310ms;
+  --motion-content-stagger-mobile: 430ms;
+  --motion-content-delay-mobile: 100ms;
+  --motion-nav-slide: 250ms;
+  --motion-nav-quick: 130ms;
+  --motion-nav-icon: 140ms;
+  --motion-nav-mobile-open: 280ms;
+  --motion-nav-mobile-fade: 260ms;
+  --motion-nav-mobile-item: 300ms;
+  --motion-leader-card: 280ms;
+  --motion-leader-row: 220ms;
+  --motion-leader-card-mobile: 380ms;
+  --motion-leader-row-mobile: 320ms;
+  --motion-mine-reveal: 260ms;
+  --motion-mine-pulse: 1100ms;
+  --motion-mine-row: 240ms;
+  --motion-mine-result: 180ms;
+  --motion-mine-reveal-mobile: 360ms;
+  --motion-mine-pulse-mobile: 1450ms;
+  --motion-mine-row-mobile: 340ms;
+  --motion-mine-result-mobile: 260ms;
+}
+
+.motion-balanced {
+  --motion-content-fade: 280ms;
+  --motion-content-stagger: 360ms;
+  --motion-content-delay: 90ms;
+  --motion-content-fade-mobile: 360ms;
+  --motion-content-stagger-mobile: 520ms;
+  --motion-content-delay-mobile: 140ms;
+  --motion-nav-slide: 300ms;
+  --motion-nav-quick: 160ms;
+  --motion-nav-icon: 180ms;
+  --motion-nav-mobile-open: 340ms;
+  --motion-nav-mobile-fade: 300ms;
+  --motion-nav-mobile-item: 360ms;
+  --motion-leader-card: 340ms;
+  --motion-leader-row: 280ms;
+  --motion-leader-card-mobile: 470ms;
+  --motion-leader-row-mobile: 390ms;
+  --motion-mine-reveal: 320ms;
+  --motion-mine-pulse: 1300ms;
+  --motion-mine-row: 290ms;
+  --motion-mine-result: 220ms;
+  --motion-mine-reveal-mobile: 440ms;
+  --motion-mine-pulse-mobile: 1750ms;
+  --motion-mine-row-mobile: 420ms;
+  --motion-mine-result-mobile: 320ms;
+}
+
+.motion-cinematic {
+  --motion-content-fade: 360ms;
+  --motion-content-stagger: 520ms;
+  --motion-content-delay: 150ms;
+  --motion-content-fade-mobile: 460ms;
+  --motion-content-stagger-mobile: 700ms;
+  --motion-content-delay-mobile: 220ms;
+  --motion-nav-slide: 420ms;
+  --motion-nav-quick: 240ms;
+  --motion-nav-icon: 260ms;
+  --motion-nav-mobile-open: 480ms;
+  --motion-nav-mobile-fade: 440ms;
+  --motion-nav-mobile-item: 560ms;
+  --motion-leader-card: 480ms;
+  --motion-leader-row: 420ms;
+  --motion-leader-card-mobile: 620ms;
+  --motion-leader-row-mobile: 560ms;
+  --motion-mine-reveal: 460ms;
+  --motion-mine-pulse: 1900ms;
+  --motion-mine-row: 420ms;
+  --motion-mine-result: 360ms;
+  --motion-mine-reveal-mobile: 620ms;
+  --motion-mine-pulse-mobile: 2400ms;
+  --motion-mine-row-mobile: 560ms;
+  --motion-mine-result-mobile: 460ms;
 }
 
 * {

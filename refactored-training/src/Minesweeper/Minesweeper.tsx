@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import type { MouseEvent } from 'react';
 import styles from './Minesweeper.module.css';
+import { ACTIVE_MOTION_PRESET, MOTION_DELAY_PRESETS } from '../motionPreset';
 
 type Cell = {
   mine: boolean;
@@ -75,6 +76,7 @@ function cloneBoard(board: Board): Board {
 }
 
 function Minesweeper() {
+  const motion = MOTION_DELAY_PRESETS[ACTIVE_MOTION_PRESET];
   const [rows, setRows] = useState(8);
   const [cols, setCols] = useState(8);
   const [mines, setMines] = useState(10);
@@ -91,6 +93,7 @@ function Minesweeper() {
   const [wrongFlags, setWrongFlags] = useState<{ r: number; c: number }[]>([]);
   const [elapsed, setElapsed] = useState(0);
   const [timerActive, setTimerActive] = useState(false);
+  const [boardAnimKey, setBoardAnimKey] = useState(0);
   const timerRef = useRef<number | null>(null);
 
   function startNewGame(nextRows: number, nextCols: number, nextMines: number) {
@@ -102,6 +105,7 @@ function Minesweeper() {
     setWrongFlags([]);
     setElapsed(0);
     setTimerActive(false);
+    setBoardAnimKey(v => v + 1);
   }
 
   function applyPreset(nextRows: number, nextCols: number, nextMines: number) {
@@ -401,12 +405,20 @@ function Minesweeper() {
           Bombs left: {bombsLeft} | Time: {elapsed}s
         </div>
         <button onClick={reset} className={styles.restartButton}>Restart</button>
-        <div className={styles.boardWrapper}>
+        <div className={styles.boardWrapper} key={boardAnimKey}>
           {boardState.map((row, r) => (
-            <div key={r} className={styles.boardRow}>
+            <div
+              key={r}
+              className={styles.boardRow}
+              style={{ animationDelay: `${Math.min(r * motion.mineRowStepMs, motion.mineRowMaxMs)}ms` }}
+            >
               {row.map((cell, c) => {
                 const isPreReveal = preReveal && preReveal.r === r && preReveal.c === c;
                 const isWrongFlag = wrongFlags.some(f => f.r === r && f.c === c);
+                const tileDelay = Math.min(
+                  r * motion.mineTileRowWeightMs + c * motion.mineTileColWeightMs,
+                  motion.mineTileMaxMs
+                );
                 return (
                   <button
                     key={c}
@@ -419,7 +431,9 @@ function Minesweeper() {
                       height: rows > 18 || cols > 18 ? 36 : 48,
                       fontSize: 24,
                       color: cell.mine ? 'red' : isWrongFlag ? '#b00' : 'black',
+                      animationDelay: cell.revealed || isPreReveal ? `${tileDelay}ms` : undefined,
                     }}
+                    data-tile-index={r * cols + c}
                     onClick={() => reveal(r, c)}
                     onContextMenu={e => flagCell(e, r, c)}
                     disabled={gameOver}
