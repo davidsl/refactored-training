@@ -537,115 +537,116 @@ function ClickingGame() {
         : styles.ramFill;
   const ramFillStyle = { width: `${ramPercent.toFixed(1)}%` } as CSSProperties;
   const gameCardClass = isShortViewport ? `${styles.gameCard} ${styles.compactHeight}` : styles.gameCard;
+  const pressureState = cortisolEfficiency > 0.92 ? 'Stable' : cortisolEfficiency > 0.82 ? 'Warming' : 'Overloaded';
 
   return (
     <section className={gameCardClass}>
       <header className={styles.header}>
-        <h2>Serotonin Farm</h2>
-        <p>Cultivate serotonin with each tap, then automate growth through lab upgrades.</p>
-        <div className={styles.headerUtilityRow}>
-          <button
-            type="button"
-            className={soundEnabled ? styles.headerUtilityToggle : `${styles.headerUtilityToggle} ${styles.headerUtilityToggleOff}`}
-            onClick={() => setSoundEnabled(prev => !prev)}
-            aria-label={`Sound ${soundEnabled ? 'on' : 'off'}`}
-            title={`Sound ${soundEnabled ? 'On' : 'Off'}`}
-          >
-            S:{soundEnabled ? 'On' : 'Off'}
-          </button>
-          <button
-            type="button"
-            className={
-              hapticsEnabled && canVibrate
-                ? styles.headerUtilityToggle
-                : `${styles.headerUtilityToggle} ${styles.headerUtilityToggleOff}`
-            }
-            onClick={() => setHapticsEnabled(prev => !prev)}
-            disabled={!canVibrate}
-            aria-label={`Haptics ${canVibrate ? (hapticsEnabled ? 'on' : 'off') : 'unsupported'}`}
-            title={`Haptics ${canVibrate ? (hapticsEnabled ? 'On' : 'Off') : 'Unsupported'}`}
-          >
-            H:{canVibrate ? (hapticsEnabled ? 'On' : 'Off') : 'N/A'}
-          </button>
+        <div>
+          <h2>Serotonin Farm</h2>
+          <p>Cultivate serotonin with each tap, then automate growth through lab upgrades.</p>
+        </div>
+        <div className={styles.headerControls}>
+          <div className={styles.headerUtilityRow}>
+            <button
+              type="button"
+              className={soundEnabled ? styles.headerUtilityToggle : `${styles.headerUtilityToggle} ${styles.headerUtilityToggleOff}`}
+              onClick={() => setSoundEnabled(prev => !prev)}
+              aria-label={`Sound ${soundEnabled ? 'on' : 'off'}`}
+              title={`Sound ${soundEnabled ? 'On' : 'Off'}`}
+            >
+              S:{soundEnabled ? 'On' : 'Off'}
+            </button>
+            <button
+              type="button"
+              className={
+                hapticsEnabled && canVibrate
+                  ? styles.headerUtilityToggle
+                  : `${styles.headerUtilityToggle} ${styles.headerUtilityToggleOff}`
+              }
+              onClick={() => setHapticsEnabled(prev => !prev)}
+              disabled={!canVibrate}
+              aria-label={`Haptics ${canVibrate ? (hapticsEnabled ? 'on' : 'off') : 'unsupported'}`}
+              title={`Haptics ${canVibrate ? (hapticsEnabled ? 'On' : 'Off') : 'Unsupported'}`}
+            >
+              H:{canVibrate ? (hapticsEnabled ? 'On' : 'Off') : 'N/A'}
+            </button>
+          </div>
+          <span className={styles.statePill}>{vibeLabel}</span>
         </div>
       </header>
 
-      <div className={serotoninDisplayClass} aria-live="polite">
-        <span className={styles.serotoninDisplayLabel}>Total Serotonin</span>
-        <strong className={styles.serotoninDisplayValue}>{formatValue(points)}</strong>
-        <span className={styles.serotoninDisplayMeta}>
-          {isShortViewport
-            ? `Harvest: ${formatValue(passivePerSecond)} / sec`
-            : `Harvest: ${formatValue(passivePerSecond)} / sec | Cortisol drift: +${formatValue(cortisolPerSecond)} / sec`}
-        </span>
-      </div>
-
-      <div className={styles.statsBar}>
-        <div>
-          <span>Serotonin</span>
-          <strong>{formatValue(points)}</strong>
+      <div className={styles.hudGrid}>
+        <div className={serotoninDisplayClass} aria-live="polite">
+          <span className={styles.serotoninDisplayLabel}>Total Serotonin</span>
+          <strong className={styles.serotoninDisplayValue}>{formatValue(points)}</strong>
+          <span className={styles.serotoninDisplayMeta}>Harvest: {formatValue(passivePerSecond)} / sec</span>
         </div>
-        <div>
+
+        <div className={styles.statTile}>
           <span>Per Tap</span>
           <strong>{formatValue(clickGain)}</strong>
         </div>
-        <div>
-          <span>Harvest / sec</span>
-          <strong>{formatValue(passivePerSecond)}</strong>
+        <div className={styles.statTile}>
+          <span>Lifetime</span>
+          <strong>{formatValue(lifetime)}</strong>
         </div>
-        <div className={styles.cortisolCard}>
+        <div className={`${styles.statTile} ${styles.statTileAlert}`}>
           <span>Cortisol</span>
           <strong>{formatValue(cortisol)}</strong>
         </div>
-        <div className={styles.cortisolRateCard}>
-          <span>Cortisol / sec</span>
+        <div className={`${styles.statTile} ${styles.statTileAlert}`}>
+          <span>Drift / sec</span>
           <strong>+{formatValue(cortisolPerSecond)}</strong>
         </div>
-        <div>
-          <span>State</span>
-          <strong>{vibeLabel}</strong>
+        <div className={styles.statTile}>
+          <span>Pressure</span>
+          <strong>{pressureState}</strong>
         </div>
       </div>
 
-      <section className={styles.cortisolMechanics} aria-label="Cortisol mechanics">
-        <div className={styles.cortisolSummaryRow}>
-          <span>Cortisol Efficiency</span>
-          <strong>{formatPercent(cortisolEfficiency * 100)}</strong>
-        </div>
-        <div className={styles.cortisolSummaryRow}>
-          <span>Focus Boost</span>
-          <strong>{isFocusActive ? `x${focusMultiplier.toFixed(2)} (${focusSecondsLeft}s)` : 'Inactive'}</strong>
-        </div>
-        <button
-          type="button"
-          className={canRecover ? styles.recoveryButton : `${styles.recoveryButton} ${styles.recoveryButtonDisabled}`}
-          onClick={triggerRecovery}
-          disabled={!canRecover}
-        >
-          Recovery Burn ({formatValue(recoveryCost)} cortisol)
-        </button>
-      </section>
+      <div className={styles.experienceGrid}>
+        <aside className={styles.systemPanel}>
+          <section className={styles.cortisolMechanics} aria-label="Cortisol mechanics">
+            <h3>Recovery Console</h3>
+            <div className={styles.cortisolSummaryRow}>
+              <span>Cortisol Efficiency</span>
+              <strong>{formatPercent(cortisolEfficiency * 100)}</strong>
+            </div>
+            <div className={styles.cortisolSummaryRow}>
+              <span>Focus Boost</span>
+              <strong>{isFocusActive ? `x${focusMultiplier.toFixed(2)} (${focusSecondsLeft}s)` : 'Inactive'}</strong>
+            </div>
+            <button
+              type="button"
+              className={canRecover ? styles.recoveryButton : `${styles.recoveryButton} ${styles.recoveryButtonDisabled}`}
+              onClick={triggerRecovery}
+              disabled={!canRecover}
+            >
+              Recovery Burn ({formatValue(recoveryCost)} cortisol)
+            </button>
+          </section>
 
-      <section className={styles.ramSection} aria-label="RAM usage">
-        <div className={styles.ramHeader}>
-          <h3>Runtime RAM</h3>
-          <span>{ramPercent.toFixed(1)}%</span>
-        </div>
-        <div className={styles.ramTrack} role="meter" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Number(ramPercent.toFixed(1))}>
-          <div className={ramUsageClass} style={ramFillStyle} />
-        </div>
-        {!isShortViewport ? (
-          <div className={styles.ramValues}>
-            <span>Used: {ramSnapshot.usedMB.toFixed(0)} MB</span>
-            <span>Total: {ramSnapshot.totalMB.toFixed(0)} MB</span>
-            <span>Source: {ramSnapshot.source === 'browser' ? 'Browser Heap' : 'Estimated'}</span>
-          </div>
-        ) : (
-          <div className={styles.ramCompactNote}>RAM detail rows hidden on short screens</div>
-        )}
-      </section>
+          <section className={styles.ramSection} aria-label="RAM usage">
+            <div className={styles.ramHeader}>
+              <h3>Runtime RAM</h3>
+              <span>{ramPercent.toFixed(1)}%</span>
+            </div>
+            <div className={styles.ramTrack} role="meter" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Number(ramPercent.toFixed(1))}>
+              <div className={ramUsageClass} style={ramFillStyle} />
+            </div>
+            {!isShortViewport ? (
+              <div className={styles.ramValues}>
+                <span>Used: {ramSnapshot.usedMB.toFixed(0)} MB</span>
+                <span>Total: {ramSnapshot.totalMB.toFixed(0)} MB</span>
+                <span>Source: {ramSnapshot.source === 'browser' ? 'Browser Heap' : 'Estimated'}</span>
+              </div>
+            ) : (
+              <div className={styles.ramCompactNote}>RAM detail rows hidden on short screens</div>
+            )}
+          </section>
+        </aside>
 
-      <div className={styles.mainPanel}>
         <div
           className={flareActive ? `${styles.clickArea} ${styles.clickAreaFlare}` : styles.clickArea}
           style={clickAreaStyle}
