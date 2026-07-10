@@ -1,0 +1,51 @@
+.page {
+  height: 100%;
+  max-height: 100%;
+  min-height: 0;
+  padding: 1.5rem;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-soft);
+  background:
+    radial-gradient(120% 120% at 100% 0%, rgba(21, 105, 240, 0.2) 0%, rgba(21, 105, 240, 0) 45%),
+    linear-gradient(150deg, var(--surface-strong), var(--surface));
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 0.95rem;
+  overflow: hidden;
+}
+
+.pageHeader h2 {
+  margin: 0;
+  font-size: clamp(1.35rem, 2.4vw, 1.9rem);
+  color: var(--text-strong);
+}
+
+.pageHeader p {
+  margin: 0.45rem 0 0;
+  color: var(--text-muted);
+  max-width: 68ch;
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+.statusActive,
+.statusIdle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 0.2rem 0.55rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.statusActive {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+.statusIdle {
+  color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 22%, transparent);
+}

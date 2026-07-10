@@ -34,6 +34,7 @@ function Header({ theme, onToggleTheme }: HeaderProps) {
         <Link to="/refactored-training/styling-examples" onClick={() => setMenuOpen(false)}>Styling Examples</Link>
         <Link to="/refactored-training/thumbnails" onClick={() => setMenuOpen(false)}>Thumbnails</Link>
         <Link to="/refactored-training/clicking-game" onClick={() => setMenuOpen(false)}>Clicking Game</Link>
+        <Link to="/refactored-training/table" onClick={() => setMenuOpen(false)}>Table</Link>
         <button
           type="button"
           className={styles.themeToggle}
