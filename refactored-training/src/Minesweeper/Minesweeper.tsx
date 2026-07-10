@@ -77,6 +77,11 @@ function cloneBoard(board: Board): Board {
 
 function Minesweeper() {
   const motion = MOTION_DELAY_PRESETS[ACTIVE_MOTION_PRESET];
+  const TILE_GAP = 3;
+  const BOARD_PADDING = 10;
+  const TILE_MIN = 10;
+  const TILE_MAX = 48;
+  const TILE_READABLE_THRESHOLD = 18;
   const [rows, setRows] = useState(8);
   const [cols, setCols] = useState(8);
   const [mines, setMines] = useState(10);
@@ -94,7 +99,9 @@ function Minesweeper() {
   const [elapsed, setElapsed] = useState(0);
   const [timerActive, setTimerActive] = useState(false);
   const [boardAnimKey, setBoardAnimKey] = useState(0);
+  const [boardViewport, setBoardViewport] = useState({ width: 0, height: 0 });
   const timerRef = useRef<number | null>(null);
+  const boardFrameRef = useRef<HTMLDivElement | null>(null);
 
   function startNewGame(nextRows: number, nextCols: number, nextMines: number) {
     const { board, preReveal } = generateBoard(nextRows, nextCols, nextMines);
@@ -176,6 +183,45 @@ function Minesweeper() {
       sessionStorage.setItem('minesweeperWins', JSON.stringify(wins));
     }
   }, [won, elapsed, rows, cols, mines]);
+
+  useEffect(() => {
+    if (!boardFrameRef.current) return;
+
+    const element = boardFrameRef.current;
+    const updateSize = () => {
+      const rect = element.getBoundingClientRect();
+      setBoardViewport({
+        width: Math.max(0, Math.floor(rect.width)),
+        height: Math.max(0, Math.floor(rect.height)),
+      });
+    };
+
+    updateSize();
+
+    const resizeObserver = new ResizeObserver(updateSize);
+    resizeObserver.observe(element);
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [rows, cols]);
+
+  const computedTileSize = (() => {
+    if (!boardViewport.width || !boardViewport.height) {
+      return rows > 18 || cols > 18 ? 36 : 48;
+    }
+
+    const availableWidth = Math.max(0, boardViewport.width - BOARD_PADDING * 2);
+    const availableHeight = Math.max(0, boardViewport.height - BOARD_PADDING * 2);
+    const widthByCols = (availableWidth - TILE_GAP * (cols - 1)) / cols;
+    const heightByRows = (availableHeight - TILE_GAP * (rows - 1)) / rows;
+    const size = Math.floor(Math.min(widthByCols, heightByRows));
+
+    return Math.max(TILE_MIN, Math.min(TILE_MAX, size));
+  })();
+
+  const tileFontSize = Math.max(10, Math.floor(computedTileSize * 0.52));
+  const tileSizeConstrained = computedTileSize <= TILE_READABLE_THRESHOLD;
 
   function reveal(r: number, c: number) {
     if (gameOver) return;
@@ -320,166 +366,191 @@ function Minesweeper() {
 
   return (
     <div className={styles.gameContainer}>
-      <h2>Minesweeper</h2>
-      <div className={styles.customizeButtonRow}>
-        <div className={styles.presetGroup}>
-          <button
-            type="button"
-            className={
-              styles.presetButton + (rows === 8 && cols === 8 && mines === 10 ? ' ' + styles.selectedButton : '')
-            }
-            onClick={() => applyPreset(8, 8, 10)}
-          >
-            Small
-          </button>
-          <button
-            type="button"
-            className={
-              styles.presetButton + (rows === 16 && cols === 16 && mines === 40 ? ' ' + styles.selectedButton : '')
-            }
-            onClick={() => applyPreset(16, 16, 40)}
-          >
-            Medium
-          </button>
-          <button
-            type="button"
-            className={
-              styles.presetButton + (rows === 16 && cols === 30 && mines === 99 ? ' ' + styles.selectedButton : '')
-            }
-            onClick={() => applyPreset(16, 30, 99)}
-          >
-            Large
-          </button>
-        </div>
-        <button
-          type="button"
-          onClick={() => setShowCustomize(v => !v)}
-          className={styles.customizeToggle + (showCustomize ? ' ' + styles.customizeToggleOpen : '')}
-        >
-          {showCustomize ? '▲ Custom' : '⚙ Custom'}
-        </button>
-      </div>
-      {showCustomize && (
-        <form
-          className={styles.customForm}
-          onSubmit={e => {
-            e.preventDefault();
-            applyDraftSettings();
-          }}
-        >
-          <label className={styles.customLabel}>
-            Rows:
-            <input
-              className={styles.customInput}
-              type="number"
-              min={5}
-              max={30}
-              value={draftRows}
-              onChange={e => setDraftRows(Math.max(5, Math.min(30, Number(e.target.value))))}
-            />
-          </label>
-          <label className={styles.customLabel}>
-            Columns:
-            <input
-              className={styles.customInput}
-              type="number"
-              min={5}
-              max={30}
-              value={draftCols}
-              onChange={e => setDraftCols(Math.max(5, Math.min(30, Number(e.target.value))))}
-            />
-          </label>
-          <label className={styles.customLabel}>
-            Mines:
-            <input
-              className={styles.customInput}
-              type="number"
-              min={1}
-              max={Math.max(1, draftRows * draftCols - 1)}
-              value={draftMines}
-              onChange={e => {
-                const maxMines = Math.max(1, draftRows * draftCols - 1);
-                setDraftMines(Math.max(1, Math.min(maxMines, Number(e.target.value))));
-              }}
-            />
-          </label>
-          <button type="submit" className={styles.applyButton}>Apply</button>
-        </form>
-      )}
-      <div className={styles.centerColumn}>
-        <div className={styles.statusRow}>
-          <span>💣 <span>{bombsLeft}</span></span>
-          <span>⏱ <span>{elapsed}s</span></span>
+      <header className={styles.headerBar}>
+        <div>
+          <h2>Minesweeper</h2>
+          <p className={styles.subtitle}>Sweep efficiently, mark confidently, and avoid cortisol spikes.</p>
         </div>
         <button onClick={reset} className={styles.restartButton}>Restart</button>
-        <div className={styles.boardWrapper} key={boardAnimKey}>
-          {boardState.map((row, r) => (
-            <div
-              key={r}
-              className={styles.boardRow}
-              style={{ animationDelay: `${Math.min(r * motion.mineRowStepMs, motion.mineRowMaxMs)}ms` }}
-            >
-              {row.map((cell, c) => {
-                const isPreReveal = preReveal && preReveal.r === r && preReveal.c === c;
-                const isWrongFlag = wrongFlags.some(f => f.r === r && f.c === c);
-                const tileDelay = Math.min(
-                  r * motion.mineTileRowWeightMs + c * motion.mineTileColWeightMs,
-                  motion.mineTileMaxMs
-                );
-                return (
-                  <button
-                    key={c}
-                    className={
-                      (cell.revealed ? styles.revealedTile : isPreReveal ? styles.preRevealTile : styles.tile) +
-                      (isWrongFlag ? ' ' + styles.wrongFlagTile : '')
-                    }
-                    style={{
-                      width: rows > 18 || cols > 18 ? 36 : 48,
-                      height: rows > 18 || cols > 18 ? 36 : 48,
-                      fontSize: 24,
-                      color: cell.mine
-                        ? '#ff6b6b'
-                        : isWrongFlag
-                          ? '#ff4455'
-                          : cell.adjacent === 1 ? '#5ba3ff'
-                          : cell.adjacent === 2 ? '#4dcc7a'
-                          : cell.adjacent === 3 ? '#ff6b6b'
-                          : cell.adjacent === 4 ? '#a07bff'
-                          : cell.adjacent === 5 ? '#ff9944'
-                          : cell.adjacent === 6 ? '#44ddcc'
-                          : cell.adjacent === 7 ? '#e0c06a'
-                          : cell.adjacent === 8 ? '#aabbd0'
-                          : '#c8daf5',
-                      animationDelay: cell.revealed || isPreReveal ? `${tileDelay}ms` : undefined,
-                    }}
-                    data-tile-index={r * cols + c}
-                    onClick={() => reveal(r, c)}
-                    onContextMenu={e => flagCell(e, r, c)}
-                    disabled={gameOver}
-                  >
-                    {cell.revealed
-                      ? cell.mine
-                        ? '💣'
-                        : isWrongFlag
-                          ? '❌'
-                          : cell.adjacent > 0
-                            ? cell.adjacent
-                            : ''
-                      : cell.flagged
-                        ? '🚩'
-                        : ''}
-                  </button>
-                );
-              })}
+      </header>
+
+      <div className={styles.workspace}>
+        <aside className={styles.controlRail}>
+          <section className={styles.panelCard}>
+            <h3>Presets</h3>
+            <div className={styles.presetGroup}>
+              <button
+                type="button"
+                className={
+                  styles.presetButton + (rows === 8 && cols === 8 && mines === 10 ? ' ' + styles.selectedButton : '')
+                }
+                onClick={() => applyPreset(8, 8, 10)}
+              >
+                Small
+              </button>
+              <button
+                type="button"
+                className={
+                  styles.presetButton + (rows === 16 && cols === 16 && mines === 40 ? ' ' + styles.selectedButton : '')
+                }
+                onClick={() => applyPreset(16, 16, 40)}
+              >
+                Medium
+              </button>
+              <button
+                type="button"
+                className={
+                  styles.presetButton + (rows === 16 && cols === 30 && mines === 99 ? ' ' + styles.selectedButton : '')
+                }
+                onClick={() => applyPreset(16, 30, 99)}
+              >
+                Large
+              </button>
             </div>
-          ))}
-        </div>
+            <button
+              type="button"
+              onClick={() => setShowCustomize(v => !v)}
+              className={styles.customizeToggle + (showCustomize ? ' ' + styles.customizeToggleOpen : '')}
+            >
+              {showCustomize ? 'Hide Custom Settings' : 'Open Custom Settings'}
+            </button>
+          </section>
+
+          {showCustomize && (
+            <form
+              className={styles.customForm}
+              onSubmit={e => {
+                e.preventDefault();
+                applyDraftSettings();
+              }}
+            >
+              <label className={styles.customLabel}>
+                Rows
+                <input
+                  className={styles.customInput}
+                  type="number"
+                  min={5}
+                  max={30}
+                  value={draftRows}
+                  onChange={e => setDraftRows(Math.max(5, Math.min(30, Number(e.target.value))))}
+                />
+              </label>
+              <label className={styles.customLabel}>
+                Columns
+                <input
+                  className={styles.customInput}
+                  type="number"
+                  min={5}
+                  max={30}
+                  value={draftCols}
+                  onChange={e => setDraftCols(Math.max(5, Math.min(30, Number(e.target.value))))}
+                />
+              </label>
+              <label className={styles.customLabel}>
+                Mines
+                <input
+                  className={styles.customInput}
+                  type="number"
+                  min={1}
+                  max={Math.max(1, draftRows * draftCols - 1)}
+                  value={draftMines}
+                  onChange={e => {
+                    const maxMines = Math.max(1, draftRows * draftCols - 1);
+                    setDraftMines(Math.max(1, Math.min(maxMines, Number(e.target.value))));
+                  }}
+                />
+              </label>
+              <button type="submit" className={styles.applyButton}>Apply</button>
+            </form>
+          )}
+
+          <section className={styles.panelCard}>
+            <h3>Round Status</h3>
+            <div className={styles.statusRow}>
+              <span>💣 {bombsLeft}</span>
+              <span>⏱ {elapsed}s</span>
+            </div>
+            <p className={styles.instructions}>Right click to flag. Click revealed cells to chord nearby safe tiles.</p>
+          </section>
+        </aside>
+
+        <section className={styles.boardStage}>
+          <div className={styles.boardFrame} ref={boardFrameRef}>
+            <div className={styles.boardWrapper} key={boardAnimKey}>
+              {boardState.map((row, r) => (
+                <div
+                  key={r}
+                  className={styles.boardRow}
+                  style={{ animationDelay: `${Math.min(r * motion.mineRowStepMs, motion.mineRowMaxMs)}ms` }}
+                >
+                  {row.map((cell, c) => {
+                    const isPreReveal = preReveal && preReveal.r === r && preReveal.c === c;
+                    const isWrongFlag = wrongFlags.some(f => f.r === r && f.c === c);
+                    const tileDelay = Math.min(
+                      r * motion.mineTileRowWeightMs + c * motion.mineTileColWeightMs,
+                      motion.mineTileMaxMs
+                    );
+                    return (
+                      <button
+                        key={c}
+                        className={
+                          (cell.revealed ? styles.revealedTile : isPreReveal ? styles.preRevealTile : styles.tile) +
+                          (isWrongFlag ? ' ' + styles.wrongFlagTile : '')
+                        }
+                        style={{
+                          width: computedTileSize,
+                          height: computedTileSize,
+                          fontSize: tileFontSize,
+                          color: cell.mine
+                            ? '#ff6b6b'
+                            : isWrongFlag
+                              ? '#ff4455'
+                              : cell.adjacent === 1 ? '#5ba3ff'
+                              : cell.adjacent === 2 ? '#4dcc7a'
+                              : cell.adjacent === 3 ? '#ff6b6b'
+                              : cell.adjacent === 4 ? '#a07bff'
+                              : cell.adjacent === 5 ? '#ff9944'
+                              : cell.adjacent === 6 ? '#44ddcc'
+                              : cell.adjacent === 7 ? '#e0c06a'
+                              : cell.adjacent === 8 ? '#aabbd0'
+                              : '#c8daf5',
+                          animationDelay: cell.revealed || isPreReveal ? `${tileDelay}ms` : undefined,
+                        }}
+                        data-tile-index={r * cols + c}
+                        onClick={() => reveal(r, c)}
+                        onContextMenu={e => flagCell(e, r, c)}
+                        disabled={gameOver}
+                      >
+                        {cell.revealed
+                          ? cell.mine
+                            ? '💣'
+                            : isWrongFlag
+                              ? '❌'
+                              : cell.adjacent > 0
+                                ? cell.adjacent
+                                : ''
+                          : cell.flagged
+                            ? '🚩'
+                            : ''}
+                      </button>
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
+          </div>
+          {tileSizeConstrained && !gameOver && (
+            <p className={styles.boardScaleHint}>
+              Board is heavily scaled to fit. For easier play, reduce rows/columns or mine density.
+            </p>
+          )}
+          {gameOver && (
+            <div className={styles.gameOverMsg} style={{ color: won ? '#0f8e5f' : '#cc3040' }}>
+              {won ? 'You Win!' : 'Game Over!'}
+            </div>
+          )}
+        </section>
       </div>
-      {gameOver && (
-        <div className={styles.gameOverMsg} style={{ color: won ? '#0f8e5f' : '#cc3040' }}>
-          {won ? 'You Win!' : 'Game Over!'}
-        </div>
-      )}
     </div>
   );
 }
