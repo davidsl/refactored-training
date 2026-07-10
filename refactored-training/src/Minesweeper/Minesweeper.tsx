@@ -322,35 +322,41 @@ function Minesweeper() {
     <div className={styles.gameContainer}>
       <h2>Minesweeper</h2>
       <div className={styles.customizeButtonRow}>
+        <div className={styles.presetGroup}>
+          <button
+            type="button"
+            className={
+              styles.presetButton + (rows === 8 && cols === 8 && mines === 10 ? ' ' + styles.selectedButton : '')
+            }
+            onClick={() => applyPreset(8, 8, 10)}
+          >
+            Small
+          </button>
+          <button
+            type="button"
+            className={
+              styles.presetButton + (rows === 16 && cols === 16 && mines === 40 ? ' ' + styles.selectedButton : '')
+            }
+            onClick={() => applyPreset(16, 16, 40)}
+          >
+            Medium
+          </button>
+          <button
+            type="button"
+            className={
+              styles.presetButton + (rows === 16 && cols === 30 && mines === 99 ? ' ' + styles.selectedButton : '')
+            }
+            onClick={() => applyPreset(16, 30, 99)}
+          >
+            Large
+          </button>
+        </div>
         <button
           type="button"
-          className={
-            styles.customizeButton + (rows === 8 && cols === 8 && mines === 10 ? ' ' + styles.selectedButton : '')
-          }
-          onClick={() => applyPreset(8, 8, 10)}
+          onClick={() => setShowCustomize(v => !v)}
+          className={styles.customizeToggle + (showCustomize ? ' ' + styles.customizeToggleOpen : '')}
         >
-          Small
-        </button>
-        <button
-          type="button"
-          className={
-            styles.customizeButton + (rows === 16 && cols === 16 && mines === 40 ? ' ' + styles.selectedButton : '')
-          }
-          onClick={() => applyPreset(16, 16, 40)}
-        >
-          Medium
-        </button>
-        <button
-          type="button"
-          className={
-            styles.customizeButton + (rows === 16 && cols === 30 && mines === 99 ? ' ' + styles.selectedButton : '')
-          }
-          onClick={() => applyPreset(16, 30, 99)}
-        >
-          Large
-        </button>
-        <button type="button" onClick={() => setShowCustomize(v => !v)} className={styles.customizeButton}>
-          {showCustomize ? 'Hide Customization' : 'Customize Board'}
+          {showCustomize ? '▲ Custom' : '⚙ Custom'}
         </button>
       </div>
       {showCustomize && (
@@ -402,7 +408,8 @@ function Minesweeper() {
       )}
       <div className={styles.centerColumn}>
         <div className={styles.statusRow}>
-          Bombs left: {bombsLeft} | Time: {elapsed}s
+          <span>💣 <span>{bombsLeft}</span></span>
+          <span>⏱ <span>{elapsed}s</span></span>
         </div>
         <button onClick={reset} className={styles.restartButton}>Restart</button>
         <div className={styles.boardWrapper} key={boardAnimKey}>
@@ -430,7 +437,19 @@ function Minesweeper() {
                       width: rows > 18 || cols > 18 ? 36 : 48,
                       height: rows > 18 || cols > 18 ? 36 : 48,
                       fontSize: 24,
-                      color: cell.mine ? 'red' : isWrongFlag ? '#b00' : 'black',
+                      color: cell.mine
+                        ? '#ff6b6b'
+                        : isWrongFlag
+                          ? '#ff4455'
+                          : cell.adjacent === 1 ? '#5ba3ff'
+                          : cell.adjacent === 2 ? '#4dcc7a'
+                          : cell.adjacent === 3 ? '#ff6b6b'
+                          : cell.adjacent === 4 ? '#a07bff'
+                          : cell.adjacent === 5 ? '#ff9944'
+                          : cell.adjacent === 6 ? '#44ddcc'
+                          : cell.adjacent === 7 ? '#e0c06a'
+                          : cell.adjacent === 8 ? '#aabbd0'
+                          : '#c8daf5',
                       animationDelay: cell.revealed || isPreReveal ? `${tileDelay}ms` : undefined,
                     }}
                     data-tile-index={r * cols + c}
