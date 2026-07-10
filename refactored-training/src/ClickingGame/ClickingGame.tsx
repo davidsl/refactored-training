@@ -95,6 +95,7 @@ function ClickingGame() {
 
   const audioContextRef = useRef<AudioContext | null>(null);
   const clickToneIndexRef = useRef(0);
+  const upgradeToneIndexRef = useRef(0);
   const previousPointsRef = useRef(0);
   const pointsPulseTimeoutRef = useRef<number | null>(null);
 
@@ -304,12 +305,6 @@ function ClickingGame() {
   }, [SHORT_VIEWPORT_THRESHOLD]);
 
   useEffect(() => {
-    if (focusBoostUntil <= clockNow && focusBoostMultiplier !== 1) {
-      setFocusBoostMultiplier(1);
-    }
-  }, [focusBoostUntil, clockNow, focusBoostMultiplier]);
-
-  useEffect(() => {
     const readRamSnapshot = () => {
       const perfWithMemory = performance as Performance & { memory?: BrowserPerformanceMemory };
       if (perfWithMemory.memory?.usedJSHeapSize && perfWithMemory.memory?.jsHeapSizeLimit) {
@@ -436,7 +431,8 @@ function ClickingGame() {
 
     clickToneIndexRef.current += 1;
     const variant = clickToneIndexRef.current % 3;
-    const baseFrequency = 240 + variant * 18 + Math.random() * 24;
+    const harmonicJitter = (clickToneIndexRef.current % 5) * 4.8;
+    const baseFrequency = 240 + variant * 18 + harmonicJitter;
     playTone(ctx, baseFrequency, 0.055, 'triangle', 0.05);
     playTone(ctx, baseFrequency * 1.85, 0.04, 'sine', 0.02, ctx.currentTime + 0.012);
   }
@@ -446,7 +442,8 @@ function ClickingGame() {
     const ctx = getAudioContext();
     if (!ctx) return;
 
-    const root = 300 + Math.random() * 16;
+    upgradeToneIndexRef.current += 1;
+    const root = 300 + (upgradeToneIndexRef.current % 6) * 2.6;
     const now = ctx.currentTime;
     playTone(ctx, root, 0.09, 'triangle', 0.05, now);
     playTone(ctx, root * 1.25, 0.1, 'triangle', 0.05, now + 0.065);
@@ -500,7 +497,7 @@ function ClickingGame() {
     const boost = 1 + Math.min(0.9, recoveryCost / 320);
     setCortisol(prev => Math.max(0, prev - recoveryCost));
     setFocusBoostMultiplier(boost);
-    setFocusBoostUntil(Date.now() + RECOVERY_DURATION_MS);
+    setFocusBoostUntil(clockNow + RECOVERY_DURATION_MS);
     playUpgradeSound();
     triggerHaptics([10, 14, 10, 14, 10]);
   }
