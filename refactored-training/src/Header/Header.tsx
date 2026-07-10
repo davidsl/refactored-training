@@ -2,8 +2,16 @@ import styles from './Header.module.css'
 import { Link } from 'react-router-dom'
 import { useState } from 'react'
 
-function Header() {
+type Theme = 'light' | 'dark'
+
+type HeaderProps = {
+  theme: Theme
+  onToggleTheme: () => void
+}
+
+function Header({ theme, onToggleTheme }: HeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false)
+
   return (
     <div className={styles.headerContainer}>
       <div className={styles.mobileNavBar}>
@@ -21,14 +29,20 @@ function Header() {
       <nav id="main-nav" className={`${styles.navMenu} ${menuOpen ? styles.navOpen : styles.navClosed}`}>
         <Link to="/refactored-training" onClick={() => setMenuOpen(false)}>Home</Link>
         <Link to="/refactored-training/about" onClick={() => setMenuOpen(false)}>About</Link>
-        <Link to="/refactored-training/events" onClick={() => setMenuOpen(false)}>Events</Link>
-        <Link to="/refactored-training/places" onClick={() => setMenuOpen(false)}>Places</Link>
-        <Link to="/refactored-training/contact" onClick={() => setMenuOpen(false)}>Contact</Link>
         <Link to="/refactored-training/game" onClick={() => setMenuOpen(false)}>Minesweeper</Link>
         <Link to="/refactored-training/leaderboard" onClick={() => setMenuOpen(false)}>Leaderboard</Link>
         <Link to="/refactored-training/styling-examples" onClick={() => setMenuOpen(false)}>Styling Examples</Link>
         <Link to="/refactored-training/thumbnails" onClick={() => setMenuOpen(false)}>Thumbnails</Link>
         <Link to="/refactored-training/clicking-game" onClick={() => setMenuOpen(false)}>Clicking Game</Link>
+        <Link to="/refactored-training/table" onClick={() => setMenuOpen(false)}>Table</Link>
+        <button
+          type="button"
+          className={styles.themeToggle}
+          onClick={onToggleTheme}
+          aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+        >
+          {theme === 'dark' ? 'Light mode' : 'Dark mode'}
+        </button>
       </nav>
     </div>
   )

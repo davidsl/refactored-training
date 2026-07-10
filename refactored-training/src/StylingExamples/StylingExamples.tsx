@@ -1,194 +1,207 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
+import ReusableTable, { type TableColumn } from '../components/ReusableTable/ReusableTable';
 import styles from './StylingExamples.module.css';
 
+type PreviewRow = {
+  component: string;
+  status: 'Ready' | 'Draft' | 'Review';
+  owner: string;
+};
+
+const previewRows: PreviewRow[] = [
+  { component: 'Hero Banner', status: 'Ready', owner: 'Ari' },
+  { component: 'Leaderboard Panel', status: 'Review', owner: 'Mila' },
+  { component: 'Settings Drawer', status: 'Draft', owner: 'Kai' },
+  { component: 'Game Tile', status: 'Ready', owner: 'Nova' },
+];
+
+const previewColumns: Array<TableColumn<PreviewRow>> = [
+  { key: 'component', header: 'Component' },
+  {
+    key: 'status',
+    header: 'Status',
+    align: 'center',
+    render: value => {
+      const status = String(value) as PreviewRow['status'];
+      const badgeClass =
+        status === 'Ready' ? styles.badgeReady : status === 'Review' ? styles.badgeReview : styles.badgeDraft;
+
+      return <span className={`${styles.statusBadge} ${badgeClass}`}>{status}</span>;
+    },
+  },
+  { key: 'owner', header: 'Owner', align: 'center' },
+];
+
 const StylingExamples: React.FC = () => {
-  const [useRed, setUseRed] = useState(false);
+  const [compactMode, setCompactMode] = useState(false);
+  const [warmPalette, setWarmPalette] = useState(false);
   const [spinnerSpeed, setSpinnerSpeed] = useState(1);
 
-  const speedPresets = [
-    { label: 'Slow', value: 0.7 },
-    { label: 'Normal', value: 1 },
-    { label: 'Fast', value: 1.5 },
-  ];
+  const rootStyle = useMemo(
+    () => ({
+      '--demo-spin-duration': `${(1.1 / spinnerSpeed).toFixed(2)}s`,
+    }) as React.CSSProperties,
+    [spinnerSpeed],
+  );
 
   return (
-    <div className={styles.examplesContainer}>
-      <h2 className={styles.heading}>Styling Examples</h2>
-      <section className={styles.section}>
-        <h3>Button Styles</h3>
-        <button className={styles.primaryButton}>Primary Button</button>
-        <button className={styles.secondaryButton}>Secondary Button</button>
-        <button className={styles.dangerButton}>Danger Button</button>
-      </section>
-      <section className={styles.section}>
-        <h3>Table Example</h3>
-        <table className={styles.exampleTable}>
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Status</th>
-              <th>Score</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Alice</td>
-              <td><span className={styles.statusActive}>Active</span></td>
-              <td>95</td>
-            </tr>
-            <tr>
-              <td>Bob</td>
-              <td><span className={styles.statusInactive}>Inactive</span></td>
-              <td>80</td>
-            </tr>
-          </tbody>
-        </table>
-      </section>
-      <section className={styles.section}>
-        <h3>Modal Example</h3>
-        <div className={styles.modalExample}>
-          <div className={styles.modalBox}>
-            <div className={styles.modalText}>This is a modal example using the shared modal style.</div>
-            <div className={styles.modalActions}>
-              <button className={styles.primaryButton}>OK</button>
-              <button className={styles.secondaryButton}>Cancel</button>
-            </div>
-          </div>
+    <div className={`${styles.examplesPage} ${compactMode ? styles.compactMode : ''}`} style={rootStyle}>
+      <header className={styles.hero}>
+        <div>
+          <p className={styles.eyebrow}>Design Playground</p>
+          <h2>Styling Examples</h2>
+          <p className={styles.heroText}>
+            A curated surface to test spacing, color language, interaction cues, and motion behavior before shipping.
+          </p>
         </div>
-      </section>
-      <section
-        className={`${styles.section} ${styles.spinnerSection}`}
-        style={{ '--spinner-speed': spinnerSpeed } as React.CSSProperties}
-      >
-        <h3>Loading Spinners</h3>
-        <div className={styles.spinnerControls}>
-          <label className={styles.toggleSliderLabel}>
-            <span>Use Red Theme</span>
-            <span className={styles.toggleSlider}>
+        <div className={styles.heroChips}>
+          <span className={styles.chip}>Layout rhythm</span>
+          <span className={styles.chip}>Component states</span>
+          <span className={styles.chip}>Motion tokens</span>
+        </div>
+      </header>
+
+      <section className={styles.grid}>
+        <article className={styles.panel}>
+          <h3>Controls</h3>
+          <div className={styles.buttonRow}>
+            <button className={styles.primaryButton}>Primary Action</button>
+            <button className={styles.ghostButton}>Ghost Action</button>
+            <button className={styles.warningButton}>Destructive</button>
+          </div>
+
+          <div className={styles.toggleGroup}>
+            <label className={styles.toggle}>
+              <span>Compact mode</span>
               <input
                 type="checkbox"
-                checked={useRed}
-                onChange={e => setUseRed(e.target.checked)}
+                checked={compactMode}
+                onChange={event => setCompactMode(event.target.checked)}
               />
-              <span className={styles.toggleSliderTrack}>
-                <span className={styles.toggleSliderThumb}></span>
-              </span>
-            </span>
-          </label>
-          <label className={styles.spinnerSpeedControl}>
-            <span>Spinner Speed</span>
+            </label>
+            <label className={styles.toggle}>
+              <span>Warm palette loaders</span>
+              <input
+                type="checkbox"
+                checked={warmPalette}
+                onChange={event => setWarmPalette(event.target.checked)}
+              />
+            </label>
+          </div>
+        </article>
+
+        <article className={styles.panel}>
+          <h3>Card + Modal Preview</h3>
+          <div className={styles.cardPreview}>
+            <div>
+              <strong>Daily Challenge</strong>
+              <p>Clear a 16x16 board with fewer than 60 moves.</p>
+            </div>
+            <button className={styles.primaryButton}>Join Challenge</button>
+          </div>
+
+          <div className={styles.modalMock}>
+            <div className={styles.modalTitle}>Confirm action</div>
+            <p>This area mirrors the modal hierarchy and button emphasis.</p>
+            <div className={styles.modalActions}>
+              <button className={styles.primaryButton}>Confirm</button>
+              <button className={styles.ghostButton}>Cancel</button>
+            </div>
+          </div>
+        </article>
+
+        <article className={styles.panel}>
+          <h3>Table Preview</h3>
+          <div className={styles.tableHolder}>
+            <ReusableTable
+              columns={previewColumns}
+              rows={previewRows}
+              caption="Component implementation status"
+              emptyMessage="No components in preview."
+            />
+          </div>
+        </article>
+      </section>
+
+      <section className={`${styles.loaderPanel} ${warmPalette ? styles.loaderPanelWarm : ''}`}>
+        <div className={styles.loaderHeader}>
+          <div>
+            <h3>Motion Lab</h3>
+            <div className={styles.loaderLegend}>
+              <span>Rotational</span>
+              <span>Pulse</span>
+              <span>Linear</span>
+              <span>Transform</span>
+            </div>
+          </div>
+          <label className={styles.speedControl}>
+            <span>Speed</span>
             <input
-              className={styles.spinnerSpeedRange}
               type="range"
-              min={0.5}
-              max={2}
+              min={0.6}
+              max={1.8}
               step={0.1}
               value={spinnerSpeed}
-              onChange={e => setSpinnerSpeed(Number(e.target.value))}
+              onChange={event => setSpinnerSpeed(Number(event.target.value))}
             />
-            <span className={styles.spinnerSpeedValue}>{spinnerSpeed.toFixed(1)}x</span>
+            <strong>{spinnerSpeed.toFixed(1)}x</strong>
           </label>
-          <div className={styles.spinnerSpeedPresets}>
-            {speedPresets.map(preset => (
-              <button
-                key={preset.label}
-                type="button"
-                className={
-                  styles.spinnerSpeedPresetButton +
-                  (Math.abs(spinnerSpeed - preset.value) < 0.01 ? ` ${styles.spinnerSpeedPresetButtonActive}` : '')
-                }
-                onClick={() => setSpinnerSpeed(preset.value)}
-              >
-                {preset.label}
-              </button>
-            ))}
-          </div>
         </div>
-        <div className={styles.spinnerGrid + (useRed ? ' ' + styles.redTheme : '')}>
-          <div className={styles.spinnerExample} data-short="Ring">
-            <div className={styles.spinnerCircle}></div>
-            <div className={styles.spinnerLabel}>Circle Spinner</div>
+
+        <div className={styles.loaderGrid}>
+          <div className={styles.loaderTile} data-family="Rotational" title="Rotational loader">
+            <div className={styles.loaderRing}></div>
+            <span>Ring</span>
           </div>
-          <div className={styles.spinnerExample} data-short="Dots">
-            <div className={styles.spinnerDots}>
+          <div className={styles.loaderTile} data-family="Pulse" title="Pulse and bounce loader">
+            <div className={styles.loaderDots}>
               <span></span><span></span><span></span>
             </div>
-            <div className={styles.spinnerLabel}>Bouncing Dots</div>
+            <span>Dots</span>
           </div>
-          <div className={styles.spinnerExample} data-short="Square">
-            <div className={styles.spinnerRotatingSquare}>
+          <div className={styles.loaderTile} data-family="Linear" title="Linear wave loader">
+            <div className={styles.loaderBars}>
               <span></span><span></span><span></span><span></span>
             </div>
-            <div className={styles.spinnerLabel}>Rotating Square</div>
+            <span>Bars</span>
           </div>
-          <div className={styles.spinnerExample} data-short="Bar">
-            <div className={styles.spinnerBarHorizontal}></div>
-            <div className={styles.spinnerLabel}>Horizontal Bar</div>
+          <div className={styles.loaderTile} data-family="Rotational" title="Orbiting loader">
+            <div className={styles.loaderOrbit}></div>
+            <span>Orbit</span>
           </div>
-          <div className={styles.spinnerExample} data-short="Pulse">
-            <div className={styles.spinnerPulse}></div>
-            <div className={styles.spinnerLabel}>Pulse</div>
+          <div className={styles.loaderTile} data-family="Pulse" title="Pulse scale loader">
+            <div className={styles.loaderPulse}></div>
+            <span>Pulse</span>
           </div>
-          <div className={styles.spinnerExample} data-short="DualRing">
-            <div className={styles.spinnerDualRing}></div>
-            <div className={styles.spinnerLabel}>Dual Ring</div>
+          <div className={styles.loaderTile} data-family="Rotational" title="Dual ring spinner">
+            <div className={styles.loaderDualRing}></div>
+            <span>Dual Ring</span>
           </div>
-          <div className={styles.spinnerExample} data-short="Wave">
-            <div className={styles.spinnerWave}>
+          <div className={styles.loaderTile} data-family="Linear" title="Vertical wave bars">
+            <div className={styles.loaderWave}>
               <span></span><span></span><span></span><span></span><span></span>
             </div>
-            <div className={styles.spinnerLabel}>Wave</div>
+            <span>Wave</span>
           </div>
-          <div className={styles.spinnerExample} data-short="Flip">
-            <div className={styles.spinnerFlip}></div>
-            <div className={styles.spinnerLabel}>Flip</div>
+          <div className={styles.loaderTile} data-family="Transform" title="3D flip loader">
+            <div className={styles.loaderFlip}></div>
+            <span>Flip</span>
           </div>
-          <div className={styles.spinnerExample} data-short="DualPulse">
-            <div className={styles.spinnerDualColorPulse}></div>
-            <div className={styles.spinnerLabel}>Dual Color Pulse</div>
+          <div className={styles.loaderTile} data-family="Rotational" title="Spiral spinner">
+            <div className={styles.loaderSpiral}></div>
+            <span>Spiral</span>
           </div>
-          <div className={styles.spinnerExample} data-short="RingDots">
-            <div className={styles.spinnerDotsOnRing}>
-              <span></span><span></span><span></span><span></span>
-            </div>
-            <div className={styles.spinnerLabel}>Dots on Rotating Ring</div>
+          <div className={styles.loaderTile} data-family="Linear" title="Horizontal sweep bar">
+            <div className={styles.loaderSweep}></div>
+            <span>Sweep</span>
           </div>
-          <div className={styles.spinnerExample} data-short="Flip+P">
-            <div className={styles.spinnerFlipPulse}></div>
-            <div className={styles.spinnerLabel}>Flip & Pulse Combo</div>
+          <div className={styles.loaderTile} data-family="Pulse" title="Ripple pulse loader">
+            <div className={styles.loaderRipple}></div>
+            <span>Ripple</span>
           </div>
-          <div className={styles.spinnerExample} data-short="WaveBar">
-            <div className={styles.spinnerWaveBar}>
-              <span></span><span></span><span></span><span></span><span></span>
-            </div>
-            <div className={styles.spinnerLabel}>Wave + Color Bar</div>
-          </div>
-          <div className={styles.spinnerExample} data-short="Spiral">
-            <div className={styles.spinnerSpiral}></div>
-            <div className={styles.spinnerLabel}>Spiral Spinner</div>
-          </div>
-          <div className={styles.spinnerExample} data-short="WaveDots">
-            <div className={styles.spinnerWaveDots}>
-              <span></span><span></span><span></span><span></span><span></span>
-            </div>
-            <div className={styles.spinnerLabel}>Wave Dots Spinner</div>
-          </div>
-          <div className={styles.spinnerExample} data-short="CircleBar">
-            <div className={styles.spinnerCircleWaveBar}>
-              <div className={styles.circle}></div>
-              <div className={styles.bars}>
-                <span></span><span></span><span></span><span></span><span></span><span></span>
-              </div>
-            </div>
-            <div className={styles.spinnerLabel}>Circle Wave Bar</div>
-          </div>
-          <div className={styles.spinnerExample} data-short="RingWave">
-            <div className={styles.spinnerWaveOnRing}>
-              <div className={styles.wave}>
-                <span></span><span></span><span></span><span></span><span></span><span></span>
-              </div>
-            </div>
-            <div className={styles.spinnerLabel}>Wave on Rotating Ring</div>
+          <div className={styles.loaderTile} data-family="Transform" title="Stepped cube transform">
+            <div className={styles.loaderCube}></div>
+            <span>Cube</span>
           </div>
         </div>
       </section>

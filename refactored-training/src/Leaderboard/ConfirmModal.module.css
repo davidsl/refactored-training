@@ -64,3 +64,8 @@
 .cancelButton:hover {
   background: rgba(21, 105, 240, 0.2);
 }
+
+:global(:root[data-theme='dark']) .confirmModalBox {
+  background: rgba(20, 36, 58, 0.96);
+  border: 1px solid rgba(141, 184, 255, 0.24);
+}

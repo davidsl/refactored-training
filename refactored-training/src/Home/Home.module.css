@@ -35,3 +35,11 @@
   font-size: 1.04rem;
   line-height: 1.65;
 }
+
+:global(:root[data-theme='dark']) .homeContainer {
+  background: linear-gradient(145deg, rgba(15, 29, 48, 0.92), rgba(18, 36, 58, 0.88));
+}
+
+:global(:root[data-theme='dark']) .homeContainer::before {
+  background: radial-gradient(circle, rgba(55, 213, 157, 0.22), rgba(55, 213, 157, 0));
+}

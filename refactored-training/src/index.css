@@ -15,6 +15,16 @@
   --border: rgba(21, 105, 240, 0.14);
   --shadow-soft: 0 14px 34px rgba(16, 33, 59, 0.1);
   --shadow-strong: 0 24px 48px rgba(16, 33, 59, 0.18);
+  --focus-outline: rgba(21, 105, 240, 0.32);
+  --header-bg: linear-gradient(120deg, rgba(16, 33, 59, 0.86), rgba(21, 105, 240, 0.76));
+  --header-border: rgba(255, 255, 255, 0.34);
+  --header-shadow: 0 16px 34px rgba(16, 33, 59, 0.28);
+  --header-link-color: #eff5ff;
+  --header-link-hover-bg: rgba(255, 255, 255, 0.16);
+  --header-button-bg: rgba(255, 255, 255, 0.08);
+  --header-button-bg-hover: rgba(255, 255, 255, 0.14);
+  --header-button-border: rgba(255, 255, 255, 0.28);
+  --header-mobile-menu-bg: rgba(9, 20, 38, 0.42);
   --radius-xl: 20px;
   --radius-lg: 14px;
   --radius-md: 10px;
@@ -54,6 +64,33 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+:root[data-theme='dark'] {
+  --bg-0: #091220;
+  --bg-1: #0c1a2c;
+  --bg-2: #12253c;
+  --text-strong: #ecf3ff;
+  --text-muted: #b4c3df;
+  --primary: #63a0ff;
+  --primary-strong: #8db8ff;
+  --accent: #37d59d;
+  --danger: #ff7282;
+  --surface: rgba(16, 30, 50, 0.78);
+  --surface-strong: rgba(20, 36, 58, 0.9);
+  --border: rgba(141, 184, 255, 0.22);
+  --shadow-soft: 0 14px 34px rgba(0, 0, 0, 0.28);
+  --shadow-strong: 0 24px 48px rgba(0, 0, 0, 0.38);
+  --focus-outline: rgba(141, 184, 255, 0.45);
+  --header-bg: linear-gradient(120deg, rgba(11, 25, 42, 0.9), rgba(22, 60, 118, 0.86));
+  --header-border: rgba(141, 184, 255, 0.28);
+  --header-shadow: 0 16px 34px rgba(0, 0, 0, 0.4);
+  --header-link-color: #eaf2ff;
+  --header-link-hover-bg: rgba(141, 184, 255, 0.18);
+  --header-button-bg: rgba(141, 184, 255, 0.14);
+  --header-button-bg-hover: rgba(141, 184, 255, 0.24);
+  --header-button-border: rgba(141, 184, 255, 0.32);
+  --header-mobile-menu-bg: rgba(7, 17, 30, 0.72);
 }
 
 .motion-crisp {
@@ -200,7 +237,7 @@ button:active {
 button:focus-visible,
 input:focus-visible,
 a:focus-visible {
-  outline: 3px solid rgba(21, 105, 240, 0.32);
+  outline: 3px solid var(--focus-outline);
   outline-offset: 2px;
 }
 

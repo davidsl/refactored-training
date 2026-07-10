@@ -1,7 +1,7 @@
 import React from 'react';
 import styles from './Leaderboard.module.css';
 import ConfirmModal from './ConfirmModal';
-import { ACTIVE_MOTION_PRESET, MOTION_DELAY_PRESETS } from '../motionPreset';
+import ReusableTable, { type TableColumn } from '../components/ReusableTable/ReusableTable';
 
 export type WinRecord = {
   rows: number;
@@ -9,6 +9,25 @@ export type WinRecord = {
   mines: number;
   time: number;
   date: string;
+};
+
+type LeaderboardRow = {
+  rank: number;
+  date: string;
+  size: string;
+  mines: number;
+  time: number;
+};
+
+type CategoryKey = 'Small' | 'Medium' | 'Large' | 'Custom';
+
+const CATEGORY_ORDER: CategoryKey[] = ['Small', 'Medium', 'Large', 'Custom'];
+
+const CATEGORY_LABELS: Record<CategoryKey, { title: string; description: string }> = {
+  Small: { title: 'Small', description: '8x8 board, 10 mines' },
+  Medium: { title: 'Medium', description: '16x16 board, 40 mines' },
+  Large: { title: 'Large', description: '16x30 board, 99 mines' },
+  Custom: { title: 'Custom', description: 'Any custom setup' },
 };
 
 function getLeaderboard(): WinRecord[] {
@@ -30,10 +49,47 @@ function categorizeWin(win: WinRecord): 'Small' | 'Medium' | 'Large' | 'Custom' 
   return 'Custom';
 }
 
+const leaderboardColumns: Array<TableColumn<LeaderboardRow>> = [
+  {
+    key: 'rank',
+    header: '#',
+    align: 'center',
+    width: '64px',
+    render: value => {
+      const rank = Number(value);
+      const topClass = rank <= 3 ? styles.topRank : '';
+      return <span className={`${styles.rankBadge} ${topClass}`}>{rank}</span>;
+    },
+  },
+  {
+    key: 'date',
+    header: 'Date',
+    render: value => {
+      const d = new Date(String(value));
+      const dateStr = d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+      const timeStr = d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+      return (
+        <span className={styles.leaderDateCell}>
+          <span className={styles.leaderDate}>{dateStr}</span>
+          <span className={styles.leaderTime}>{timeStr}</span>
+        </span>
+      );
+    },
+  },
+  { key: 'size', header: 'Size', align: 'center' },
+  { key: 'mines', header: 'Mines', align: 'center' },
+  {
+    key: 'time',
+    header: 'Time (s)',
+    align: 'center',
+    render: value => <span className={styles.timeCell}>{value}</span>,
+  },
+];
+
 const Leaderboard: React.FC = () => {
-  const motion = MOTION_DELAY_PRESETS[ACTIVE_MOTION_PRESET];
   const [leaderboard, setLeaderboard] = React.useState<WinRecord[]>(getLeaderboard());
-  const [showCustom, setShowCustom] = React.useState(false);
+  const [selectedCategory, setSelectedCategory] = React.useState<CategoryKey>('Small');
   const [showConfirm, setShowConfirm] = React.useState(false);
 
   React.useEffect(() => {
@@ -54,44 +110,30 @@ const Leaderboard: React.FC = () => {
     categorized[categorizeWin(win)].push(win);
   });
 
+  const totalWins = leaderboard.length;
+  const fastestTime = leaderboard.length > 0 ? leaderboard[0].time : null;
+  const averageTime =
+    leaderboard.length > 0
+      ? Math.round(leaderboard.reduce((sum, win) => sum + win.time, 0) / leaderboard.length)
+      : null;
+  const selectedWins = categorized[selectedCategory];
+  const selectedMeta = CATEGORY_LABELS[selectedCategory];
+
   function renderTable(wins: WinRecord[]) {
-    return wins.length === 0 ? (
-      <div className={styles.noWins}>No wins yet.</div>
-    ) : (
-      <table className={styles.leaderTable}>
-        <thead>
-          <tr className={styles.leaderTableHeadRow}>
-            <th className={styles.leaderTableHeadCell}>#</th>
-            <th className={styles.leaderTableHeadCell}>Date</th>
-            <th className={styles.leaderTableHeadCell}>Size</th>
-            <th className={styles.leaderTableHeadCell}>Mines</th>
-            <th className={styles.leaderTableHeadCell}>Time (s)</th>
-          </tr>
-        </thead>
-        <tbody>
-          {wins.map((win, i) => {
-            const d = new Date(win.date);
-            const dateStr = d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
-            const timeStr = d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-            return (
-              <tr
-                key={i}
-                className={i % 2 === 0 ? styles.leaderTableRow : styles.leaderTableRowAlt}
-                style={{ animationDelay: `${Math.min(i * motion.leaderboardRowStepMs, motion.leaderboardRowMaxMs)}ms` }}
-              >
-                <td className={styles.leaderTableCell + ' ' + styles.leaderTableCellNum}>{i + 1}</td>
-                <td className={styles.leaderTableCell + ' ' + styles.leaderTableCellDate}>
-                  <span className={styles.leaderDate}>{dateStr}</span>
-                  <span className={styles.leaderTime}>{timeStr}</span>
-                </td>
-                <td className={styles.leaderTableCell}>{win.rows}x{win.cols}</td>
-                <td className={styles.leaderTableCell}>{win.mines}</td>
-                <td className={styles.leaderTableCell}>{win.time}</td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+    const rows: LeaderboardRow[] = wins.map((win, i) => ({
+      rank: i + 1,
+      date: win.date,
+      size: `${win.rows}x${win.cols}`,
+      mines: win.mines,
+      time: win.time,
+    }));
+
+    return (
+      <ReusableTable
+        columns={leaderboardColumns}
+        rows={rows}
+        emptyMessage="No wins yet."
+      />
     );
   }
 
@@ -103,14 +145,63 @@ const Leaderboard: React.FC = () => {
 
   return (
     <div className={styles.leaderContainer}>
-      <h3 className={styles.leaderTitle}>Leaderboard</h3>
-      <button
-        className={styles.clearButton}
-        type="button"
-        onClick={() => setShowConfirm(true)}
-      >
-        Clear Leaderboard
-      </button>
+      <header className={styles.leaderHeader}>
+        <div>
+          <h3 className={styles.leaderTitle}>Leaderboard</h3>
+          <p className={styles.leaderSubtitle}>Track your best Minesweeper runs by board type.</p>
+        </div>
+        <button
+          className={styles.clearButton}
+          type="button"
+          onClick={() => setShowConfirm(true)}
+        >
+          Clear Leaderboard
+        </button>
+      </header>
+
+      <div className={styles.metricsRow}>
+        <article className={styles.metricCard}>
+          <span className={styles.metricLabel}>Total wins</span>
+          <strong className={styles.metricValue}>{totalWins}</strong>
+        </article>
+        <article className={styles.metricCard}>
+          <span className={styles.metricLabel}>Best time</span>
+          <strong className={styles.metricValue}>{fastestTime === null ? '--' : `${fastestTime}s`}</strong>
+        </article>
+        <article className={styles.metricCard}>
+          <span className={styles.metricLabel}>Average time</span>
+          <strong className={styles.metricValue}>{averageTime === null ? '--' : `${averageTime}s`}</strong>
+        </article>
+      </div>
+
+      <div className={styles.contentGrid}>
+        <aside className={styles.categoryRail}>
+          {CATEGORY_ORDER.map(category => (
+            <button
+              key={category}
+              type="button"
+              className={`${styles.categoryButton} ${selectedCategory === category ? styles.categoryButtonActive : ''}`}
+              onClick={() => setSelectedCategory(category)}
+              aria-pressed={selectedCategory === category}
+            >
+              <span className={styles.categoryTitle}>{CATEGORY_LABELS[category].title}</span>
+              <span className={styles.categoryDescription}>{CATEGORY_LABELS[category].description}</span>
+              <span className={styles.categoryCount}>{categorized[category].length} entries</span>
+            </button>
+          ))}
+        </aside>
+
+        <section className={styles.tablePanel}>
+          <div key={selectedCategory} className={styles.categorySwap}>
+            <div className={styles.tableHeader}>
+              <h4>{selectedMeta.title}</h4>
+              <p>{selectedMeta.description}</p>
+            </div>
+            <div className={styles.tableWrap}>{renderTable(selectedWins)}</div>
+          </div>
+        </section>
+      </div>
+
       <ConfirmModal
         open={showConfirm}
         message="Are you sure you want to clear the leaderboard? This cannot be undone."
@@ -119,32 +210,6 @@ const Leaderboard: React.FC = () => {
         confirmText="Yes, clear"
         cancelText="Cancel"
       />
-      <div className={styles.leaderFlexRow}>
-        <div className={styles.leaderCategoryCol} style={{ animationDelay: `${motion.leaderboardCardDelayMs[0]}ms` }}>
-          <h4 className={styles.leaderCategoryTitle}>Small (8x8, 10 mines)</h4>
-          {renderTable(categorized.Small)}
-        </div>
-        <div className={styles.leaderCategoryCol} style={{ animationDelay: `${motion.leaderboardCardDelayMs[1]}ms` }}>
-          <h4 className={styles.leaderCategoryTitle}>Medium (16x16, 40 mines)</h4>
-          {renderTable(categorized.Medium)}
-        </div>
-        <div className={styles.leaderCategoryCol} style={{ animationDelay: `${motion.leaderboardCardDelayMs[2]}ms` }}>
-          <h4 className={styles.leaderCategoryTitle}>Large (16x30, 99 mines)</h4>
-          {renderTable(categorized.Large)}
-        </div>
-        <div className={styles.leaderCategoryCol} style={{ animationDelay: `${motion.leaderboardCardDelayMs[3]}ms` }}>
-          <h4 className={styles.leaderCategoryTitle}>
-            <button
-              className={styles.showCustomButton}
-              type="button"
-              onClick={() => setShowCustom(v => !v)}
-            >
-              {showCustom ? 'Hide' : 'Show'} Custom
-            </button>
-          </h4>
-          {showCustom && renderTable(categorized.Custom)}
-        </div>
-      </div>
     </div>
   );
 };

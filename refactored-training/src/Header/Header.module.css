@@ -1,6 +1,6 @@
 .headerContainer {
   width: min(1160px, calc(100% - 2rem));
-  color: #fff;
+  color: var(--header-link-color);
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -12,9 +12,9 @@
   z-index: 1000;
   padding: 0.5rem;
   border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.34);
-  background: linear-gradient(120deg, rgba(16, 33, 59, 0.86), rgba(21, 105, 240, 0.76));
-  box-shadow: 0 16px 34px rgba(16, 33, 59, 0.28);
+  border: 1px solid var(--header-border);
+  background: var(--header-bg);
+  box-shadow: var(--header-shadow);
   backdrop-filter: blur(8px);
   animation: navSlideDown var(--motion-nav-slide) cubic-bezier(0.22, 1, 0.36, 1);
 }
@@ -40,8 +40,8 @@
 }
 
 .menuButton {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: var(--header-button-bg);
+  border: 1px solid var(--header-button-border);
   border-radius: 10px;
   cursor: pointer;
   padding: 9px;
@@ -53,13 +53,13 @@
 
 .menuButton:hover {
   transform: translateY(-1px);
-  background: rgba(255, 255, 255, 0.14);
+  background: var(--header-button-bg-hover);
 }
 
 .menuIcon {
   width: 24px;
   height: 2px;
-  background: #fff;
+  background: var(--header-link-color);
   border-radius: 2px;
   position: relative;
   display: block;
@@ -73,7 +73,7 @@
   left: 0;
   width: 24px;
   height: 2px;
-  background: #fff;
+  background: var(--header-link-color);
   border-radius: 2px;
 }
 
@@ -133,8 +133,9 @@
 }
 
 .navMenu a,
-.headerContainer a {
-  color: #eff5ff;
+.headerContainer a,
+.themeToggle {
+  color: var(--header-link-color);
   text-decoration: none;
   font-weight: 600;
   font-size: 0.95rem;
@@ -143,19 +144,27 @@
   transition: background var(--motion-nav-quick), color var(--motion-nav-quick), transform var(--motion-nav-quick), box-shadow var(--motion-nav-quick);
 }
 
+.themeToggle {
+  border: 1px solid var(--header-button-border);
+  background: transparent;
+  color: var(--header-link-color);
+  cursor: pointer;
+}
+
 .navMenu a:hover,
-.headerContainer a:hover {
-  background: rgba(255, 255, 255, 0.16);
-  color: #fff;
+.headerContainer a:hover,
+.themeToggle:hover {
+  background: var(--header-link-hover-bg);
+  color: var(--header-link-color);
   transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
 }
 
 @media (max-width: 799px) {
   .navMenu {
     flex-direction: column;
     gap: 0.45rem;
-    background: rgba(9, 20, 38, 0.42);
+    background: var(--header-mobile-menu-bg);
     position: absolute;
     top: calc(100% + 0.25rem);
     left: 0.5rem;
@@ -163,7 +172,7 @@
     z-index: 10;
     padding: 0.8rem;
     border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid var(--header-border);
     overflow: hidden;
     transform-origin: top;
     transition: max-height var(--motion-nav-mobile-open) ease, opacity var(--motion-nav-mobile-fade) ease, transform var(--motion-nav-mobile-fade) ease;
