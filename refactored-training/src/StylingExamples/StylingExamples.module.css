@@ -1,978 +1,688 @@
-/* StylingExamples.module.css */
-.examplesContainer {
+.examplesPage {
+  --demo-spin-duration: 1.1s;
+  --loader-cool-a: #1f85ff;
+  --loader-cool-b: #13c995;
+  --loader-cool-c: #5f7dff;
+  --loader-warm-a: #ff8b3d;
+  --loader-warm-b: #ff5d78;
+  --loader-warm-c: #ffb13d;
   height: 100%;
   max-height: 100%;
-  padding: 1.5rem;
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.97), rgba(238, 245, 255, 0.92));
+  min-height: 0;
+  padding: 1.25rem;
   border-radius: var(--radius-xl);
   border: 1px solid var(--border);
   box-shadow: var(--shadow-soft);
-  color: var(--text-strong);
-  overflow: hidden;
+  background:
+    radial-gradient(140% 170% at 0% 0%, rgba(20, 184, 122, 0.16) 0%, rgba(20, 184, 122, 0) 42%),
+    radial-gradient(140% 170% at 100% 0%, rgba(21, 105, 240, 0.18) 0%, rgba(21, 105, 240, 0) 45%),
+    linear-gradient(148deg, var(--surface-strong), var(--surface));
   display: grid;
-  grid-template-rows: auto minmax(0, 0.78fr) minmax(0, 0.86fr) minmax(0, 0.86fr) minmax(0, 1.9fr);
-  gap: 0.55rem;
-}
-
-.heading {
-  margin-bottom: 1rem;
-  text-align: left;
-  font-size: clamp(1.4rem, 2.4vw, 1.95rem);
-}
-
-.section {
-  margin-bottom: 0;
-  min-height: 0;
-  padding: 0.58rem;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.7);
-  border: 1px solid rgba(16, 33, 59, 0.1);
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: 0.85rem;
   overflow: hidden;
 }
 
-.section h3 {
-  margin-bottom: 0.45rem;
-  font-size: 0.9rem;
+.compactMode {
+  gap: 0.65rem;
+}
+
+.hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.11em;
+  font-weight: 700;
+  color: var(--primary-strong);
+  font-size: 0.72rem;
+}
+
+.hero h2 {
+  margin: 0.1rem 0 0;
+  font-size: clamp(1.42rem, 2.5vw, 1.95rem);
+}
+
+.heroText {
+  margin-top: 0.42rem;
+  max-width: 62ch;
+  color: var(--text-muted);
+  font-size: 0.92rem;
+}
+
+.heroChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  justify-content: flex-end;
+}
+
+.chip {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.28rem 0.62rem;
+  font-size: 0.76rem;
+  font-weight: 700;
+  background: color-mix(in srgb, var(--surface-strong) 82%, transparent);
+}
+
+.grid {
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.2fr;
+  gap: 0.75rem;
+}
+
+.panel {
+  min-height: 0;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--surface-strong) 82%, transparent);
+  padding: 0.75rem;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 0.58rem;
+}
+
+.panel h3 {
+  margin: 0;
+  font-size: 0.98rem;
+}
+
+.buttonRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.42rem;
+}
+
+.primaryButton,
+.ghostButton,
+.warningButton {
+  border-radius: 10px;
+  padding: 0.45rem 0.78rem;
+  font-size: 0.83rem;
+  font-weight: 700;
+  border: 1px solid transparent;
+  cursor: pointer;
 }
 
 .primaryButton {
   background: linear-gradient(120deg, var(--primary), var(--primary-strong));
   color: #fff;
-  border: 1px solid transparent;
-  border-radius: 10px;
-  padding: 0.5rem 0.95rem;
-  margin-right: 8px;
-  font-size: 0.92rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
 }
 
-.primaryButton:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 10px 18px rgba(21, 105, 240, 0.25);
-}
-
-.secondaryButton {
-  background: rgba(21, 105, 240, 0.08);
-  color: var(--primary-strong);
-  border: 1px solid rgba(21, 105, 240, 0.33);
-  border-radius: 10px;
-  padding: 0.5rem 0.95rem;
-  margin-right: 8px;
-  font-size: 0.92rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.secondaryButton:hover {
-  background: rgba(21, 105, 240, 0.18);
-}
-
-.dangerButton {
-  background: rgba(204, 48, 64, 0.08);
-  color: #a3202f;
-  border: 1px solid rgba(204, 48, 64, 0.4);
-  border-radius: 10px;
-  padding: 0.5rem 0.95rem;
-  font-size: 0.92rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.dangerButton:hover {
-  background: rgba(204, 48, 64, 0.16);
-}
-
-.exampleTable {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-  margin-top: 10px;
-  font-size: 0.9rem;
-  overflow: hidden;
-  border-radius: 10px;
-}
-
-.exampleTable th, .exampleTable td {
-  border: 0;
-  border-bottom: 1px solid rgba(16, 33, 59, 0.11);
-  padding: 0.5rem 0.7rem;
-  text-align: left;
-}
-
-.exampleTable th {
+.ghostButton {
   background: rgba(21, 105, 240, 0.1);
+  color: var(--primary-strong);
+  border-color: rgba(21, 105, 240, 0.3);
 }
 
-.statusActive {
-  color: #0f8e5f;
-  font-weight: 700;
+.warningButton {
+  background: color-mix(in srgb, var(--danger) 12%, transparent);
+  color: var(--danger);
+  border-color: color-mix(in srgb, var(--danger) 36%, transparent);
 }
 
-.statusInactive {
-  color: #b22334;
-  font-weight: 700;
-}
-.modalExample {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 120px;
-}
-.modalBox {
-  background: rgba(255, 255, 255, 0.96);
-  border-radius: 12px;
-  box-shadow: var(--shadow-soft);
-  padding: 1.3rem 1.6rem;
-  min-width: 240px;
-  text-align: center;
+.toggleGroup {
+  margin-top: 0.62rem;
+  display: grid;
+  gap: 0.52rem;
 }
 
-.modalText {
-  font-size: 0.93rem;
-  margin-bottom: 0.9rem;
-  color: var(--text-strong);
-}
-.modalActions {
-  display: flex;
-  gap: 16px;
-  justify-content: center;
-}
-
-.spinnerSection {
-  position: relative;
-  overflow: hidden;
-  --spinner-visual-scale: 0.82;
-  --spinner-tempo-rings: 1.08s;
-  --spinner-tempo-bars: 1.24s;
-  --spinner-tempo-dots: 0.84s;
-  --spinner-tempo-pulses: 1.12s;
-  --spinner-tempo-ambient: 1.04s;
-  --spinner-speed: 1;
-  --spinner-rings-duration: calc(var(--spinner-tempo-rings) / var(--spinner-speed));
-  --spinner-bars-duration: calc(var(--spinner-tempo-bars) / var(--spinner-speed));
-  --spinner-dots-duration: calc(var(--spinner-tempo-dots) / var(--spinner-speed));
-  --spinner-pulses-duration: calc(var(--spinner-tempo-pulses) / var(--spinner-speed));
-  --spinner-ambient-duration: calc(var(--spinner-tempo-ambient) / var(--spinner-speed));
-  background:
-    radial-gradient(120% 140% at 100% 0%, rgba(20, 184, 122, 0.13) 0%, rgba(20, 184, 122, 0) 48%),
-    linear-gradient(145deg, rgba(255, 255, 255, 0.86), rgba(233, 242, 255, 0.86));
-  display: flex;
-  flex-direction: column;
-}
-
-.spinnerControls {
+.toggle {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  flex-wrap: wrap;
   gap: 0.6rem;
-  margin-bottom: 0.18rem;
-}
-
-.spinnerSpeedControl {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.55rem;
   font-size: 0.84rem;
-  font-weight: 600;
   color: var(--text-strong);
-  padding: 0.34rem 0.52rem;
-  border-radius: 999px;
-  border: 1px solid rgba(16, 33, 59, 0.14);
-  background: rgba(255, 255, 255, 0.66);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.45rem 0.56rem;
+  background: color-mix(in srgb, var(--surface-strong) 84%, transparent);
 }
 
-.spinnerSpeedRange {
-  width: 120px;
+.toggle input {
   accent-color: var(--primary);
 }
 
-.spinnerSpeedValue {
-  min-width: 2.6rem;
-  text-align: right;
-  color: var(--primary-strong);
-  font-variant-numeric: tabular-nums;
-}
-
-.spinnerSpeedPresets {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.38rem;
-}
-
-.spinnerSpeedPresetButton {
-  border: 1px solid rgba(21, 105, 240, 0.28);
-  background: rgba(255, 255, 255, 0.88);
-  color: var(--primary-strong);
-  border-radius: 999px;
-  padding: 0.32rem 0.62rem;
-  font-size: 0.78rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: background 0.18s, color 0.18s, transform 0.18s, border-color 0.18s;
-}
-
-.spinnerSpeedPresetButton:hover {
-  background: rgba(21, 105, 240, 0.12);
-  border-color: rgba(21, 105, 240, 0.5);
-  transform: translateY(-1px);
-}
-
-.spinnerSpeedPresetButtonActive {
-  background: linear-gradient(120deg, var(--primary), var(--primary-strong));
-  color: #fff;
-  border-color: transparent;
-}
-
-.spinnerRow {
-  display: flex;
-  flex-direction: row;
-  justify-content: flex-start;
-  align-items: flex-end;
-  gap: 32px;
-  margin-top: 12px;
-  margin-bottom: 12px;
-}
-.spinnerGrid {
-  flex: 1 1 auto;
-  min-height: 0;
-  display: grid;
-  grid-template-columns: repeat(8, minmax(0, 1fr));
-  gap: 0.34rem;
-  justify-items: stretch;
-  align-items: stretch;
-  align-content: start;
-  margin-top: 0.45rem;
-  margin-bottom: 0;
-  overflow: hidden;
-}
-
-.spinnerExample {
+.cardPreview {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0.62rem;
+  background:
+    radial-gradient(140% 180% at 100% 0%, rgba(21, 105, 240, 0.12) 0%, rgba(21, 105, 240, 0) 48%),
+    color-mix(in srgb, var(--surface-strong) 86%, transparent);
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 58px;
-  border-radius: 12px;
-  border: 1px solid rgba(16, 33, 59, 0.1);
-  background: rgba(255, 255, 255, 0.74);
-  box-shadow: 0 8px 20px rgba(16, 33, 59, 0.08);
-  padding: 0.28rem 0.22rem;
-  text-align: center;
-  opacity: 0;
-  transform: translateY(8px);
-  animation: spinnerCardIn 360ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
-  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+  gap: 0.62rem;
 }
 
-.spinnerExample > :first-child {
-  transform: scale(var(--spinner-visual-scale));
-  transform-origin: center;
+.cardPreview strong {
+  font-size: 0.92rem;
 }
 
-.spinnerExample:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 24px rgba(16, 33, 59, 0.12);
-  border-color: rgba(21, 105, 240, 0.22);
-}
-
-.spinnerExample::after {
-  content: '';
-  display: none;
-}
-
-.spinnerExample:nth-child(1) { animation-delay: 30ms; }
-.spinnerExample:nth-child(2) { animation-delay: 55ms; }
-.spinnerExample:nth-child(3) { animation-delay: 80ms; }
-.spinnerExample:nth-child(4) { animation-delay: 105ms; }
-.spinnerExample:nth-child(5) { animation-delay: 130ms; }
-.spinnerExample:nth-child(6) { animation-delay: 155ms; }
-.spinnerExample:nth-child(7) { animation-delay: 180ms; }
-.spinnerExample:nth-child(8) { animation-delay: 205ms; }
-.spinnerExample:nth-child(9) { animation-delay: 230ms; }
-.spinnerExample:nth-child(10) { animation-delay: 255ms; }
-.spinnerExample:nth-child(11) { animation-delay: 280ms; }
-.spinnerExample:nth-child(12) { animation-delay: 305ms; }
-.spinnerExample:nth-child(13) { animation-delay: 330ms; }
-.spinnerExample:nth-child(14) { animation-delay: 355ms; }
-.spinnerExample:nth-child(15) { animation-delay: 380ms; }
-.spinnerExample:nth-child(16) { animation-delay: 405ms; }
-
-@keyframes spinnerCardIn {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.spinnerLabel {
-  margin-top: 0.15rem;
-  font-size: 0.58rem;
-  font-weight: 600;
-  letter-spacing: 0.01em;
+.cardPreview p {
+  margin-top: 0.22rem;
+  font-size: 0.83rem;
   color: var(--text-muted);
-  line-height: 1.05;
 }
-/* Circle Spinner */
-.spinnerCircle {
-  width: 32px;
-  height: 32px;
-  border: 4px solid #3399cc;
-  border-top: 4px solid #e0f4ff;
-  border-radius: 50%;
-  animation: spin var(--spinner-rings-duration) linear infinite;
+
+.modalMock {
+  margin-top: 0.6rem;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface-strong) 90%, transparent);
+  box-shadow: var(--shadow-soft);
+  padding: 0.7rem;
 }
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+
+.modalTitle {
+  font-weight: 800;
+  margin-bottom: 0.25rem;
 }
-/* Bouncing Dots Spinner */
-.spinnerDots {
+
+.modalMock p {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin-bottom: 0.58rem;
+}
+
+.modalActions {
   display: flex;
-  gap: 4px;
-  align-items: flex-end;
-  height: 18px;
+  gap: 0.45rem;
 }
-.spinnerDots span {
-  display: block;
-  width: 8px;
-  height: 8px;
-  background: #3399cc;
-  border-radius: 50%;
-  animation: bounce var(--spinner-dots-duration) infinite alternate;
-}
-.spinnerDots span:nth-child(2) {
-  animation-delay: 0.2s;
-}
-.spinnerDots span:nth-child(3) {
-  animation-delay: 0.4s;
-}
-@keyframes bounce {
-  0% { transform: translateY(0); }
-  100% { transform: translateY(-10px); }
-}
-/* Rotating Square Spinner (formerly Bars) */
-.spinnerRotatingSquare {
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.spinnerRotatingSquare span {
-  display: none;
-}
-.spinnerRotatingSquare::before {
-  content: '';
-  display: block;
-  width: 22px;
-  height: 22px;
-  background: #3399cc;
-  border-radius: 4px;
-  animation: rotatingSquare var(--spinner-ambient-duration) linear infinite;
-}
-@keyframes rotatingSquare {
-  0% { transform: rotate(0deg) scale(1); }
-  50% { transform: rotate(180deg) scale(0.7); }
-  100% { transform: rotate(360deg) scale(1); }
-}
-/* Horizontal Bar Spinner */
-.spinnerBarHorizontal {
-  width: 60px;
-  height: 8px;
-  background: #e0f4ff;
-  border-radius: 4px;
-  position: relative;
+
+.tableHolder {
+  min-height: 0;
   overflow: hidden;
 }
-.spinnerBarHorizontal::before {
-  content: '';
-  position: absolute;
-  left: -40px;
-  top: 0;
-  width: 40px;
-  height: 100%;
-  background: linear-gradient(90deg, #3399cc 0%, #e0f4ff 100%);
-  border-radius: 4px;
-  animation: barSlide var(--spinner-bars-duration) cubic-bezier(0.4,0.2,0.2,1) infinite;
-}
-@keyframes barSlide {
-  0% { left: -40px; }
-  100% { left: 60px; }
-}
-/* Pulse Spinner */
-.spinnerPulse {
-  width: 28px;
-  height: 28px;
-  background: #3399cc;
-  border-radius: 50%;
-  animation: pulse var(--spinner-pulses-duration) infinite cubic-bezier(0.4,0.2,0.2,1);
-}
-@keyframes pulse {
-  0% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.3); opacity: 0.5; }
-  100% { transform: scale(1); opacity: 1; }
-}
-/* Dual Ring Spinner */
-.spinnerDualRing {
-  display: inline-block;
-  width: 32px;
-  height: 32px;
-}
-.spinnerDualRing::after {
-  content: "";
-  display: block;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: 4px solid #3399cc;
-  border-color: #3399cc transparent #3399cc transparent;
-  animation: dualRing var(--spinner-rings-duration) linear infinite;
-}
-@keyframes dualRing {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-/* Wave Spinner */
-.spinnerWave {
-  display: flex;
-  align-items: flex-end;
-  gap: 2px;
-  height: 22px;
-}
-.spinnerWave span {
-  display: block;
-  width: 5px;
-  height: 10px;
-  background: #3399cc;
-  border-radius: 2px;
-  animation: waveGrow var(--spinner-bars-duration) infinite;
-}
-.spinnerWave span:nth-child(1) { animation-delay: 0s; }
-.spinnerWave span:nth-child(2) { animation-delay: 0.1s; }
-.spinnerWave span:nth-child(3) { animation-delay: 0.2s; }
-.spinnerWave span:nth-child(4) { animation-delay: 0.3s; }
-.spinnerWave span:nth-child(5) { animation-delay: 0.4s; }
-@keyframes waveGrow {
-  0%, 100% { height: 10px; }
-  50% { height: 22px; }
-}
-/* Flip Spinner */
-.spinnerFlip {
-  width: 28px;
-  height: 28px;
-  background: #3399cc;
-  border-radius: 4px;
-  animation: flipAnim var(--spinner-ambient-duration) infinite cubic-bezier(0.4,0.2,0.2,1);
-}
-@keyframes flipAnim {
-  0% { transform: rotateY(0deg); }
-  50% { transform: rotateY(180deg); }
-  100% { transform: rotateY(360deg); }
-}
-/* Dual Color Pulse Spinner */
-.spinnerDualColorPulse {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #3399cc 60%, #ffb347 100%);
-  animation: dualColorPulse var(--spinner-pulses-duration) infinite cubic-bezier(0.4,0.2,0.2,1);
-}
-@keyframes dualColorPulse {
-  0% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.25); opacity: 0.5; }
-  100% { transform: scale(1); opacity: 1; }
+
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 0.18rem 0.52rem;
+  font-size: 0.72rem;
+  font-weight: 700;
 }
 
-/* Dots on Rotating Ring Spinner */
-.spinnerDotsOnRing {
-  width: 32px;
-  height: 32px;
-  position: relative;
-  animation: ringSpin var(--spinner-rings-duration) linear infinite;
+.badgeReady {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 20%, transparent);
 }
-.spinnerDotsOnRing span {
+
+.badgeReview {
+  color: #d67b1b;
+  background: rgba(214, 123, 27, 0.18);
+}
+
+.badgeDraft {
+  color: var(--primary-strong);
+  background: rgba(21, 105, 240, 0.18);
+}
+
+.loaderPanel {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 0.72rem;
+  background:
+    radial-gradient(120% 130% at 0% 100%, rgba(95, 125, 255, 0.14) 0%, rgba(95, 125, 255, 0) 44%),
+    color-mix(in srgb, var(--surface-strong) 84%, transparent);
+  display: grid;
+  gap: 0.58rem;
+}
+
+.loaderPanelWarm {
+  background:
+    radial-gradient(120% 130% at 0% 100%, rgba(255, 93, 120, 0.16) 0%, rgba(255, 93, 120, 0) 44%),
+    color-mix(in srgb, var(--surface-strong) 84%, transparent);
+}
+
+.loaderHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.loaderHeader h3 {
+  margin: 0;
+  font-size: 0.98rem;
+}
+
+.loaderLegend {
+  margin-top: 0.28rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.loaderLegend span {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.08rem 0.44rem;
+  font-size: 0.67rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  background: color-mix(in srgb, var(--surface-strong) 90%, transparent);
+}
+
+.speedControl {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.42rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.28rem 0.5rem;
+  font-size: 0.78rem;
+}
+
+.speedControl input {
+  width: 110px;
+  accent-color: var(--primary);
+}
+
+.loaderGrid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.loaderTile {
+  position: relative;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  min-height: 76px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 0.35rem;
+  padding-top: 0.8rem;
+  background: color-mix(in srgb, var(--surface-strong) 88%, transparent);
+}
+
+.loaderTile[data-family]::before {
+  content: attr(data-family);
   position: absolute;
+  top: 0.35rem;
+  left: 0.35rem;
+  border-radius: 999px;
+  padding: 0.08rem 0.34rem;
+  font-size: 0.6rem;
+  letter-spacing: 0.02em;
+  font-weight: 700;
+  color: var(--text-muted);
+  background: color-mix(in srgb, var(--surface-strong) 92%, transparent);
+  border: 1px solid var(--border);
+}
+
+.loaderTile > span {
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.loaderRing {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 3px solid rgba(21, 105, 240, 0.2);
+  border-top-color: var(--loader-cool-a);
+  animation: spin var(--demo-spin-duration) linear infinite;
+}
+
+.loaderPanelWarm .loaderRing {
+  border-top-color: var(--loader-warm-a);
+}
+
+.loaderDots {
+  display: flex;
+  gap: 4px;
+}
+
+.loaderDots span {
   width: 7px;
   height: 7px;
-  background: #3399cc;
   border-radius: 50%;
-}
-.spinnerDotsOnRing span:nth-child(1) { top: 0; left: 12px; background: #3399cc; }
-.spinnerDotsOnRing span:nth-child(2) { top: 12px; right: 0; background: #ffb347; }
-.spinnerDotsOnRing span:nth-child(3) { bottom: 0; left: 12px; background: #3399cc; }
-.spinnerDotsOnRing span:nth-child(4) { top: 12px; left: 0; background: #ffb347; }
-@keyframes ringSpin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  background: var(--loader-cool-b);
+  animation: bounce var(--demo-spin-duration) ease-in-out infinite;
 }
 
-/* Flip & Pulse Combo Spinner */
-.spinnerFlipPulse {
-  width: 28px;
-  height: 28px;
-  background: #3399cc;
-  border-radius: 6px;
-  animation: flipPulseCombo var(--spinner-pulses-duration) infinite cubic-bezier(0.4,0.2,0.2,1);
-}
-@keyframes flipPulseCombo {
-  0% { transform: scale(1) rotateY(0deg); opacity: 1; }
-  40% { transform: scale(1.2) rotateY(180deg); opacity: 0.6; }
-  100% { transform: scale(1) rotateY(360deg); opacity: 1; }
+.loaderDots span:nth-child(2) { animation-delay: 0.12s; }
+.loaderDots span:nth-child(3) { animation-delay: 0.24s; }
+
+.loaderPanelWarm .loaderDots span {
+  background: var(--loader-warm-b);
 }
 
-/* Wave + Color Bar Spinner */
-.spinnerWaveBar {
+.loaderBars {
   display: flex;
   align-items: flex-end;
-  gap: 2px;
-  height: 22px;
+  gap: 3px;
+  height: 20px;
 }
-.spinnerWaveBar span {
-  display: block;
-  width: 5px;
-  height: 10px;
-  /* Use a more vibrant multi-color gradient */
-  background: linear-gradient(180deg, #43b97f 0%, #3399cc 40%, #ffb347 80%, #e94f37 100%);
-  border-radius: 2px;
-  animation: waveBarGrow var(--spinner-bars-duration) infinite;
+
+.loaderBars span {
+  width: 4px;
+  height: 7px;
+  border-radius: 4px;
+  background: var(--loader-cool-c);
+  animation: bars var(--demo-spin-duration) ease-in-out infinite;
 }
-.spinnerWaveBar span:nth-child(1) { animation-delay: 0s; }
-.spinnerWaveBar span:nth-child(2) { animation-delay: 0.1s; }
-.spinnerWaveBar span:nth-child(3) { animation-delay: 0.2s; }
-.spinnerWaveBar span:nth-child(4) { animation-delay: 0.3s; }
-.spinnerWaveBar span:nth-child(5) { animation-delay: 0.4s; }
-@keyframes waveBarGrow {
-  0%, 100% { height: 10px; }
-  50% { height: 22px; }
+
+.loaderBars span:nth-child(2) { animation-delay: 0.08s; }
+.loaderBars span:nth-child(3) { animation-delay: 0.16s; }
+.loaderBars span:nth-child(4) { animation-delay: 0.24s; }
+
+.loaderPanelWarm .loaderBars span {
+  background: var(--loader-warm-c);
 }
-/* Spiral Spinner */
-.spinnerSpiral {
-  width: 32px;
-  height: 32px;
-  position: relative;
-}
-.spinnerSpiral::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
-  margin: auto;
+
+.loaderOrbit {
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  border: 3px solid transparent;
-  border-top: 3px solid #3399cc;
-  border-right: 3px solid #ffb347;
-  animation: spiralSpin var(--spinner-rings-duration) linear infinite;
-}
-@keyframes spiralSpin {
-  0% { transform: rotate(0deg) scale(1); }
-  50% { transform: rotate(180deg) scale(1.15); }
-  100% { transform: rotate(360deg) scale(1); }
+  border: 2px dashed var(--loader-cool-a);
+  position: relative;
+  animation: spin calc(var(--demo-spin-duration) * 1.2) linear infinite;
 }
 
-/* Spiral Dots Spinner (combines Spiral and Dots) */
-.spinnerSpiralDots {
-  width: 32px;
-  height: 32px;
-  position: relative;
-  animation: spiralSpin var(--spinner-rings-duration) linear infinite;
-}
-.spinnerSpiralDots span {
-  position: absolute;
-  width: 7px;
-  height: 7px;
-  background: #3399cc;
-  border-radius: 50%;
-}
-.spinnerSpiralDots span:nth-child(1) { top: 0; left: 12px; background: #3399cc; }
-.spinnerSpiralDots span:nth-child(2) { top: 12px; right: 0; background: #ffb347; }
-.spinnerSpiralDots span:nth-child(3) { bottom: 0; left: 12px; background: #3399cc; }
-.spinnerSpiralDots span:nth-child(4) { top: 12px; left: 0; background: #ffb347; }
-.spinnerSpiralDots::before {
+.loaderOrbit::after {
   content: '';
   position: absolute;
-  top: 2px; left: 2px; right: 2px; bottom: 2px;
-  margin: auto;
+  top: -3px;
+  left: 9px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--loader-cool-b);
+}
+
+.loaderPanelWarm .loaderOrbit {
+  border-color: var(--loader-warm-a);
+}
+
+.loaderPanelWarm .loaderOrbit::after {
+  background: var(--loader-warm-b);
+}
+
+.loaderPulse {
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  border: 3px solid transparent;
-  border-top: 3px solid #3399cc;
-  border-right: 3px solid #ffb347;
-  opacity: 0.7;
+  background: var(--loader-cool-a);
+  animation: pulse var(--demo-spin-duration) ease-in-out infinite;
 }
 
-/* Enhanced Wave Dots Spinner (rotation, colors, flip, pulse, horizontal bar motion) */
-.spinnerWaveDots {
-  display: flex;
-  align-items: flex-end;
-  gap: 6px;
-  height: 22px;
-  position: relative;
-  animation: waveDotsBarMove var(--spinner-bars-duration) cubic-bezier(0.4,0.2,0.2,1) infinite;
-  perspective: 80px;
-}
-.spinnerWaveDots span {
-  display: block;
-  width: 10px;
-  height: 10px;
-  background: #3399cc;
-  border-radius: 50%;
-  animation: waveDotBouncePulse var(--spinner-dots-duration) infinite cubic-bezier(0.4,0.2,0.2,1);
-  will-change: transform;
-}
-.spinnerWaveDots span:nth-child(1) {
-  animation-delay: 0s;
-  background: #3399cc;
-}
-.spinnerWaveDots span:nth-child(2) {
-  animation-delay: 0.12s;
-  background: #ffb347;
-}
-.spinnerWaveDots span:nth-child(3) {
-  animation-delay: 0.24s;
-  background: #e94f37;
-}
-.spinnerWaveDots span:nth-child(4) {
-  animation-delay: 0.36s;
-  background: #43b97f;
-}
-.spinnerWaveDots span:nth-child(5) {
-  animation-delay: 0.48s;
-  background: #3399cc;
-}
-@keyframes waveDotBouncePulse {
-  0%, 100% { transform: translateY(0) scale(1) scaleY(1); opacity: 1; }
-  30% { transform: translateY(-10px) scale(1.2) scaleY(1.2); opacity: 0.7; }
-  50% { transform: translateY(0) scale(0.9) scaleY(0.9); opacity: 1; }
-}
-@keyframes waveDotsBarMove {
-  0% { left: -40px; }
-  100% { left: 60px; }
+.loaderPanelWarm .loaderPulse {
+  background: var(--loader-warm-a);
 }
 
-/* Circle Wave Bar Spinner (combines Circle Spinner and Wave+Color Bar) */
-.spinnerCircleWaveBar {
-  position: relative;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.spinnerCircleWaveBar .circle {
-  width: 40px;
-  height: 40px;
-  border: 4px solid #3399cc;
-  border-top: 4px solid #e0f4ff;
+.loaderDualRing {
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
-  animation: spin var(--spinner-rings-duration) linear infinite;
-  position: absolute;
-  top: 0;
-  left: 0;
+  border: 3px solid var(--loader-cool-c);
+  border-color: var(--loader-cool-c) transparent var(--loader-cool-a) transparent;
+  animation: spin calc(var(--demo-spin-duration) * 0.95) linear infinite;
 }
-.spinnerCircleWaveBar .bars {
-  position: absolute;
-  /* left: 50%; */
-  right: 0;
-  transform: translateY(-50%);
-  top: 50%;
-  height: 24px;
+
+.loaderPanelWarm .loaderDualRing {
+  border-color: var(--loader-warm-c) transparent var(--loader-warm-a) transparent;
+}
+
+.loaderWave {
+  height: 20px;
   display: flex;
   align-items: flex-end;
-  gap: 2px;
+  gap: 3px;
 }
-.spinnerCircleWaveBar .bars span {
-  display: block;
+
+.loaderWave span {
   width: 4px;
   height: 8px;
-  background: linear-gradient(180deg, #43b97f 0%, #3399cc 40%, #ffb347 80%, #e94f37 100%);
-  border-radius: 2px;
-  animation: circleWaveBarGrow var(--spinner-bars-duration) infinite;
-}
-.spinnerCircleWaveBar .bars span:nth-child(1) { animation-delay: 0s; }
-.spinnerCircleWaveBar .bars span:nth-child(2) { animation-delay: 0.1s; }
-.spinnerCircleWaveBar .bars span:nth-child(3) { animation-delay: 0.2s; }
-.spinnerCircleWaveBar .bars span:nth-child(4) { animation-delay: 0.3s; }
-.spinnerCircleWaveBar .bars span:nth-child(5) { animation-delay: 0.4s; }
-.spinnerCircleWaveBar .bars span:nth-child(6) { animation-delay: 0.5s; }
-@keyframes circleWaveBarGrow {
-  0%, 100% { height: 8px; }
-  50% { height: 20px; }
-}
-
-/* Wave on Rotating Ring Spinner */
-.spinnerWaveOnRing {
-  position: relative;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.spinnerWaveOnRing .ring {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  border: 4px solid #3399cc;
-  border-top: 4px solid #ffb347;
-  border-bottom: 4px solid #43b97f;
-  border-left: 4px solid #e94f37;
-  position: absolute;
-  top: 0;
-  left: 0;
-  animation: spin var(--spinner-rings-duration) linear infinite;
-}
-.spinnerWaveOnRing .wave {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  pointer-events: none;
-}
-.spinnerWaveOnRing .wave span {
-  position: absolute;
-  width: 6px;
-  height: 14px;
-  background: linear-gradient(180deg, #43b97f 0%, #3399cc 40%, #ffb347 80%, #e94f37 100%);
-  border-radius: 3px;
-  animation: waveOnRingGrow var(--spinner-bars-duration) infinite;
-  /* Place each bar around the ring using rotate and translate */
-  left: 50%;
-  top: 50%;
-  transform-origin: bottom center;
-}
-.spinnerWaveOnRing .wave span:nth-child(1) {
-  animation-delay: 0s;
-  transform: rotate(-60deg) translateY(-16px);
-}
-.spinnerWaveOnRing .wave span:nth-child(2) {
-  animation-delay: 0.1s;
-  transform: rotate(-36deg) translateY(-16px);
-}
-.spinnerWaveOnRing .wave span:nth-child(3) {
-  animation-delay: 0.2s;
-  transform: rotate(-12deg) translateY(-16px);
-}
-.spinnerWaveOnRing .wave span:nth-child(4) {
-  animation-delay: 0.3s;
-  transform: rotate(12deg) translateY(-16px);
-}
-.spinnerWaveOnRing .wave span:nth-child(5) {
-  animation-delay: 0.4s;
-  transform: rotate(36deg) translateY(-16px);
-}
-.spinnerWaveOnRing .wave span:nth-child(6) {
-  animation-delay: 0.5s;
-  transform: rotate(60deg) translateY(-16px);
-}
-@keyframes waveOnRingGrow {
-  0%, 100% { height: 14px; }
-  50% { height: 28px; }
-}
-
-/* Red Theme Overrides */
-.redTheme .spinnerCircle,
-.redTheme .spinnerDots span,
-.redTheme .spinnerRotatingSquare::before,
-.redTheme .spinnerBarHorizontal::before,
-.redTheme .spinnerPulse,
-.redTheme .spinnerDualRing::after,
-.redTheme .spinnerWave span,
-.redTheme .spinnerFlip,
-.redTheme .spinnerDualColorPulse,
-.redTheme .spinnerDotsOnRing span,
-.redTheme .spinnerFlipPulse,
-.redTheme .spinnerWaveBar span,
-.redTheme .spinnerSpiral::before,
-.redTheme .spinnerSpiralDots span,
-.redTheme .spinnerSpiralDots::before,
-.redTheme .spinnerWaveDots span,
-.redTheme .spinnerCircleWaveBar .circle,
-.redTheme .spinnerCircleWaveBar .bars span,
-.redTheme .spinnerWaveOnRing .ring,
-.redTheme .spinnerWaveOnRing .wave span {
-  /* Replace blue with red and adjust gradients */
-  border-color: #cc3333 !important;
-  border-top-color: #ffcccc !important;
-  background: #ffcccc !important;
-  background-image: linear-gradient(180deg, #e94f37 0%, #cc3333 40%, #ffb347 80%, #3399cc 100%) !important; 
-}
-.redTheme .spinnerDualRing::after {
-  border-color: #cc3333 transparent #cc3333 transparent !important;
-}
-.toggleSliderLabel {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 12px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--text-strong);
-  padding: 0.35rem 0.55rem;
   border-radius: 999px;
-  border: 1px solid rgba(16, 33, 59, 0.14);
-  background: rgba(255, 255, 255, 0.66);
+  background: var(--loader-cool-b);
+  animation: bars var(--demo-spin-duration) ease-in-out infinite;
 }
-.toggleSlider {
-  position: relative;
-  width: 44px;
+
+.loaderWave span:nth-child(2) { animation-delay: 0.08s; }
+.loaderWave span:nth-child(3) { animation-delay: 0.16s; }
+.loaderWave span:nth-child(4) { animation-delay: 0.24s; }
+.loaderWave span:nth-child(5) { animation-delay: 0.32s; }
+
+.loaderPanelWarm .loaderWave span {
+  background: var(--loader-warm-b);
+}
+
+.loaderFlip {
+  width: 24px;
   height: 24px;
-  display: inline-block;
+  border-radius: 6px;
+  background: linear-gradient(135deg, var(--loader-cool-a), var(--loader-cool-b));
+  animation: flip calc(var(--demo-spin-duration) * 1.15) ease-in-out infinite;
 }
-.toggleSlider input {
-  opacity: 0;
-  width: 0;
-  height: 0;
+
+.loaderPanelWarm .loaderFlip {
+  background: linear-gradient(135deg, var(--loader-warm-a), var(--loader-warm-b));
 }
-.toggleSliderTrack {
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(16, 33, 59, 0.2);
-  border-radius: 24px;
-  transition: background 0.2s;
-}
-.toggleSlider input:checked + .toggleSliderTrack {
-  background: #cc3333;
-}
-.toggleSliderThumb {
-  position: absolute;
-  left: 4px;
-  top: 4px;
-  width: 16px;
-  height: 16px;
-  background: #fff;
+
+.loaderSpiral {
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
-  transition: transform 0.2s;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+  border: 3px solid transparent;
+  border-top-color: var(--loader-cool-a);
+  border-left-color: var(--loader-cool-b);
+  animation: spin calc(var(--demo-spin-duration) * 0.9) linear infinite;
 }
-.toggleSlider input:checked + .toggleSliderTrack .toggleSliderThumb {
-  transform: translateX(20px);
+
+.loaderPanelWarm .loaderSpiral {
+  border-top-color: var(--loader-warm-a);
+  border-left-color: var(--loader-warm-b);
 }
 
-@media (max-width: 800px) {
-  .examplesContainer {
-    padding: 0.6rem;
-    gap: 0.35rem;
-    grid-template-rows: auto minmax(0, 0.72fr) minmax(0, 0.78fr) minmax(0, 0.78fr) minmax(0, 2.05fr);
+.loaderSweep {
+  width: 58px;
+  height: 7px;
+  border-radius: 999px;
+  background: rgba(21, 105, 240, 0.14);
+  position: relative;
+  overflow: hidden;
+}
+
+.loaderSweep::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -45%;
+  width: 45%;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--loader-cool-a), var(--loader-cool-b));
+  animation: sweep calc(var(--demo-spin-duration) * 1.2) ease-in-out infinite;
+}
+
+.loaderPanelWarm .loaderSweep::before {
+  background: linear-gradient(90deg, var(--loader-warm-a), var(--loader-warm-b));
+}
+
+.loaderRipple {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid var(--loader-cool-a);
+  position: relative;
+  animation: ripple calc(var(--demo-spin-duration) * 1.1) ease-out infinite;
+}
+
+.loaderRipple::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  border: 2px solid var(--loader-cool-b);
+  animation: ripple calc(var(--demo-spin-duration) * 1.1) ease-out infinite;
+  animation-delay: 0.22s;
+}
+
+.loaderPanelWarm .loaderRipple {
+  border-color: var(--loader-warm-a);
+}
+
+.loaderPanelWarm .loaderRipple::after {
+  border-color: var(--loader-warm-b);
+}
+
+.loaderCube {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  box-shadow:
+    0 0 0 0 var(--loader-cool-a),
+    14px 0 0 0 rgba(31, 133, 255, 0.38),
+    0 14px 0 0 rgba(19, 201, 149, 0.38),
+    14px 14px 0 0 rgba(95, 125, 255, 0.38);
+  animation: cube calc(var(--demo-spin-duration) * 1.35) steps(1) infinite;
+}
+
+.loaderPanelWarm .loaderCube {
+  box-shadow:
+    0 0 0 0 var(--loader-warm-a),
+    14px 0 0 0 rgba(255, 139, 61, 0.4),
+    0 14px 0 0 rgba(255, 93, 120, 0.4),
+    14px 14px 0 0 rgba(255, 177, 61, 0.4);
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); opacity: 0.8; }
+  50% { transform: translateY(-6px); opacity: 1; }
+}
+
+@keyframes bars {
+  0%, 100% { height: 7px; }
+  50% { height: 18px; }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(0.92);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+}
+
+@keyframes flip {
+  0% { transform: perspective(100px) rotateY(0deg); }
+  50% { transform: perspective(100px) rotateY(180deg); }
+  100% { transform: perspective(100px) rotateY(360deg); }
+}
+
+@keyframes sweep {
+  0% { left: -45%; }
+  100% { left: 100%; }
+}
+
+@keyframes ripple {
+  0% {
+    transform: scale(0.5);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+@keyframes cube {
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(2px, 0); }
+  50% { transform: translate(2px, 2px); }
+  75% { transform: translate(0, 2px); }
+  100% { transform: translate(0, 0); }
+}
+
+@media (max-width: 1060px) {
+  .grid {
+    grid-template-columns: 1fr 1fr;
   }
 
-  .section {
-    padding: 0.42rem;
+  .grid .panel:last-child {
+    grid-column: span 2;
   }
 
-  .spinnerSection {
-    --spinner-tempo-rings: 1.16s;
-    --spinner-tempo-bars: 1.34s;
-    --spinner-tempo-dots: 0.92s;
-    --spinner-tempo-pulses: 1.22s;
-    --spinner-tempo-ambient: 1.12s;
-    --spinner-visual-scale: 0.68;
-  }
-
-  .spinnerControls {
-    justify-content: center;
-  }
-
-  .spinnerSpeedControl {
-    width: 100%;
-    justify-content: center;
-  }
-
-  .spinnerSpeedPresets {
-    width: 100%;
-    justify-content: center;
-  }
-
-  .spinnerGrid {
+  .loaderGrid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .examplesPage {
+    padding: 0.72rem;
+  }
+
+  .hero {
+    flex-direction: column;
+  }
+
+  .heroChips {
+    justify-content: flex-start;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .grid .panel:last-child {
+    grid-column: auto;
+  }
+
+  .loaderGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .loaderLegend {
     gap: 0.24rem;
-    margin-top: 0.25rem;
   }
 
-  .spinnerExample {
-    min-height: 42px;
-    padding: 0.2rem 0.12rem;
+  .loaderLegend span {
+    font-size: 0.62rem;
   }
 
-  .spinnerLabel {
-    display: none;
-  }
-
-  .spinnerExample::after {
-    content: attr(data-short);
-    display: block;
-    margin-top: 0.12rem;
-    font-size: 0.54rem;
-    font-weight: 700;
-    letter-spacing: 0.01em;
-    color: var(--text-muted);
-    line-height: 1;
-    white-space: nowrap;
+  .speedControl input {
+    width: 84px;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .spinnerExample {
-    animation: none;
-    opacity: 1;
-    transform: none;
+  .loaderRing,
+  .loaderDots span,
+  .loaderBars span,
+  .loaderOrbit,
+  .loaderPulse,
+  .loaderDualRing,
+  .loaderWave span,
+  .loaderFlip,
+  .loaderSpiral,
+  .loaderSweep::before,
+  .loaderRipple,
+  .loaderRipple::after,
+  .loaderCube {
+    animation: none !important;
   }
-}
-
-:global(:root[data-theme='dark']) .examplesContainer {
-  background: linear-gradient(145deg, rgba(15, 29, 48, 0.92), rgba(18, 36, 58, 0.88));
-}
-
-:global(:root[data-theme='dark']) .section {
-  background: rgba(20, 36, 58, 0.76);
-  border-color: rgba(141, 184, 255, 0.22);
-}
-
-:global(:root[data-theme='dark']) .exampleTable th,
-:global(:root[data-theme='dark']) .exampleTable td {
-  border-bottom-color: rgba(141, 184, 255, 0.18);
-}
-
-:global(:root[data-theme='dark']) .exampleTable th {
-  background: rgba(99, 160, 255, 0.18);
-}
-
-:global(:root[data-theme='dark']) .modalBox {
-  background: rgba(20, 36, 58, 0.94);
-}
-
-:global(:root[data-theme='dark']) .spinnerSection {
-  background:
-    radial-gradient(120% 140% at 100% 0%, rgba(55, 213, 157, 0.16) 0%, rgba(55, 213, 157, 0) 48%),
-    linear-gradient(145deg, rgba(18, 36, 58, 0.9), rgba(15, 29, 48, 0.88));
-}
-
-:global(:root[data-theme='dark']) .spinnerSpeedControl,
-:global(:root[data-theme='dark']) .toggleSliderLabel {
-  border-color: rgba(141, 184, 255, 0.22);
-  background: rgba(20, 36, 58, 0.76);
-}
-
-:global(:root[data-theme='dark']) .spinnerSpeedPresetButton,
-:global(:root[data-theme='dark']) .spinnerExample {
-  border-color: rgba(141, 184, 255, 0.22);
-  background: rgba(20, 36, 58, 0.82);
 }
