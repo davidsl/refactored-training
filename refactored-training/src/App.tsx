@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { useEffect, useState } from 'react'
 import './App.css'
 import Home from './Home/Home'
 import About from './About/About'
@@ -9,10 +10,35 @@ import StylingExamples from './StylingExamples/StylingExamples'
 import Thumbnails from './Thumbnails/Thumbnails'
 import ClickingGame from './ClickingGame/ClickingGame'
 
+type Theme = 'light' | 'dark'
+
+const THEME_STORAGE_KEY = 'refactored-training-theme'
+
+function getInitialTheme(): Theme {
+  const savedTheme = window.localStorage.getItem(THEME_STORAGE_KEY)
+
+  if (savedTheme === 'light' || savedTheme === 'dark') {
+    return savedTheme
+  }
+
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+}
+
 function App() {
+  const [theme, setTheme] = useState<Theme>(getInitialTheme)
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme)
+    document.documentElement.style.colorScheme = theme
+    window.localStorage.setItem(THEME_STORAGE_KEY, theme)
+  }, [theme])
+
   return (
     <Router>
-      <Header />
+      <Header
+        theme={theme}
+        onToggleTheme={() => setTheme(currentTheme => (currentTheme === 'light' ? 'dark' : 'light'))}
+      />
       <main className="appContent">
         <Routes>
           <Route path="/refactored-training" element={<Home />} />

@@ -936,3 +936,43 @@
     transform: none;
   }
 }
+
+:global(:root[data-theme='dark']) .examplesContainer {
+  background: linear-gradient(145deg, rgba(15, 29, 48, 0.92), rgba(18, 36, 58, 0.88));
+}
+
+:global(:root[data-theme='dark']) .section {
+  background: rgba(20, 36, 58, 0.76);
+  border-color: rgba(141, 184, 255, 0.22);
+}
+
+:global(:root[data-theme='dark']) .exampleTable th,
+:global(:root[data-theme='dark']) .exampleTable td {
+  border-bottom-color: rgba(141, 184, 255, 0.18);
+}
+
+:global(:root[data-theme='dark']) .exampleTable th {
+  background: rgba(99, 160, 255, 0.18);
+}
+
+:global(:root[data-theme='dark']) .modalBox {
+  background: rgba(20, 36, 58, 0.94);
+}
+
+:global(:root[data-theme='dark']) .spinnerSection {
+  background:
+    radial-gradient(120% 140% at 100% 0%, rgba(55, 213, 157, 0.16) 0%, rgba(55, 213, 157, 0) 48%),
+    linear-gradient(145deg, rgba(18, 36, 58, 0.9), rgba(15, 29, 48, 0.88));
+}
+
+:global(:root[data-theme='dark']) .spinnerSpeedControl,
+:global(:root[data-theme='dark']) .toggleSliderLabel {
+  border-color: rgba(141, 184, 255, 0.22);
+  background: rgba(20, 36, 58, 0.76);
+}
+
+:global(:root[data-theme='dark']) .spinnerSpeedPresetButton,
+:global(:root[data-theme='dark']) .spinnerExample {
+  border-color: rgba(141, 184, 255, 0.22);
+  background: rgba(20, 36, 58, 0.82);
+}

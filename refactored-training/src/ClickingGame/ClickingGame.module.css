@@ -900,3 +900,53 @@
     grid-template-columns: 1fr;
   }
 }
+
+:global(:root[data-theme='dark']) .gameCard {
+  background:
+    radial-gradient(130% 130% at 100% 0%, rgba(55, 213, 157, 0.14) 0%, rgba(55, 213, 157, 0) 45%),
+    linear-gradient(145deg, rgba(15, 29, 48, 0.92), rgba(18, 36, 58, 0.88));
+}
+
+:global(:root[data-theme='dark']) .statsBar div,
+:global(:root[data-theme='dark']) .shopPanel,
+:global(:root[data-theme='dark']) .shopItem {
+  background: rgba(20, 36, 58, 0.82);
+  border-color: rgba(141, 184, 255, 0.22);
+}
+
+:global(:root[data-theme='dark']) .clickArea {
+  border-color: rgba(141, 184, 255, 0.22);
+  background:
+    radial-gradient(circle at 18% 20%, rgba(45, 212, 191, 0.16), rgba(45, 212, 191, 0) 48%),
+    radial-gradient(circle at 80% 75%, rgba(16, 185, 129, 0.12), rgba(16, 185, 129, 0) 48%),
+    rgba(20, 36, 58, 0.86);
+}
+
+:global(:root[data-theme='dark']) .serotoninDisplay,
+:global(:root[data-theme='dark']) .ramSection {
+  border-color: rgba(141, 184, 255, 0.24);
+  background:
+    radial-gradient(circle at 14% 30%, rgba(45, 212, 191, 0.16), rgba(45, 212, 191, 0) 48%),
+    linear-gradient(135deg, rgba(18, 36, 58, 0.92), rgba(22, 43, 68, 0.9));
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
+}
+
+:global(:root[data-theme='dark']) .headerUtilityToggle,
+:global(:root[data-theme='dark']) .headerUtilityToggleOff,
+:global(:root[data-theme='dark']) .resetButton {
+  background: rgba(20, 36, 58, 0.88);
+  border-color: rgba(141, 184, 255, 0.24);
+  color: var(--text-strong);
+}
+
+:global(:root[data-theme='dark']) .serotoninDisplayLabel,
+:global(:root[data-theme='dark']) .ramHeader h3,
+:global(:root[data-theme='dark']) .ramHeader span,
+:global(:root[data-theme='dark']) .serotoninFieldReadout,
+:global(:root[data-theme='dark']) .shopEffect {
+  color: #b5ffe8;
+}
+
+:global(:root[data-theme='dark']) .serotoninDisplayValue {
+  color: #f3f8ff;
+}
