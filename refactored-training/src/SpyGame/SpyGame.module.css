@@ -325,10 +325,10 @@
 }
 
 .tileSafe {
-  border-color: #d4ac0d;
+  border-color: #00bcd4;
   border-width: 2px;
-  background: #2a1e00;
-  box-shadow: 0 0 10px rgba(212, 172, 13, 0.35);
+  background: #071e22;
+  box-shadow: 0 0 12px rgba(0, 188, 212, 0.45);
 }
 
 .tileReachable {
@@ -344,10 +344,10 @@
 }
 
 .tileSafeLabel {
-  font-size: 0.5rem;
+  font-size: 0.38rem;
   font-weight: 800;
-  color: #d4ac0d;
-  letter-spacing: 0.06em;
+  color: #00e5ff;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
   line-height: 1;
 }
@@ -568,12 +568,77 @@
   gap: 0.55rem;
 }
 
-.scoreDot {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
+.scoreDelta {
+  font-size: 0.68rem;
+  font-weight: 800;
+  min-width: 2.2rem;
+  text-align: right;
   flex-shrink: 0;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.animBanner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.animGem {
+  font-size: clamp(1.4rem, 4vw, 2rem);
+  animation: gemPulse 0.6s ease-in-out infinite alternate;
+}
+
+@keyframes gemPulse {
+  from { transform: scale(1); filter: brightness(1); }
+  to   { transform: scale(1.18); filter: brightness(1.4); }
+}
+
+.animTitle {
+  font-size: clamp(0.6rem, 1.6vw, 0.78rem);
+  font-weight: 900;
+  color: #00e5ff;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.showLastBtn {
+  margin-top: 0.3rem;
+  padding: 0.22rem 0.65rem;
+  background: transparent;
+  border: 1px dashed #2e4a63;
+  border-radius: 4px;
+  color: #4a6a82;
+  font-size: 0.7rem;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.showLastBtn:hover {
+  border-color: #00bcd4;
+  color: #00bcd4;
+}
+
+.deltaModal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.deltaModalInner {
+  background: #0f1b2d;
+  border: 1px solid #2e4a63;
+  border-radius: 12px;
+  padding: 1.4rem 1.6rem;
+  width: min(440px, 92vw);
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  max-height: 90vh;
+  overflow-y: auto;
 }
 
 .barWrap {

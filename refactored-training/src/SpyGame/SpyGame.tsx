@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import styles from './SpyGame.module.css';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -19,7 +19,7 @@ const HEX: Record<SpyColor, string> = {
 const NUM_SPACES = 12;
 const WIN = 42;
 
-// Point value of each space on the board (no nulls — Safe House is a movable marker)
+// Point value of each space on the board (no nulls — Treasure is a movable marker)
 const SPACE_VAL: number[] = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, -3];
 
 // Grid positions (row, col) for each space — clockwise around a 4×4 perimeter
@@ -57,6 +57,7 @@ interface G {
   die: number | null;
   left: number;
   deltas: Delta[] | null;
+  animFrom: Record<SpyColor, number> | null;
   guesser: number;
   endFlag: boolean;
 }
@@ -80,6 +81,39 @@ export default function SpyGame() {
   const [showSec, setShowSec] = useState(false);
   const [dragSpy, setDragSpy] = useState<SpyColor | null>(null);
   const [draggingOver, setDraggingOver] = useState<number | null>(null);
+  const [animScores, setAnimScores] = useState<Record<SpyColor, number> | null>(null);
+  const [showLastDeltas, setShowLastDeltas] = useState(false);
+
+  useEffect(() => {
+    if (g?.phase !== 'scoring' || !g.animFrom) return;
+    const from = g.animFrom;
+    const to = g.score;
+    const DURATION = 2200;
+    const start = performance.now();
+    let raf: number;
+    function tick(now: number) {
+      const t = Math.min((now - start) / DURATION, 1);
+      const ease = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+      setAnimScores(Object.fromEntries(
+        SPY_COLORS.map(c => [c, Math.round(from[c] + (to[c] - from[c]) * ease)])
+      ) as Record<SpyColor, number>);
+      if (t < 1) {
+        raf = requestAnimationFrame(tick);
+      } else {
+        setTimeout(() => {
+          setAnimScores(null);
+          setShowSec(false);
+          setG(prev => {
+            if (!prev || prev.phase !== 'scoring') return prev;
+            if (prev.endFlag) return { ...prev, phase: 'guess' as Phase, guesser: 0, animFrom: null };
+            return { ...prev, phase: 'play' as Phase, cur: (prev.cur + 1) % prev.players.length, animFrom: null };
+          });
+        }, 500);
+      }
+    }
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [g?.phase]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Handlers ────────────────────────────────────────────────────────────────
 
@@ -102,16 +136,16 @@ export default function SpyGame() {
     setG({
       phase: 'play', players,
       pos: mkPos(), score: mkScore(),
-      safePos: 0,
+      safePos: 7,
       cur: 0, die: null, left: 0,
-      deltas: null, guesser: 0, endFlag: false,
+      deltas: null, animFrom: null, guesser: 0, endFlag: false,
     });
     setShowSec(false);
   }
 
   function roll() {
     const r = 1 + Math.floor(Math.random() * 6);
-    setG(prev => prev ? { ...prev, die: r, left: r, pend: {} } : prev);
+    setG(prev => prev ? { ...prev, die: r, left: r } : prev);
   }
 
   function pickSpy(c: SpyColor) {
@@ -158,6 +192,7 @@ export default function SpyGame() {
         return {
           ...prev, score, safePos: newSafePos,
           phase: 'scoring' as Phase, deltas,
+          animFrom: prev.score,
           die: null, left: 0,
           endFlag: Object.values(score).some(s => s >= WIN),
         };
@@ -167,20 +202,6 @@ export default function SpyGame() {
         ...prev, die: null, left: 0,
         phase: 'play' as Phase,
         cur: (prev.cur + 1) % prev.players.length,
-        deltas: null,
-      };
-    });
-    setShowSec(false);
-  }
-
-  function ackScoring() {
-    setG(prev => {
-      if (!prev) return prev;
-      if (prev.endFlag) return { ...prev, phase: 'guess' as Phase, guesser: 0 };
-      return {
-        ...prev, phase: 'play' as Phase,
-        cur: (prev.cur + 1) % prev.players.length,
-        deltas: null,
       };
     });
     setShowSec(false);
@@ -255,10 +276,10 @@ export default function SpyGame() {
           <details className={styles.rulesBox}>
             <summary className={styles.rulesSummary}>How to Play</summary>
             <ul className={styles.rulesList}>
-              <li>All 7 spies start together on the Safe House tile. Each player is secretly assigned one spy colour — tap <strong>Reveal my spy</strong> at any time to check yours.</li>
+              <li>All 7 spies start together on the Treasure tile. Each player is secretly assigned one spy colour — tap <strong>Reveal my spy</strong> at any time to check yours.</li>
               <li>On your turn, roll the die. Click any spy token to move it one space clockwise; each click uses one move point. You can move any spy, not just your own.</li>
               <li>You must use all your move points. Once they&apos;re gone, click <strong>End Turn</strong>.</li>
-              <li>If any spy is sitting <em>on</em> the Safe House tile when you click End Turn, all spies immediately score points equal to their current space value (0 to +10, or −3 for the penalty tile). The Safe House then jumps to a new random empty tile.</li>
+              <li>If any spy is sitting <em>on</em> the Treasure tile when you click End Turn, all spies immediately score points equal to their current space value (0 to +10, or −3 for the penalty tile). The Treasure then jumps to a new random empty tile.</li>
               <li>First spy to reach <strong>{WIN} points</strong> triggers the endgame.</li>
               <li>Each player secretly guesses which colour the others control. Each correct guess earns <strong>+5 bonus points</strong>.</li>
               <li>Highest total score wins. Move carefully — and bluff!</li>
@@ -270,38 +291,6 @@ export default function SpyGame() {
   }
 
   const cur = g.players[g.cur];
-
-  // ── Scoring event screen ──────────────────────────────────────────────────────
-
-  if (g.phase === 'scoring') {
-    return (
-      <div className={styles.page}>
-        <h2 className={styles.scoringHeading}>SAFE HOUSE — All Spies Score!</h2>
-        <div className={styles.deltaList}>
-          {(g.deltas ?? []).map(({ c, d, to }) => (
-            <div key={c} className={styles.deltaRow}>
-              <span className={styles.dot} style={{ background: HEX[c] }} />
-              <span className={styles.deltaName}>{c}</span>
-              <span className={`${styles.deltaChange} ${d > 0 ? styles.pos : d < 0 ? styles.neg : styles.zero}`}>
-                {d > 0 ? `+${d}` : `${d}`}
-              </span>
-              <span className={styles.deltaTo}>
-                &rarr; <strong>{to}</strong>
-                {to >= WIN && <span className={styles.trigger}> TRIGGERED!</span>}
-              </span>
-            </div>
-          ))}
-        </div>
-        <p className={styles.safeMoved}>
-          Safe House moved to space {g.safePos}
-          {' '}(value: <strong>{SPACE_VAL[g.safePos] > 0 ? `+${SPACE_VAL[g.safePos]}` : SPACE_VAL[g.safePos]})</strong>
-        </p>
-        <button className={styles.bigBtn} onClick={ackScoring}>
-          {g.endFlag ? 'Proceed to Final Guesses \u2192' : 'Continue \u2192'}
-        </button>
-      </div>
-    );
-  }
 
   // ── Guessing phase ────────────────────────────────────────────────────────────
 
@@ -403,10 +392,12 @@ export default function SpyGame() {
     );
   }
 
-  // ── Playing phase ─────────────────────────────────────────────────────────────
+  // ── Playing phase (also handles 'scoring' animation) ─────────────────────────
 
-  const canRoll = g.die === null;
-  const canPick = g.die !== null && g.left > 0;
+  const isAnimating = g.phase === 'scoring';
+  const canRoll = !isAnimating && g.die === null;
+  const canPick = !isAnimating && g.die !== null && g.left > 0;
+  const displayedScores = animScores ?? g.score;
 
   // Tiles reachable by the spy currently being dragged
   const reachable: Set<number> | null = (dragSpy && canPick)
@@ -447,7 +438,7 @@ export default function SpyGame() {
               onDrop={e => { e.preventDefault(); handleTileDrop(i); }}
             >
               <div className={styles.tileTop}>
-                {isSafe && <span className={styles.tileSafeLabel}>SAFE</span>}
+                {isSafe && <span className={styles.tileSafeLabel}>TREASURE</span>}
                 <span className={`${styles.tileVal} ${val > 0 ? styles.tilePos : val < 0 ? styles.tileNeg : ''}`}>
                   {val > 0 ? `+${val}` : val}
                 </span>
@@ -476,10 +467,16 @@ export default function SpyGame() {
           );
         })}
         <div className={styles.boardCenter}>
-          {canRoll && (
+          {isAnimating && (
+            <div className={styles.animBanner}>
+              <span className={styles.animGem}>💎</span>
+              <span className={styles.animTitle}>TREASURE!</span>
+            </div>
+          )}
+          {!isAnimating && canRoll && (
             <button className={styles.rollBtn} onClick={roll}>Roll Die</button>
           )}
-          {g.die !== null && (
+          {!isAnimating && g.die !== null && (
             <div className={styles.dieDisplay}>
               <span className={styles.dieNumber}>{g.die}</span>
               {canPick
@@ -489,7 +486,7 @@ export default function SpyGame() {
             </div>
           )}
           {canPick && <p className={styles.centerHint}>tap spies</p>}
-          {!canPick && g.die !== null && (
+          {!canPick && !isAnimating && g.die !== null && (
             <button className={styles.rollBtn} onClick={endTurn}>End Turn</button>
           )}
         </div>
@@ -498,21 +495,29 @@ export default function SpyGame() {
       <div className={styles.scoreSide}>
         <span className={styles.scoreLabel}>Score (/{WIN})</span>
         <div className={styles.scoreRows}>
-          {SPY_COLORS.map(c => (
-            <div key={c} className={styles.scoreRow}>
-              <div className={styles.scoreDot} style={{ background: HEX[c] }} />
-              <div className={styles.barWrap}>
-                <div
-                  className={styles.barFill}
-                  style={{
-                    width: `${Math.max(0, Math.min(100, (g.score[c] / WIN) * 100))}%`,
-                    background: HEX[c],
-                  }}
-                />
+          {SPY_COLORS.map(c => {
+            const delta = isAnimating ? (g.deltas?.find(d => d.c === c)?.d ?? 0) : null;
+            return (
+              <div key={c} className={styles.scoreRow}>
+                <div className={styles.scoreDot} style={{ background: HEX[c] }} />
+                <div className={styles.barWrap}>
+                  <div
+                    className={styles.barFill}
+                    style={{
+                      width: `${Math.max(0, Math.min(100, (displayedScores[c] / WIN) * 100))}%`,
+                      background: HEX[c],
+                    }}
+                  />
+                </div>
+                <span className={styles.scoreNum}>{displayedScores[c]}</span>
+                {delta !== null && delta !== 0 && (
+                  <span className={`${styles.scoreDelta} ${delta > 0 ? styles.pos : styles.neg}`}>
+                    {delta > 0 ? `+${delta}` : delta}
+                  </span>
+                )}
               </div>
-              <span className={styles.scoreNum}>{g.score[c]}</span>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
       </div>
@@ -535,6 +540,40 @@ export default function SpyGame() {
           )
         }
       </div>
+
+      {g.deltas !== null && !isAnimating && (
+        <button className={styles.showLastBtn} onClick={() => setShowLastDeltas(true)}>
+          Show last Treasure trigger
+        </button>
+      )}
+
+      {showLastDeltas && g.deltas && (
+        <div className={styles.deltaModal} onClick={() => setShowLastDeltas(false)}>
+          <div className={styles.deltaModalInner} onClick={e => e.stopPropagation()}>
+            <h3 className={styles.scoringHeading}>Last Treasure Trigger</h3>
+            <p className={styles.safeMoved}>
+              Treasure is now on space {g.safePos}
+              {' '}(value: <strong>{SPACE_VAL[g.safePos] > 0 ? `+${SPACE_VAL[g.safePos]}` : SPACE_VAL[g.safePos]}</strong>)
+            </p>
+            <div className={styles.deltaList}>
+              {g.deltas.map(({ c, d, to }) => (
+                <div key={c} className={styles.deltaRow}>
+                  <span className={styles.dot} style={{ background: HEX[c] }} />
+                  <span className={styles.deltaName}>{c}</span>
+                  <span className={`${styles.deltaChange} ${d > 0 ? styles.pos : d < 0 ? styles.neg : styles.zero}`}>
+                    {d > 0 ? `+${d}` : `${d}`}
+                  </span>
+                  <span className={styles.deltaTo}>
+                    &rarr; <strong>{to}</strong>
+                    {to >= WIN && <span className={styles.trigger}> TRIGGERED!</span>}
+                  </span>
+                </div>
+              ))}
+            </div>
+            <button className={styles.bigBtn} onClick={() => setShowLastDeltas(false)}>Close</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
