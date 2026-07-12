@@ -10,6 +10,7 @@ import StylingExamples from './StylingExamples/StylingExamples'
 import Thumbnails from './Thumbnails/Thumbnails'
 import ClickingGame from './ClickingGame/ClickingGame'
 import TableDemo from './TableDemo/TableDemo'
+import SpyGame from './SpyGame/SpyGame'
 
 type Theme = 'light' | 'dark'
 
@@ -50,6 +51,7 @@ function App() {
           <Route path="/refactored-training/thumbnails" element={<Thumbnails />} />
           <Route path="/refactored-training/clicking-game" element={<ClickingGame />} />
           <Route path="/refactored-training/table" element={<TableDemo />} />
+          <Route path="/refactored-training/spy-game" element={<SpyGame />} />
         </Routes>
       </main>
     </Router>

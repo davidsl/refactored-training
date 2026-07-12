@@ -1,0 +1,931 @@
+/* SpyGame.module.css — flat selectors only (no nesting) */
+
+.page {
+  min-height: calc(100dvh - 4rem);
+  background: #0d1b2a;
+  color: #d6e4f0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.25rem 1rem 2rem;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+/* ── Setup ─────────────────────────────────────────────────────────────────── */
+
+.hero {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.heroIcon {
+  font-size: 3.5rem;
+  line-height: 1;
+  margin-bottom: 0.4rem;
+  filter: drop-shadow(0 0 12px rgba(212, 172, 13, 0.6));
+}
+
+.title {
+  font-size: clamp(1.6rem, 4vw, 2.6rem);
+  font-weight: 800;
+  color: #d4ac0d;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin: 0 0 0.25rem;
+  text-shadow: 0 0 18px rgba(212, 172, 13, 0.4);
+}
+
+.sub {
+  font-size: 0.8rem;
+  color: #7f9cb5;
+  margin: 0;
+  letter-spacing: 0.06em;
+}
+
+.setup {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.fieldRow {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.fieldLabel {
+  font-size: 0.9rem;
+  color: #a0b8cc;
+  min-width: 4.5rem;
+}
+
+.numBtns {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.numBtn {
+  width: 2.6rem;
+  height: 2.6rem;
+  border-radius: 50%;
+  border: 2px solid #2e4a63;
+  background: #1a2e42;
+  color: #a0b8cc;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.numBtnActive {
+  background: #d4ac0d;
+  border-color: #d4ac0d;
+  color: #0d1b2a;
+}
+
+.nameFields {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.nameInput {
+  width: 100%;
+  padding: 0.55rem 0.85rem;
+  background: #1a2e42;
+  border: 1px solid #2e4a63;
+  border-radius: 6px;
+  color: #d6e4f0;
+  font-size: 0.95rem;
+  box-sizing: border-box;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.nameInput:focus {
+  border-color: #d4ac0d;
+}
+
+.nameInput::placeholder {
+  color: #4a6a82;
+}
+
+.bigBtn {
+  padding: 0.7rem 1.5rem;
+  background: #d4ac0d;
+  border: none;
+  border-radius: 8px;
+  color: #0d1b2a;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.03em;
+  transition: background 0.15s, opacity 0.15s;
+  text-transform: uppercase;
+  align-self: center;
+  min-width: 160px;
+}
+
+.bigBtn:hover {
+  background: #e8be0f;
+}
+
+.bigBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.rulesBox {
+  background: #1a2e42;
+  border: 1px solid #2e4a63;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+}
+
+.rulesSummary {
+  color: #a0b8cc;
+  font-size: 0.9rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.rulesList {
+  margin: 0.6rem 0 0;
+  padding-left: 1.2rem;
+  font-size: 0.82rem;
+  color: #8faec6;
+  line-height: 1.65;
+}
+
+/* ── Pass-device screen ─────────────────────────────────────────────────────── */
+
+.passScreen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.1rem;
+  width: 100%;
+  max-width: 360px;
+  margin-top: 3rem;
+}
+
+.passIcon {
+  font-size: 5rem;
+  filter: drop-shadow(0 0 16px rgba(212, 172, 13, 0.5));
+}
+
+.passHeading {
+  font-size: 1.3rem;
+  color: #a0b8cc;
+  margin: 0;
+  text-align: center;
+}
+
+.passName {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #d4ac0d;
+  text-align: center;
+}
+
+.secretWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.secretPre {
+  color: #a0b8cc;
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.secretBadge {
+  padding: 0.7rem 2.2rem;
+  border-radius: 10px;
+  font-size: 1.6rem;
+  font-weight: 900;
+  color: white;
+  letter-spacing: 0.12em;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+.secretNote {
+  font-size: 0.82rem;
+  color: #7f9cb5;
+  margin: 0;
+  text-align: center;
+}
+
+/* ── Turn bar ───────────────────────────────────────────────────────────────── */
+
+.turnBar {
+  width: 100%;
+  max-width: 600px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  background: #1a2e42;
+  border: 1px solid #2e4a63;
+  border-radius: 8px;
+  padding: 0.55rem 1rem;
+  font-size: 0.9rem;
+  color: #a0b8cc;
+  margin-bottom: 0.6rem;
+}
+
+.revealArea {
+  display: flex;
+  align-items: center;
+}
+
+.revealBtn {
+  padding: 0.3rem 0.75rem;
+  background: transparent;
+  border: 1px dashed #3a5a74;
+  border-radius: 5px;
+  color: #7f9cb5;
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+
+.revealBtn:hover {
+  border-color: #d4ac0d;
+  color: #d4ac0d;
+}
+
+.revealBadge {
+  padding: 0.28rem 0.7rem;
+  border: none;
+  border-radius: 5px;
+  color: white;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  cursor: pointer;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  white-space: nowrap;
+}
+
+.dieInfo {
+  color: #d4ac0d;
+}
+
+/* ── Board SVG ──────────────────────────────────────────────────────────────── */
+
+.playRow {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  width: 100%;
+  max-width: 720px;
+}
+
+.boardGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(4, 1fr);
+  gap: 7px;
+  flex: 1;
+  min-width: 0;
+  aspect-ratio: 1;
+}
+
+.tile {
+  background: #152233;
+  border: 1px solid #2e4a63;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 5px 3px 4px;
+  min-height: 0;
+  position: relative;
+  gap: 3px;
+  overflow: visible;
+}
+
+.tileTop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  width: 100%;
+}
+
+.tileSafe {
+  border-color: #d4ac0d;
+  border-width: 2px;
+  background: #2a1e00;
+  box-shadow: 0 0 10px rgba(212, 172, 13, 0.35);
+}
+
+.tileSafeLabel {
+  font-size: 0.5rem;
+  font-weight: 800;
+  color: #d4ac0d;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.tileVal {
+  font-size: clamp(0.8rem, 2.4vw, 1.1rem);
+  font-weight: 800;
+  color: #d6e4f0;
+  line-height: 1;
+}
+
+.tilePos {
+  color: #5dca8a;
+}
+
+.tileNeg {
+  color: #e07070;
+}
+
+.tileInner {
+  background: #0a1520;
+  border-radius: 6px;
+  border: 1px solid #111e2c;
+}
+
+.boardCenter {
+  grid-row: 2 / 4;
+  grid-column: 2 / 4;
+  background: #0a1520;
+  border-radius: 8px;
+  border: 1px solid #1a2e42;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  padding: 0.5rem;
+}
+
+.rollBtn {
+  padding: 0.4rem 0.7rem;
+  background: #d4ac0d;
+  border: none;
+  border-radius: 6px;
+  color: #0d1b2a;
+  font-size: clamp(0.62rem, 1.6vw, 0.8rem);
+  font-weight: 800;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+
+.rollBtn:hover {
+  background: #e8be0f;
+}
+
+.dieDisplay {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+}
+
+.dieNumber {
+  font-size: clamp(1.5rem, 4.5vw, 2.2rem);
+  font-weight: 900;
+  color: #d4ac0d;
+  line-height: 1;
+}
+
+.dieLeft {
+  font-size: clamp(0.5rem, 1.3vw, 0.65rem);
+  color: #7f9cb5;
+  line-height: 1;
+}
+
+.dieReady {
+  font-size: clamp(0.5rem, 1.3vw, 0.65rem);
+  color: #5dca8a;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.centerHint {
+  font-size: clamp(0.48rem, 1.2vw, 0.6rem);
+  color: #4a6a82;
+  margin: 0;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.undoSmall {
+  padding: 0.18rem 0.4rem;
+  background: transparent;
+  border: 1px solid #2e4a63;
+  border-radius: 4px;
+  color: #5a7a94;
+  font-size: clamp(0.5rem, 1.3vw, 0.65rem);
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.undoSmall:hover {
+  border-color: #d4ac0d;
+  color: #d4ac0d;
+}
+
+.centerActions {
+  display: flex;
+  gap: 0.3rem;
+  align-items: center;
+}
+
+.confirmBtn {
+  padding: 0.18rem 0.5rem;
+  background: #27ae60;
+  border: none;
+  border-radius: 4px;
+  color: white;
+  font-size: clamp(0.55rem, 1.5vw, 0.7rem);
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.confirmBtn:hover {
+  background: #2ecc71;
+}
+
+.tileTokens {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  justify-content: center;
+  align-items: center;
+  align-content: center;
+  flex: 1;
+  width: 100%;
+  padding: 0 2px;
+}
+
+.token {
+  width: clamp(18px, 4.8vw, 30px);
+  height: clamp(18px, 4.8vw, 30px);
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.7);
+  position: relative;
+  flex-shrink: 0;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+
+.tokenClickable {
+  cursor: pointer;
+}
+
+.tokenClickable:hover {
+  transform: scale(1.2);
+  border-color: #f1c40f;
+  box-shadow: 0 0 8px rgba(241, 196, 15, 0.55);
+}
+
+.tokenPending {
+  border-color: #f1c40f;
+  border-width: 2px;
+  box-shadow: 0 0 4px rgba(241, 196, 15, 0.6);
+}
+
+.tokenBadge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: #f1c40f;
+  color: #000;
+  font-size: 6px;
+  font-weight: 900;
+  border-radius: 50%;
+  width: 10px;
+  height: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  pointer-events: none;
+}
+
+/* ── Score track ────────────────────────────────────────────────────────────── */
+
+.scoreSide {
+  width: 155px;
+  flex-shrink: 0;
+  background: #152233;
+  border: 1px solid #2e4a63;
+  border-radius: 8px;
+  padding: 0.65rem 0.75rem;
+  align-self: stretch;
+}
+
+.scoreLabel {
+  display: block;
+  font-size: 0.72rem;
+  color: #5a7a94;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  margin-bottom: 0.45rem;
+}
+
+.scoreRows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.scoreRow {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.scoreDot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.barWrap {
+  flex: 1;
+  height: 8px;
+  background: #1e3348;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.barFill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.scoreNum {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #c0d4e4;
+  min-width: 2.2rem;
+  text-align: right;
+}
+
+/* ── Controls ───────────────────────────────────────────────────────────────── */
+
+.ctrlPad {
+  width: 100%;
+  max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.65rem;
+  margin-top: 0.7rem;
+}
+
+.hint {
+  font-size: 0.85rem;
+  color: #7f9cb5;
+  margin: 0;
+  text-align: center;
+}
+
+.undoBtn {
+  padding: 0.5rem 1.1rem;
+  background: transparent;
+  border: 1px solid #3a5a74;
+  border-radius: 6px;
+  color: #7f9cb5;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.undoBtn:hover {
+  border-color: #d4ac0d;
+  color: #d4ac0d;
+}
+
+.confirmRow {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.revealBottom {
+  margin-top: 0.3rem;
+  display: flex;
+  justify-content: center;
+}
+
+.revealBtnSmall {
+  padding: 0.22rem 0.6rem;
+  background: transparent;
+  border: 1px dashed #2e4a63;
+  border-radius: 4px;
+  color: #4a6a82;
+  font-size: 0.7rem;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.revealBtnSmall:hover {
+  border-color: #d4ac0d;
+  color: #d4ac0d;
+}
+
+.revealBadgeSmall {
+  padding: 0.2rem 0.55rem;
+  border: none;
+  border-radius: 4px;
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+/* ── Scoring event ──────────────────────────────────────────────────────────── */
+
+.scoringHeading {
+  font-size: clamp(1.1rem, 3vw, 1.6rem);
+  font-weight: 800;
+  color: #d4ac0d;
+  text-align: center;
+  margin: 1rem 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-shadow: 0 0 14px rgba(212, 172, 13, 0.4);
+}
+
+.deltaList {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.4rem;
+}
+
+.deltaRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: #152233;
+  border: 1px solid #2e4a63;
+  border-radius: 6px;
+  padding: 0.5rem 0.85rem;
+}
+
+.dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.deltaName {
+  flex: 1;
+  font-size: 0.9rem;
+  color: #c0d4e4;
+  text-transform: capitalize;
+}
+
+.deltaChange {
+  font-size: 1rem;
+  font-weight: 700;
+  min-width: 2.5rem;
+  text-align: right;
+}
+
+.pos {
+  color: #2ecc71;
+}
+
+.neg {
+  color: #e74c3c;
+}
+
+.zero {
+  color: #7f9cb5;
+}
+
+.deltaTo {
+  font-size: 0.9rem;
+  color: #a0b8cc;
+  min-width: 5rem;
+}
+
+.trigger {
+  color: #e74c3c;
+  font-weight: 700;
+  font-size: 0.75rem;
+}
+
+.safeMoved {
+  font-size: 0.82rem;
+  color: #d4ac0d;
+  text-align: center;
+  margin: 0.2rem 0 1rem;
+  padding: 0.4rem 0.9rem;
+  background: rgba(212, 172, 13, 0.1);
+  border: 1px dashed rgba(212, 172, 13, 0.4);
+  border-radius: 6px;
+}
+
+/* ── Guessing phase ─────────────────────────────────────────────────────────── */
+
+.guessHeading {
+  font-size: clamp(1.2rem, 3.5vw, 1.7rem);
+  color: #d4ac0d;
+  text-align: center;
+  margin: 0.5rem 0 0.3rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.guessSub {
+  font-size: 0.88rem;
+  color: #7f9cb5;
+  text-align: center;
+  margin: 0 0 1.1rem;
+}
+
+.guessList {
+  width: 100%;
+  max-width: 440px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.2rem;
+}
+
+.guessRow {
+  background: #152233;
+  border: 1px solid #2e4a63;
+  border-radius: 8px;
+  padding: 0.65rem 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.guessTarget {
+  font-size: 0.9rem;
+  color: #a0b8cc;
+}
+
+.colourRow {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.colourBtn {
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 50%;
+  border: 3px solid transparent;
+  cursor: pointer;
+  transition: border-color 0.15s, transform 0.1s;
+}
+
+.colourBtn:hover {
+  transform: scale(1.1);
+}
+
+.colourBtnSel {
+  border-color: #f1c40f;
+  box-shadow: 0 0 8px rgba(241, 196, 15, 0.7);
+}
+
+/* ── Game over ──────────────────────────────────────────────────────────────── */
+
+.overTop {
+  text-align: center;
+  margin-bottom: 1.2rem;
+}
+
+.trophy {
+  font-size: 4rem;
+  filter: drop-shadow(0 0 12px rgba(212, 172, 13, 0.6));
+}
+
+.overHeading {
+  font-size: clamp(1.4rem, 4vw, 2rem);
+  font-weight: 800;
+  color: #d4ac0d;
+  margin: 0.25rem 0 0.3rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.overWinner {
+  font-size: 1.1rem;
+  color: #c0d4e4;
+  margin: 0;
+}
+
+.finalTable {
+  width: 100%;
+  max-width: 500px;
+  background: #152233;
+  border: 1px solid #2e4a63;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 1.2rem;
+}
+
+.finalHeader {
+  display: grid;
+  grid-template-columns: 2fr 1.5fr 1fr 1fr 1fr;
+  gap: 0.5rem;
+  padding: 0.5rem 0.85rem;
+  background: #1a2e42;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #5a7a94;
+}
+
+.finalRow {
+  display: grid;
+  grid-template-columns: 2fr 1.5fr 1fr 1fr 1fr;
+  gap: 0.5rem;
+  padding: 0.55rem 0.85rem;
+  border-top: 1px solid #1e3348;
+  font-size: 0.88rem;
+  align-items: center;
+  color: #c0d4e4;
+}
+
+.finalScore {
+  font-weight: 700;
+  color: #d4ac0d;
+}
+
+.revealSection {
+  width: 100%;
+  max-width: 500px;
+  margin-bottom: 1.2rem;
+}
+
+.revealHeading {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #5a7a94;
+  margin: 0 0 0.6rem;
+  text-align: center;
+}
+
+.revealGrid {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.revealCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  background: #1a2e42;
+  border: 2px solid;
+  border-radius: 8px;
+  padding: 0.55rem 0.9rem;
+}
+
+.revealName {
+  font-size: 0.85rem;
+  color: #a0b8cc;
+}
+
+.revealBadge {
+  font-size: 0.75rem;
+  font-weight: 800;
+  padding: 0.25rem 0.6rem;
+  border-radius: 4px;
+  color: white;
+  letter-spacing: 0.08em;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
