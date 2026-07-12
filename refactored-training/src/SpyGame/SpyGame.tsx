@@ -78,6 +78,8 @@ export default function SpyGame() {
   const [names, setNames] = useState(['Player 1', 'Player 2', 'Player 3', 'Player 4']);
   const [g, setG] = useState<G | null>(null);
   const [showSec, setShowSec] = useState(false);
+  const [dragSpy, setDragSpy] = useState<SpyColor | null>(null);
+  const [draggingOver, setDraggingOver] = useState<number | null>(null);
 
   // ── Handlers ────────────────────────────────────────────────────────────────
 
@@ -118,6 +120,20 @@ export default function SpyGame() {
       const pos = { ...prev.pos };
       pos[c] = (pos[c] + 1) % NUM_SPACES;
       return { ...prev, pos, left: prev.left - 1 };
+    });
+  }
+
+  function handleTileDrop(tileIdx: number) {
+    if (!dragSpy) return;
+    const spy = dragSpy;
+    setDragSpy(null);
+    setDraggingOver(null);
+    setG(prev => {
+      if (!prev) return prev;
+      const steps = (tileIdx - prev.pos[spy] + NUM_SPACES) % NUM_SPACES;
+      if (steps < 1 || steps > prev.left) return prev;
+      const pos = { ...prev.pos, [spy]: tileIdx };
+      return { ...prev, pos, left: prev.left - steps };
     });
   }
 
@@ -392,6 +408,16 @@ export default function SpyGame() {
   const canRoll = g.die === null;
   const canPick = g.die !== null && g.left > 0;
 
+  // Tiles reachable by the spy currently being dragged
+  const reachable: Set<number> | null = (dragSpy && canPick)
+    ? (() => {
+        const s = new Set<number>();
+        const from = g.pos[dragSpy];
+        for (let n = 1; n <= g.left; n++) s.add((from + n) % NUM_SPACES);
+        return s;
+      })()
+    : null;
+
   return (
     <div className={styles.page}>
       <div className={styles.turnBar}>
@@ -407,8 +433,18 @@ export default function SpyGame() {
           return (
             <div
               key={i}
-              className={`${styles.tile} ${isSafe ? styles.tileSafe : ''}`}
+              className={[
+                styles.tile,
+                isSafe ? styles.tileSafe : '',
+                reachable?.has(i) ? styles.tileReachable : '',
+                draggingOver === i ? styles.tileDragOver : '',
+              ].join(' ')}
               style={{ gridRow: row + 1, gridColumn: col + 1 }}
+              onDragOver={e => {
+                if (reachable?.has(i)) { e.preventDefault(); setDraggingOver(i); }
+              }}
+              onDragLeave={() => setDraggingOver(d => d === i ? null : d)}
+              onDrop={e => { e.preventDefault(); handleTileDrop(i); }}
             >
               <div className={styles.tileTop}>
                 {isSafe && <span className={styles.tileSafeLabel}>SAFE</span>}
@@ -422,6 +458,15 @@ export default function SpyGame() {
                     key={c}
                     className={`${styles.token} ${canPick ? styles.tokenClickable : ''}`}
                     style={{ background: HEX[c] }}
+                    draggable={canPick}
+                    onDragStart={e => {
+                      setDragSpy(c);
+                      e.dataTransfer.effectAllowed = 'move';
+                    }}
+                    onDragEnd={() => {
+                      setDragSpy(null);
+                      setDraggingOver(null);
+                    }}
                     onClick={() => { if (canPick) pickSpy(c); }}
                     title={c}
                   />
