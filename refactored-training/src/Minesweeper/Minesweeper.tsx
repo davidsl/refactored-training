@@ -77,7 +77,7 @@ function cloneBoard(board: Board): Board {
 
 function Minesweeper() {
   const motion = MOTION_DELAY_PRESETS[ACTIVE_MOTION_PRESET];
-  const TILE_GAP = 3;
+  const TILE_GAP = 0;
   const BOARD_PADDING = 10;
   const TILE_MIN = 10;
   const TILE_MAX = 48;
@@ -476,7 +476,7 @@ function Minesweeper() {
 
         <section className={styles.boardStage}>
           <div className={styles.boardFrame} ref={boardFrameRef}>
-            <div className={styles.boardWrapper} key={boardAnimKey}>
+            <div className={styles.boardWrapper} key={boardAnimKey} onContextMenu={e => e.preventDefault()}>
               {boardState.map((row, r) => (
                 <div
                   key={r}
