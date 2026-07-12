@@ -1007,3 +1007,179 @@
   letter-spacing: 0.08em;
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
 }
+
+/* ── Choose Treasure Location ───────────────────────────────────────────────── */
+
+.chooseTreasureBanner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.showBoardBtn {
+  padding: 0.4rem 0.9rem;
+  background: #2e4a63;
+  border: 1px solid #3a6a8a;
+  border-radius: 6px;
+  color: #7f9cb5;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.showBoardBtn:hover {
+  background: #3a5a74;
+  border-color: #00bcd4;
+  color: #00e5ff;
+}
+
+.miniBoard {
+  width: 100%;
+  max-width: 280px;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: #152233;
+  border: 1px solid #2e4a63;
+  border-radius: 8px;
+}
+
+.miniBoardGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(4, 1fr);
+  gap: 4px;
+  aspect-ratio: 1;
+}
+
+.miniBoardTile {
+  background: #0a1520;
+  border: 1px solid #1a2e42;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 3px;
+  font-size: 0.65rem;
+  position: relative;
+}
+
+.miniBoardTileSafe {
+  border-color: #00bcd4;
+  background: rgba(0, 188, 212, 0.12);
+  box-shadow: 0 0 6px rgba(0, 188, 212, 0.25);
+}
+
+.miniBoardTileTop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  font-size: 0.6rem;
+  font-weight: 700;
+}
+
+.miniBoardLabel {
+  color: #00e5ff;
+  font-size: 0.55rem;
+  font-weight: 900;
+}
+
+.miniBoardValue {
+  color: #c0d4e4;
+}
+
+.miniBoardTokens {
+  display: flex;
+  gap: 2px;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-content: center;
+}
+
+.miniBoardToken {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  border: 0.5px solid rgba(255, 255, 255, 0.5);
+}
+
+.gemLarge {
+  font-size: clamp(2rem, 5vw, 3rem);
+  animation: gemPulse 0.6s ease-in-out infinite alternate;
+}
+
+.chooseTreasureHeading {
+  font-size: clamp(1.1rem, 3vw, 1.6rem);
+  font-weight: 800;
+  color: #d4ac0d;
+  margin: 0;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-shadow: 0 0 14px rgba(212, 172, 13, 0.4);
+}
+
+.chooseTreasureGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
+  width: 100%;
+  max-width: 420px;
+  margin-bottom: 1rem;
+}
+
+.treasureTile {
+  aspect-ratio: 1;
+  background: #152233;
+  border: 2px solid #2e4a63;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  padding: 0.5rem;
+  cursor: default;
+  font-family: inherit;
+  position: relative;
+  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+}
+
+.treasureTileClickable {
+  cursor: pointer;
+  border-color: #00bcd4;
+  background: rgba(0, 188, 212, 0.08);
+}
+
+.treasureTileClickable:hover {
+  border-color: #00e5ff;
+  background: rgba(0, 188, 212, 0.15);
+  box-shadow: 0 0 12px rgba(0, 188, 212, 0.4);
+}
+
+.treasureTileOccupied {
+  border-color: #c0392b;
+  background: rgba(192, 57, 43, 0.1);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.treasureTileValue {
+  font-size: clamp(0.85rem, 2.2vw, 1rem);
+  font-weight: 800;
+  color: #d6e4f0;
+}
+
+.treasureTileX {
+  font-size: 1.2rem;
+  color: #e74c3c;
+  font-weight: 900;
+  position: absolute;
+  opacity: 0.8;
+}
+

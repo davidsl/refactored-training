@@ -32,7 +32,7 @@ const GRID_POS: [number, number][] = [
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type Phase = 'setup' | 'play' | 'scoring' | 'guess' | 'over';
+type Phase = 'setup' | 'play' | 'scoring' | 'chooseTreasure' | 'guess' | 'over';
 
 interface Player {
   id: number;
@@ -83,6 +83,7 @@ export default function SpyGame() {
   const [draggingOver, setDraggingOver] = useState<number | null>(null);
   const [animScores, setAnimScores] = useState<Record<SpyColor, number> | null>(null);
   const [showLastDeltas, setShowLastDeltas] = useState(false);
+  const [showBoardWhileChoosing, setShowBoardWhileChoosing] = useState(false);
 
   useEffect(() => {
     if (g?.phase !== 'scoring' || !g.animFrom) return;
@@ -183,15 +184,9 @@ export default function SpyGame() {
           score[c] += d;
           return { c, d, to: score[c] };
         });
-        const occupied = new Set(Object.values(prev.pos));
-        occupied.add(prev.safePos);
-        let newSafePos: number;
-        do {
-          newSafePos = Math.floor(Math.random() * NUM_SPACES);
-        } while (occupied.has(newSafePos));
         return {
-          ...prev, score, safePos: newSafePos,
-          phase: 'scoring' as Phase, deltas,
+          ...prev, score,
+          phase: 'chooseTreasure' as Phase, deltas,
           animFrom: prev.score,
           die: null, left: 0,
           endFlag: Object.values(score).some(s => s >= WIN),
@@ -205,6 +200,16 @@ export default function SpyGame() {
       };
     });
     setShowSec(false);
+  }
+
+  function chooseTreasureLocation(tileIdx: number) {
+    setG(prev => {
+      if (!prev || prev.phase !== 'chooseTreasure') return prev;
+      const occupied = new Set(Object.values(prev.pos));
+      if (occupied.has(tileIdx)) return prev;
+      if (prev.endFlag) return { ...prev, safePos: tileIdx, phase: 'guess' as Phase, guesser: 0, animFrom: null };
+      return { ...prev, safePos: tileIdx, phase: 'play' as Phase, cur: (prev.cur + 1) % prev.players.length, animFrom: null };
+    });
   }
 
   function setGuess(playerId: number, c: SpyColor) {
@@ -291,6 +296,67 @@ export default function SpyGame() {
   }
 
   const cur = g.players[g.cur];
+
+  // ── Choose Treasure location ──────────────────────────────────────────────────
+
+  if (g.phase === 'chooseTreasure') {
+    const occupied = new Set(SPY_COLORS.map(c => g.pos[c]));
+    return (
+      <div className={styles.page}>
+        <div className={styles.chooseTreasureBanner}>
+          <span className={styles.gemLarge}>💎</span>
+          <h2 className={styles.chooseTreasureHeading}>{cur.name}, where should the Treasure go?</h2>
+          <button className={styles.showBoardBtn} onClick={() => setShowBoardWhileChoosing(!showBoardWhileChoosing)}>
+            {showBoardWhileChoosing ? 'Hide' : 'Show'} current board
+          </button>
+        </div>
+        {showBoardWhileChoosing && (
+          <div className={styles.miniBoard}>
+            <div className={styles.miniBoardGrid}>
+              {SPACE_VAL.map((val, i) => {
+                const [row, col] = GRID_POS[i];
+                const isSafe = i === g.safePos;
+                const spiesHere = SPY_COLORS.filter(c => g.pos[c] === i);
+                return (
+                  <div
+                    key={i}
+                    className={`${styles.miniBoardTile} ${isSafe ? styles.miniBoardTileSafe : ''}`}
+                    style={{ gridRow: row + 1, gridColumn: col + 1 }}
+                  >
+                    <div className={styles.miniBoardTileTop}>
+                      {isSafe && <span className={styles.miniBoardLabel}>T</span>}
+                      <span className={styles.miniBoardValue}>{val > 0 ? `+${val}` : val}</span>
+                    </div>
+                    <div className={styles.miniBoardTokens}>
+                      {spiesHere.map(c => (
+                        <div key={c} className={styles.miniBoardToken} style={{ background: HEX[c] }} />
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+        <div className={styles.chooseTreasureGrid}>
+          {SPACE_VAL.map((val, i) => {
+            const isOccupied = occupied.has(i);
+            return (
+              <button
+                key={i}
+                className={`${styles.treasureTile} ${isOccupied ? styles.treasureTileOccupied : styles.treasureTileClickable}`}
+                onClick={() => { if (!isOccupied) chooseTreasureLocation(i); }}
+                disabled={isOccupied}
+              >
+                <span className={styles.treasureTileValue}>{val > 0 ? `+${val}` : val}</span>
+                {isOccupied && <span className={styles.treasureTileX}>✕</span>}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
 
   // ── Guessing phase ────────────────────────────────────────────────────────────
 
