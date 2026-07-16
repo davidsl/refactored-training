@@ -32,7 +32,6 @@ function Header({ theme, onToggleTheme }: HeaderProps) {
         <Link to="/game" onClick={() => setMenuOpen(false)}>Minesweeper</Link>
         <Link to="/leaderboard" onClick={() => setMenuOpen(false)}>Leaderboard</Link>
         <Link to="/styling-examples" onClick={() => setMenuOpen(false)}>Styling Examples</Link>
-        <Link to="/thumbnails" onClick={() => setMenuOpen(false)}>Thumbnails</Link>
         <Link to="/clicking-game" onClick={() => setMenuOpen(false)}>Clicking Game</Link>
         <Link to="/table" onClick={() => setMenuOpen(false)}>Table</Link>
         <Link to="/spy-game" onClick={() => setMenuOpen(false)}>Spy Game</Link>

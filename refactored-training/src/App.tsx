@@ -7,7 +7,6 @@ import Minesweeper from './Minesweeper/Minesweeper'
 import Leaderboard from './Leaderboard/Leaderboard'
 import Header from './Header/Header'
 import StylingExamples from './StylingExamples/StylingExamples'
-import Thumbnails from './Thumbnails/Thumbnails'
 import ClickingGame from './ClickingGame/ClickingGame'
 import TableDemo from './TableDemo/TableDemo'
 import SpyGame from './SpyGame/SpyGame'
@@ -48,7 +47,6 @@ function App() {
           <Route path="/game" element={<Minesweeper />} />
           <Route path="/leaderboard" element={<Leaderboard />} />
           <Route path="/styling-examples" element={<StylingExamples />} />
-          <Route path="/thumbnails" element={<Thumbnails />} />
           <Route path="/clicking-game" element={<ClickingGame />} />
           <Route path="/table" element={<TableDemo />} />
           <Route path="/spy-game" element={<SpyGame />} />
