@@ -89,6 +89,16 @@ function TreasureIcon({ className }: { className?: string }) {
   );
 }
 
+function SpyTokenIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" width="1em" height="1em" role="img" aria-label="Spy token">
+      <path d="M5 10H19L17.2 7.4H6.8L5 10Z" />
+      <circle cx="12" cy="12.3" r="3.3" />
+      <path d="M7.1 18.5C8.1 16.1 9.8 14.8 12 14.8C14.2 14.8 15.9 16.1 16.9 18.5H7.1Z" />
+    </svg>
+  );
+}
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function SpyGame() {
@@ -100,7 +110,6 @@ export default function SpyGame() {
   const [draggingOver, setDraggingOver] = useState<number | null>(null);
   const [animScores, setAnimScores] = useState<Record<SpyColor, number> | null>(null);
   const [showLastDeltas, setShowLastDeltas] = useState(false);
-  const [showBoardWhileChoosing, setShowBoardWhileChoosing] = useState(false);
 
   useEffect(() => {
     if (g?.phase !== 'scoring' || !g.animFrom) return;
@@ -320,56 +329,75 @@ export default function SpyGame() {
     const occupied = new Set(SPY_COLORS.map(c => g.pos[c]));
     return (
       <div className={styles.page}>
-        <div className={styles.chooseTreasureBanner}>
-          <TreasureIcon className={styles.gemLarge} />
-          <h2 className={styles.chooseTreasureHeading}>{cur.name}, where should the Treasure go?</h2>
-          <button className={styles.showBoardBtn} onClick={() => setShowBoardWhileChoosing(!showBoardWhileChoosing)}>
-            {showBoardWhileChoosing ? 'Hide' : 'Show'} current board
-          </button>
-        </div>
-        {showBoardWhileChoosing && (
-          <div className={styles.miniBoard}>
-            <div className={styles.miniBoardGrid}>
-              {SPACE_VAL.map((val, i) => {
-                const [row, col] = GRID_POS[i];
-                const isSafe = i === g.safePos;
-                const spiesHere = SPY_COLORS.filter(c => g.pos[c] === i);
-                return (
-                  <div
-                    key={i}
-                    className={`${styles.miniBoardTile} ${isSafe ? styles.miniBoardTileSafe : ''}`}
-                    style={{ gridRow: row + 1, gridColumn: col + 1 }}
-                  >
-                    <div className={styles.miniBoardTileTop}>
-                      {isSafe && <TreasureIcon className={styles.miniBoardLabel} />}
-                      <span className={styles.miniBoardValue}>{val > 0 ? `+${val}` : val}</span>
-                    </div>
-                    <div className={styles.miniBoardTokens}>
-                      {spiesHere.map(c => (
-                        <div key={c} className={styles.miniBoardToken} style={{ background: HEX[c] }} />
-                      ))}
-                    </div>
+        <div className={styles.playRow}>
+          <div className={styles.boardGrid}>
+            {SPACE_VAL.map((val, i) => {
+              const isOccupied = occupied.has(i);
+              const [row, col] = GRID_POS[i];
+              const isSafe = i === g.safePos;
+              const spiesHere = SPY_COLORS.filter(c => g.pos[c] === i);
+              return (
+                <button
+                  key={i}
+                  type="button"
+                  className={[
+                    styles.tile,
+                    isSafe ? styles.tileSafe : '',
+                    isOccupied ? styles.tileChooseOccupied : styles.tileChooseSelectable,
+                  ].join(' ')}
+                  style={{ gridRow: row + 1, gridColumn: col + 1 }}
+                  onClick={() => { if (!isOccupied) chooseTreasureLocation(i); }}
+                  disabled={isOccupied}
+                >
+                  <div className={styles.tileTop}>
+                    {isSafe && (
+                      <span className={styles.tileSafeLabel}>
+                        <TreasureIcon className={styles.treasureIconInline} />
+                        TREASURE
+                      </span>
+                    )}
+                    <span className={`${styles.tileVal} ${val > 0 ? styles.tilePos : val < 0 ? styles.tileNeg : ''}`}>
+                      {val > 0 ? `+${val}` : val}
+                    </span>
                   </div>
-                );
-              })}
+                  <div className={styles.tileTokens}>
+                    {spiesHere.map(c => (
+                      <div key={c} className={styles.token} style={{ color: HEX[c] }}>
+                        <SpyTokenIcon className={styles.tokenIcon} />
+                      </div>
+                    ))}
+                  </div>
+                  {isOccupied && <span className={styles.treasureTileX}>✕</span>}
+                </button>
+              );
+            })}
+            <div className={styles.boardCenter}>
+              <TreasureIcon className={styles.gemLarge} />
+              <h2 className={styles.chooseCenterHeading}>{cur.name}, where should the Treasure go?</h2>
+              <p className={styles.chooseHint}>Choose any empty tile</p>
             </div>
           </div>
-        )}
-        <div className={styles.chooseTreasureGrid}>
-          {SPACE_VAL.map((val, i) => {
-            const isOccupied = occupied.has(i);
-            return (
-              <button
-                key={i}
-                className={`${styles.treasureTile} ${isOccupied ? styles.treasureTileOccupied : styles.treasureTileClickable}`}
-                onClick={() => { if (!isOccupied) chooseTreasureLocation(i); }}
-                disabled={isOccupied}
-              >
-                <span className={styles.treasureTileValue}>{val > 0 ? `+${val}` : val}</span>
-                {isOccupied && <span className={styles.treasureTileX}>✕</span>}
-              </button>
-            );
-          })}
+
+          <div className={styles.scoreSide}>
+            <span className={styles.scoreLabel}>Score (/{WIN})</span>
+            <div className={styles.scoreRows}>
+              {SPY_COLORS.map(c => (
+                <div key={c} className={styles.scoreRow}>
+                  <div className={styles.scoreDot} style={{ background: HEX[c] }} />
+                  <div className={styles.barWrap}>
+                    <div
+                      className={styles.barFill}
+                      style={{
+                        width: `${Math.max(0, Math.min(100, (g.score[c] / WIN) * 100))}%`,
+                        background: HEX[c],
+                      }}
+                    />
+                  </div>
+                  <span className={styles.scoreNum}>{g.score[c]}</span>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -551,7 +579,7 @@ export default function SpyGame() {
                   <div
                     key={c}
                     className={`${styles.token} ${canPick ? styles.tokenClickable : ''}`}
-                    style={{ background: HEX[c] }}
+                    style={{ color: HEX[c] }}
                     draggable={canPick}
                     onDragStart={e => {
                       setDragSpy(c);
@@ -563,7 +591,9 @@ export default function SpyGame() {
                     }}
                     onClick={() => { if (canPick) pickSpy(c); }}
                     title={c}
-                  />
+                  >
+                    <SpyTokenIcon className={styles.tokenIcon} />
+                  </div>
                 ))}
               </div>
             </div>

@@ -308,8 +308,10 @@
 /* ── Board SVG ──────────────────────────────────────────────────────────────── */
 
 .playRow {
+  --play-row-gap: 0.75rem;
+  --board-gap-total: 21px;
   display: flex;
-  gap: 0.75rem;
+  gap: var(--play-row-gap);
   align-items: flex-start;
   width: 100%;
   max-width: 920px;
@@ -366,6 +368,24 @@
   border-width: 2px;
   background: color-mix(in srgb, var(--spy-primary) 22%, transparent);
   box-shadow: 0 0 12px color-mix(in srgb, var(--spy-primary-strong) 50%, transparent);
+}
+
+.tileChooseSelectable {
+  cursor: pointer;
+  border-color: var(--spy-primary);
+  background: color-mix(in srgb, var(--spy-primary) 10%, var(--spy-surface-alt));
+}
+
+.tileChooseSelectable:hover {
+  border-color: var(--spy-primary-strong);
+  background: color-mix(in srgb, var(--spy-primary) 18%, var(--spy-surface-alt));
+  box-shadow: 0 0 10px color-mix(in srgb, var(--spy-primary-strong) 28%, transparent);
+}
+
+.tileChooseOccupied {
+  cursor: not-allowed;
+  opacity: 0.66;
+  border-color: var(--spy-danger);
 }
 
 .tileSafeLabel {
@@ -426,22 +446,59 @@
 }
 
 .rollBtn {
-  padding: 0.4rem 0.7rem;
+  min-width: clamp(150px, 32vw, 240px);
+  min-height: clamp(58px, 11vw, 82px);
+  padding: 0.9rem 1.5rem;
   background: linear-gradient(125deg, var(--spy-primary), var(--spy-primary-strong));
   border: none;
-  border-radius: 6px;
+  border-radius: 14px;
   color: #fff;
-  font-size: clamp(0.62rem, 1.6vw, 0.8rem);
-  font-weight: 800;
+  font-size: clamp(1rem, 2.4vw, 1.45rem);
+  font-weight: 900;
   cursor: pointer;
   text-transform: uppercase;
-  letter-spacing: 0.03em;
-  transition: background 0.15s;
+  letter-spacing: 0.08em;
+  box-shadow:
+    0 10px 20px color-mix(in srgb, var(--spy-primary-strong) 36%, transparent),
+    0 0 0 2px color-mix(in srgb, #fff 18%, transparent);
+  animation: rollPulse 0.95s ease-in-out infinite, rollTilt 1.7s ease-in-out infinite;
+  transition: transform 0.14s ease, filter 0.14s ease;
   white-space: nowrap;
 }
 
 .rollBtn:hover {
-  filter: brightness(1.06);
+  filter: brightness(1.12) saturate(1.12);
+  transform: scale(1.05);
+}
+
+.rollBtn:active {
+  transform: scale(0.97);
+}
+
+@keyframes rollPulse {
+  0% {
+    box-shadow:
+      0 10px 20px color-mix(in srgb, var(--spy-primary-strong) 26%, transparent),
+      0 0 0 0 color-mix(in srgb, var(--spy-primary-strong) 46%, transparent);
+  }
+  50% {
+    box-shadow:
+      0 12px 24px color-mix(in srgb, var(--spy-primary-strong) 48%, transparent),
+      0 0 0 10px color-mix(in srgb, var(--spy-primary-strong) 0%, transparent);
+  }
+  100% {
+    box-shadow:
+      0 10px 20px color-mix(in srgb, var(--spy-primary-strong) 26%, transparent),
+      0 0 0 0 color-mix(in srgb, var(--spy-primary-strong) 0%, transparent);
+  }
+}
+
+@keyframes rollTilt {
+  0% { transform: translateY(0) rotate(-1.6deg); }
+  25% { transform: translateY(-1px) rotate(1.6deg); }
+  50% { transform: translateY(0) rotate(-1.2deg); }
+  75% { transform: translateY(-1px) rotate(1.2deg); }
+  100% { transform: translateY(0) rotate(-1.6deg); }
 }
 
 .dieDisplay {
@@ -477,6 +534,23 @@
   margin: 0;
   text-align: center;
   line-height: 1.2;
+}
+
+.chooseHint {
+  font-size: clamp(0.58rem, 1.4vw, 0.76rem);
+  color: var(--spy-muted);
+  margin: 0;
+  text-align: center;
+  font-weight: 700;
+}
+
+.chooseCenterHeading {
+  margin: 0;
+  font-size: clamp(0.72rem, 1.9vw, 0.96rem);
+  line-height: 1.25;
+  color: var(--spy-primary-strong);
+  text-align: center;
+  font-weight: 800;
 }
 
 .undoSmall {
@@ -530,13 +604,26 @@
 }
 
 .token {
-  width: clamp(18px, 4.8vw, 30px);
-  height: clamp(18px, 4.8vw, 30px);
+  width: clamp(24px, 6.4vw, 42px);
+  height: clamp(24px, 6.4vw, 42px);
   border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, 0.7);
+  border: 2px solid color-mix(in srgb, currentColor 74%, #fff 26%);
+  background: color-mix(in srgb, var(--spy-surface) 76%, transparent);
+  display: grid;
+  place-items: center;
   position: relative;
   flex-shrink: 0;
   transition: transform 0.1s, box-shadow 0.1s;
+}
+
+.tokenIcon {
+  width: 124%;
+  height: 124%;
+  fill: currentColor;
+  stroke: color-mix(in srgb, currentColor 36%, #111 64%);
+  stroke-width: 0.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .tokenClickable {
@@ -545,8 +632,10 @@
 
 .tokenClickable:hover {
   transform: scale(1.2);
-  border-color: #f1c40f;
-  box-shadow: 0 0 8px rgba(241, 196, 15, 0.55);
+  border-color: var(--spy-primary-strong);
+  box-shadow:
+    0 0 8px color-mix(in srgb, var(--spy-primary-strong) 55%, transparent),
+    0 0 0 1px color-mix(in srgb, currentColor 58%, transparent);
 }
 
 .tokenPending {
@@ -576,7 +665,7 @@
 /* ── Score track ────────────────────────────────────────────────────────────── */
 
 .scoreSide {
-  width: 155px;
+  width: calc((100% - var(--play-row-gap) - var(--board-gap-total)) / 5);
   flex-shrink: 0;
   background: var(--spy-surface-alt);
   border: 1px solid var(--spy-border);
@@ -604,6 +693,14 @@
   display: flex;
   align-items: center;
   gap: 0.55rem;
+}
+
+.scoreDot {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, #fff 58%, transparent);
+  flex-shrink: 0;
 }
 
 .scoreDelta {
@@ -1022,99 +1119,6 @@
   margin-bottom: 1.5rem;
 }
 
-.showBoardBtn {
-  padding: 0.4rem 0.9rem;
-  background: var(--spy-surface-alt);
-  border: 1px solid var(--spy-border);
-  border-radius: 6px;
-  color: var(--spy-muted);
-  font-size: 0.8rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.15s, border-color 0.15s, color 0.15s;
-}
-
-.showBoardBtn:hover {
-  background: color-mix(in srgb, var(--spy-primary) 14%, var(--spy-surface));
-  border-color: var(--spy-primary);
-  color: var(--spy-primary-strong);
-}
-
-.miniBoard {
-  width: 100%;
-  max-width: 280px;
-  margin-bottom: 1.5rem;
-  padding: 1rem;
-  background: var(--spy-surface-alt);
-  border: 1px solid var(--spy-border);
-  border-radius: 8px;
-}
-
-.miniBoardGrid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  grid-template-rows: repeat(4, 1fr);
-  gap: 4px;
-  aspect-ratio: 1;
-}
-
-.miniBoardTile {
-  background: color-mix(in srgb, var(--spy-surface) 85%, transparent);
-  border: 1px solid var(--spy-border);
-  border-radius: 4px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 2px;
-  padding: 3px;
-  font-size: 0.65rem;
-  position: relative;
-}
-
-.miniBoardTileSafe {
-  border-color: var(--spy-primary);
-  background: color-mix(in srgb, var(--spy-primary) 14%, transparent);
-  box-shadow: 0 0 6px color-mix(in srgb, var(--spy-primary) 34%, transparent);
-}
-
-.miniBoardTileTop {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1px;
-  font-size: 0.6rem;
-  font-weight: 700;
-}
-
-.miniBoardLabel {
-  color: var(--spy-primary-strong);
-  font-size: 0.7rem;
-  stroke: currentColor;
-  fill: color-mix(in srgb, currentColor 22%, transparent);
-  stroke-width: 1.8;
-  stroke-linejoin: round;
-}
-
-.miniBoardValue {
-  color: var(--spy-text);
-}
-
-.miniBoardTokens {
-  display: flex;
-  gap: 2px;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-content: center;
-}
-
-.miniBoardToken {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  border: 0.5px solid rgba(255, 255, 255, 0.5);
-}
-
 .gemLarge {
   font-size: clamp(2rem, 5vw, 3rem);
   animation: gemPulse 0.6s ease-in-out infinite alternate;
@@ -1134,57 +1138,6 @@
   text-transform: uppercase;
   letter-spacing: 0.05em;
   text-shadow: 0 0 14px color-mix(in srgb, var(--spy-primary-strong) 40%, transparent);
-}
-
-.chooseTreasureGrid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 0.5rem;
-  width: 100%;
-  max-width: 420px;
-  margin-bottom: 1rem;
-}
-
-.treasureTile {
-  aspect-ratio: 1;
-  background: var(--spy-surface-alt);
-  border: 2px solid var(--spy-border);
-  border-radius: 8px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.3rem;
-  padding: 0.5rem;
-  cursor: default;
-  font-family: inherit;
-  position: relative;
-  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
-}
-
-.treasureTileClickable {
-  cursor: pointer;
-  border-color: var(--spy-primary);
-  background: color-mix(in srgb, var(--spy-primary) 10%, transparent);
-}
-
-.treasureTileClickable:hover {
-  border-color: var(--spy-primary-strong);
-  background: color-mix(in srgb, var(--spy-primary) 18%, transparent);
-  box-shadow: 0 0 12px color-mix(in srgb, var(--spy-primary-strong) 35%, transparent);
-}
-
-.treasureTileOccupied {
-  border-color: var(--spy-danger);
-  background: color-mix(in srgb, var(--spy-danger) 12%, transparent);
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-
-.treasureTileValue {
-  font-size: clamp(0.85rem, 2.2vw, 1rem);
-  font-weight: 800;
-  color: var(--spy-text);
 }
 
 .treasureTileX {
