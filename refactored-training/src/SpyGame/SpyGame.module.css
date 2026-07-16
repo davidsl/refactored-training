@@ -475,6 +475,23 @@
   transform: scale(0.97);
 }
 
+.endTurnBtn {
+  min-width: clamp(132px, 24vw, 190px);
+  min-height: clamp(48px, 8vw, 64px);
+  font-size: clamp(0.9rem, 1.8vw, 1.1rem);
+  letter-spacing: 0.05em;
+  animation: endTurnPulse 2.2s ease-in-out infinite;
+}
+
+.endTurnBtn:hover {
+  transform: scale(1.02);
+  filter: brightness(1.06) saturate(1.04);
+}
+
+.endTurnBtn:active {
+  transform: scale(0.98);
+}
+
 @keyframes rollPulse {
   0% {
     box-shadow:
@@ -499,6 +516,24 @@
   50% { transform: translateY(0) rotate(-1.2deg); }
   75% { transform: translateY(-1px) rotate(1.2deg); }
   100% { transform: translateY(0) rotate(-1.6deg); }
+}
+
+@keyframes endTurnPulse {
+  0% {
+    box-shadow:
+      0 8px 16px color-mix(in srgb, var(--spy-primary-strong) 22%, transparent),
+      0 0 0 0 color-mix(in srgb, var(--spy-primary-strong) 22%, transparent);
+  }
+  50% {
+    box-shadow:
+      0 9px 17px color-mix(in srgb, var(--spy-primary-strong) 30%, transparent),
+      0 0 0 5px color-mix(in srgb, var(--spy-primary-strong) 0%, transparent);
+  }
+  100% {
+    box-shadow:
+      0 8px 16px color-mix(in srgb, var(--spy-primary-strong) 22%, transparent),
+      0 0 0 0 color-mix(in srgb, var(--spy-primary-strong) 0%, transparent);
+  }
 }
 
 .dieDisplay {
@@ -979,21 +1014,39 @@
 }
 
 .colourBtn {
-  width: 2.2rem;
-  height: 2.2rem;
+  width: 2.55rem;
+  height: 2.55rem;
   border-radius: 50%;
-  border: 3px solid transparent;
+  border: 2px solid color-mix(in srgb, currentColor 74%, #fff 26%);
+  background: color-mix(in srgb, var(--spy-surface) 76%, transparent);
+  display: grid;
+  place-items: center;
   cursor: pointer;
-  transition: border-color 0.15s, transform 0.1s;
+  transition: border-color 0.15s, transform 0.1s, box-shadow 0.15s;
 }
 
 .colourBtn:hover {
   transform: scale(1.1);
+  box-shadow:
+    0 0 8px color-mix(in srgb, var(--spy-primary-strong) 48%, transparent),
+    0 0 0 1px color-mix(in srgb, currentColor 56%, transparent);
 }
 
 .colourBtnSel {
   border-color: var(--spy-primary-strong);
-  box-shadow: 0 0 8px color-mix(in srgb, var(--spy-primary-strong) 70%, transparent);
+  box-shadow:
+    0 0 11px color-mix(in srgb, var(--spy-primary-strong) 70%, transparent),
+    0 0 0 2px color-mix(in srgb, currentColor 54%, transparent);
+}
+
+.colourTokenIcon {
+  width: 124%;
+  height: 124%;
+  fill: currentColor;
+  stroke: color-mix(in srgb, currentColor 36%, #111 64%);
+  stroke-width: 0.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 /* ── Game over ──────────────────────────────────────────────────────────────── */

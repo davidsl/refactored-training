@@ -210,12 +210,14 @@ export default function SpyGame() {
           score[c] += d;
           return { c, d, to: score[c] };
         });
+        const endFlag = Object.values(score).some(s => s >= WIN);
         return {
           ...prev, score,
-          phase: 'chooseTreasure' as Phase, deltas,
+          phase: endFlag ? ('guess' as Phase) : ('chooseTreasure' as Phase), deltas,
           animFrom: prev.score,
+          guesser: endFlag ? 0 : prev.guesser,
           die: null, left: 0,
-          endFlag: Object.values(score).some(s => s >= WIN),
+          endFlag,
         };
       }
 
@@ -443,10 +445,12 @@ export default function SpyGame() {
                   <button
                     key={c}
                     className={`${styles.colourBtn} ${guesser.guesses[target.id] === c ? styles.colourBtnSel : ''}`}
-                    style={{ background: HEX[c] }}
+                    style={{ color: HEX[c] }}
                     onClick={() => setGuess(target.id, c)}
                     title={c}
-                  />
+                  >
+                    <SpyTokenIcon className={styles.colourTokenIcon} />
+                  </button>
                 ))}
               </div>
             </div>
@@ -626,7 +630,7 @@ export default function SpyGame() {
             </div>
           )}
           {!isAnimating && canRoll && (
-            <button className={styles.rollBtn} onClick={roll}>Roll Die</button>
+            <button className={styles.rollBtn} onClick={roll}>Roll</button>
           )}
           {!isAnimating && g.die !== null && (
             <div className={styles.dieDisplay}>
@@ -639,7 +643,7 @@ export default function SpyGame() {
           )}
           {canPick && <p className={styles.centerHint}>tap spies</p>}
           {!canPick && !isAnimating && g.die !== null && (
-            <button className={styles.rollBtn} onClick={endTurn}>End Turn</button>
+            <button className={`${styles.rollBtn} ${styles.endTurnBtn}`} onClick={endTurn}>End Turn</button>
           )}
         </div>
       </div>
