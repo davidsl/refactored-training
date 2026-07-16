@@ -1326,6 +1326,26 @@
   margin-bottom: 1.2rem;
 }
 
+.overColumns {
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.overMainColumn {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.overSideColumn {
+  flex: 0 0 280px;
+  max-width: 280px;
+}
+
 .trophy {
   font-size: 4rem;
   filter: drop-shadow(0 0 12px rgba(212, 172, 13, 0.6));
@@ -1358,7 +1378,7 @@
 
 .finalHeader {
   display: grid;
-  grid-template-columns: 2fr 1.5fr 1fr 1fr 1fr;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
   gap: 0.5rem;
   padding: 0.5rem 0.85rem;
   background: var(--spy-surface);
@@ -1370,7 +1390,7 @@
 
 .finalRow {
   display: grid;
-  grid-template-columns: 2fr 1.5fr 1fr 1fr 1fr;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
   gap: 0.5rem;
   padding: 0.55rem 0.85rem;
   border-top: 1px solid var(--spy-border);
@@ -1386,8 +1406,90 @@
 
 .revealSection {
   width: 100%;
-  max-width: 500px;
+  max-width: 100%;
   margin-bottom: 1.2rem;
+}
+
+.revealDetailsBtn {
+  margin-bottom: 1rem;
+  padding: 0.45rem 0.9rem;
+  border: 1px dashed var(--spy-border);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--spy-muted);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+
+.revealDetailsBtn:hover {
+  border-color: var(--spy-primary);
+  color: var(--spy-primary-strong);
+  background: color-mix(in srgb, var(--spy-primary) 8%, transparent);
+}
+
+.correctGuessSection {
+  width: 100%;
+  max-width: 100%;
+  margin-bottom: 1.2rem;
+}
+
+.correctGuessGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.6rem;
+}
+
+.correctGuessCard {
+  background: var(--spy-surface-alt);
+  border: 1px solid var(--spy-border);
+  border-radius: 8px;
+  padding: 0.7rem 0.8rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.correctGuessHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.78rem;
+  color: var(--spy-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.correctGuessList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.correctGuessChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.32rem;
+  padding: 0.28rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, currentColor 68%, #fff 32%);
+  background: color-mix(in srgb, var(--spy-surface) 78%, transparent);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+@media (max-width: 860px) {
+  .overColumns {
+    flex-direction: column;
+  }
+
+  .overSideColumn {
+    flex: 1 1 auto;
+    max-width: 100%;
+  }
 }
 
 .revealHeading {

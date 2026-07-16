@@ -113,6 +113,7 @@ export default function SpyGame() {
   const [targetGoal, setTargetGoal] = useState(DEFAULT_GOAL);
   const [g, setG] = useState<G | null>(null);
   const [showSec, setShowSec] = useState(false);
+  const [showCorrectGuesses, setShowCorrectGuesses] = useState(false);
   const [dragSpy, setDragSpy] = useState<SpyColor | null>(null);
   const [dragGuessToken, setDragGuessToken] = useState<GuessOccupant | null>(null);
   const [draggingOver, setDraggingOver] = useState<number | null>(null);
@@ -585,71 +586,103 @@ export default function SpyGame() {
   // ── Game over screen ──────────────────────────────────────────────────────────
 
   if (g.phase === 'over') {
-    const guessByPlayer = new Map<number, SpyColor>();
+    const ownerByColor = new Map<SpyColor, number>();
     for (const player of g.players) {
-      for (const [color, occupant] of Object.entries(player.guessBoard) as Array<[SpyColor, GuessOccupant | undefined]>) {
-        if (occupant?.kind === 'player' && occupant.playerId === player.id) {
-          guessByPlayer.set(player.id, color);
-        }
-      }
+      ownerByColor.set(player.secret, player.id);
     }
     const rows = g.players.map(p => {
-      const guess = guessByPlayer.get(p.id) ?? null;
-      const bonus = guess === p.secret ? 5 : 0;
-      return { p, guess, track: g.score[p.secret] - bonus, bonus, total: g.score[p.secret] };
+      const guessBoard = p.guessBoard;
+      const correctColors = Object.entries(guessBoard)
+        .filter(([color, occupant]) => {
+          if (!occupant) return false;
+          const owner = ownerByColor.get(color as SpyColor);
+          if (occupant.kind === 'player') return owner === occupant.playerId;
+          return owner === undefined;
+        })
+        .map(([color]) => color as SpyColor);
+      const bonus = correctColors.length * 5;
+      return { p, correctColors, bonus, total: g.score[p.secret] + bonus };
     }).sort((a, b) => b.total - a.total);
 
     const winner = rows[0];
+    const revealRows = SPY_COLORS.map(color => ({
+      color,
+      owner: g.players.find(player => player.secret === color) ?? null,
+    }));
     return (
       <div className={styles.page}>
         <div className={styles.overTop}>
-          <div className={styles.trophy}>🏆</div>
           <h2 className={styles.overHeading}>Game Over!</h2>
           <p className={styles.overWinner}>
             Winner: <span style={{ color: HEX[winner.p.secret] }}>{winner.p.name}</span>
           </p>
         </div>
-        <div className={styles.finalTable}>
-          <div className={styles.finalHeader}>
-            <span>Player</span>
-            <span>Spy</span>
-            <span>Track</span>
-            <span>Guess</span>
-            <span>Total</span>
-          </div>
-          {rows.map(({ p, guess, track, total }) => (
-            <div key={p.id} className={styles.finalRow}>
-              <span>{p.name}</span>
-              <span>
-                <span className={styles.dot} style={{ background: HEX[p.secret] }} />
-                {p.secret}
-              </span>
-              <span>{track}</span>
-              <span>
-                {guess ? (
-                  <span className={styles.finalGuess} style={{ color: HEX[guess] }}>{guess}</span>
-                ) : (
-                  <span className={styles.finalGuessDummy}>None</span>
-                )}
-              </span>
-              <span><strong>{total}</strong></span>
-            </div>
-          ))}
-        </div>
-        <div className={styles.revealSection}>
-          <h3 className={styles.revealHeading}>Identities Revealed</h3>
-          <div className={styles.revealGrid}>
-            {g.players.map(p => (
-              <div key={p.id} className={styles.revealCard} style={{ borderColor: HEX[p.secret] }}>
-                <span className={styles.revealName}>{p.name}</span>
-                <span className={styles.revealBadge} style={{ background: HEX[p.secret] }}>
-                  {p.secret.toUpperCase()}
-                </span>
+        <div className={styles.overColumns}>
+          <div className={styles.overMainColumn}>
+            <div className={styles.finalTable}>
+              <div className={styles.finalHeader}>
+                <span>Player</span>
+                <span>Score</span>
+                <span>Bonus</span>
+                <span>Total</span>
               </div>
-            ))}
+              {rows.map(({ p, bonus, total }) => (
+                <div key={p.id} className={styles.finalRow}>
+                  <span>{p.name}</span>
+                  <span>{g.score[p.secret]}</span>
+                  <span>+{bonus}</span>
+                  <span><strong>{total}</strong></span>
+                </div>
+              ))}
+            </div>
+            <button className={styles.revealDetailsBtn} onClick={() => setShowCorrectGuesses(v => !v)}>
+              {showCorrectGuesses ? 'Hide correct guesses' : 'Reveal correct guesses'}
+            </button>
+            {showCorrectGuesses && (
+              <div className={styles.correctGuessSection}>
+                <h3 className={styles.revealHeading}>Correct Guesses</h3>
+                <div className={styles.correctGuessGrid}>
+                  {rows.map(({ p, correctColors }) => (
+                    <div key={p.id} className={styles.correctGuessCard}>
+                      <div className={styles.correctGuessHeader}>
+                        <span>{p.name}</span>
+                        <span>{correctColors.length}/7 correct</span>
+                      </div>
+                      <div className={styles.correctGuessList}>
+                        {correctColors.length > 0 ? correctColors.map(color => (
+                          <span key={color} className={styles.correctGuessChip} style={{ color: HEX[color] }}>
+                            <SpyTokenIcon className={styles.guessAssignedIcon} />
+                            {color}
+                          </span>
+                        )) : (
+                          <span className={styles.finalGuessDummy}>No correct guesses</span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+          <div className={styles.overSideColumn}>
+            <div className={styles.revealSection}>
+              <h3 className={styles.revealHeading}>Identities Revealed</h3>
+              <div className={styles.revealGrid}>
+                {revealRows.map(({ color, owner }) => (
+                  <div key={color} className={styles.revealCard} style={{ borderColor: HEX[color] }}>
+                    <span className={styles.revealBadge} style={{ background: HEX[color] }}>
+                      {color.toUpperCase()}
+                    </span>
+                    <span className={styles.revealName}>
+                      {owner ? owner.name : 'Dummy'}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
-        <button className={styles.bigBtn} onClick={() => { setG(null); setShowSec(false); }}>
+        <button className={styles.bigBtn} onClick={() => { setG(null); setShowSec(false); setShowCorrectGuesses(false); }}>
           New Game
         </button>
       </div>
