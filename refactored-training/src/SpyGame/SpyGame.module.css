@@ -124,6 +124,10 @@
   transition: border-color 0.15s;
 }
 
+.goalInput {
+  max-width: 8rem;
+}
+
 .nameInput:focus {
   border-color: var(--spy-primary);
 }
@@ -983,65 +987,267 @@
   margin: 0 0 1.1rem;
 }
 
+.guessLayout {
+  width: 100%;
+  max-width: 980px;
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1.2rem;
+}
+
+.guessSidebar {
+  width: 100%;
+  max-width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  flex: 0 0 320px;
+}
+
+.guessSidebar .guessHeading {
+  margin-top: 0;
+}
+
+.guessSidebar .guessSub {
+  margin-bottom: 0.5rem;
+  text-align: left;
+}
+
 .guessList {
   width: 100%;
-  max-width: 440px;
+  max-width: 560px;
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  margin-bottom: 1.2rem;
+  flex: 1 1 0;
 }
 
 .guessRow {
   background: var(--spy-surface-alt);
   border: 1px solid var(--spy-border);
   border-radius: 8px;
-  padding: 0.65rem 0.9rem;
+  padding: 0.5rem 0.75rem;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.35rem;
 }
 
 .guessTarget {
   font-size: 0.9rem;
   color: var(--spy-muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
 }
 
-.colourRow {
+.guessColorIcon {
+  width: 1.05rem;
+  height: 1.05rem;
+  fill: currentColor;
+  stroke: color-mix(in srgb, currentColor 36%, #111 64%);
+  stroke-width: 0.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex-shrink: 0;
+}
+
+.guessPalette {
+  width: 100%;
+  max-width: 320px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+  align-content: flex-start;
+  flex: 0 0 320px;
+}
+
+.guessPaletteToken {
+  width: 100%;
+  min-width: 0;
+  min-height: 2.45rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  border: 2px solid color-mix(in srgb, currentColor 74%, #fff 26%);
+  background: color-mix(in srgb, var(--spy-surface) 76%, transparent);
+  color: var(--spy-text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.38rem;
+  cursor: grab;
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  transition: transform 0.1s, box-shadow 0.15s, border-color 0.15s, opacity 0.15s, background 0.15s;
+}
+
+.guessPalettePlayer {
+  background: color-mix(in srgb, var(--spy-primary) 12%, var(--spy-surface) 88%);
+}
+
+.guessPaletteToken:hover {
+  transform: translateY(-1px) scale(1.03);
+  box-shadow:
+    0 0 8px color-mix(in srgb, var(--spy-primary-strong) 44%, transparent),
+    0 0 0 1px color-mix(in srgb, currentColor 56%, transparent);
+}
+
+.guessPaletteTokenDragging {
+  opacity: 0.7;
+  cursor: grabbing;
+}
+
+.guessPaletteTokenUsed {
+  border-style: dashed;
+  opacity: 0.86;
+}
+
+.guessPaletteDummy {
+  color: var(--spy-muted);
+  background: color-mix(in srgb, var(--spy-surface-alt) 72%, transparent);
+}
+
+.guessPaletteIcon {
+  width: 1rem;
+  height: 1rem;
+  fill: currentColor;
+  stroke: color-mix(in srgb, currentColor 36%, #111 64%);
+  stroke-width: 0.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.guessRowDropActive {
+  border-color: var(--spy-primary-strong);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--spy-primary-strong) 42%, transparent);
+}
+
+.guessDropZone {
+  min-height: 2.55rem;
+  border-radius: 8px;
+  border: 1px dashed color-mix(in srgb, var(--spy-border) 84%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem;
+  background: color-mix(in srgb, var(--spy-surface) 70%, transparent);
+}
+
+.guessEmpty {
+  font-size: 0.78rem;
+  color: var(--spy-muted);
+  letter-spacing: 0.03em;
+}
+
+.guessAssigned {
+  min-width: 6rem;
+  min-height: 2.4rem;
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  border: 2px solid color-mix(in srgb, currentColor 74%, #fff 26%);
+  background: color-mix(in srgb, var(--spy-surface) 76%, transparent);
+  color: var(--spy-text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: grab;
+  transition: transform 0.1s, box-shadow 0.15s;
+}
+
+.guessAssignedDummy {
+  color: var(--spy-muted);
+  border-style: dashed;
+}
+
+.guessAssigned:hover {
+  transform: scale(1.03);
+  box-shadow:
+    0 0 8px color-mix(in srgb, var(--spy-primary-strong) 42%, transparent),
+    0 0 0 1px color-mix(in srgb, currentColor 56%, transparent);
+}
+
+.guessAssignedIcon {
+  width: 1rem;
+  height: 1rem;
+  fill: currentColor;
+  stroke: color-mix(in srgb, currentColor 36%, #111 64%);
+  stroke-width: 0.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+@media (max-width: 860px) {
+  .guessLayout {
+    flex-direction: column;
+  }
+
+  .guessSidebar {
+    max-width: 100%;
+    flex-basis: auto;
+    order: 2;
+  }
+
+  .guessPalette {
+    max-width: 100%;
+    flex-basis: auto;
+    order: 2;
+  }
+
+  .guessList {
+    max-width: 100%;
+    order: 1;
+  }
+}
+
+.guessChoices {
   display: flex;
   gap: 0.4rem;
   flex-wrap: wrap;
 }
 
-.colourBtn {
-  width: 2.55rem;
-  height: 2.55rem;
-  border-radius: 50%;
-  border: 2px solid color-mix(in srgb, currentColor 74%, #fff 26%);
+.guessChoice {
+  min-height: 2.4rem;
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, currentColor 74%, #fff 26%);
   background: color-mix(in srgb, var(--spy-surface) 76%, transparent);
-  display: grid;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
   place-items: center;
   cursor: pointer;
-  transition: border-color 0.15s, transform 0.1s, box-shadow 0.15s;
+  transition: border-color 0.15s, transform 0.1s, box-shadow 0.15s, background 0.15s;
+  color: var(--spy-text);
+  font-size: 0.8rem;
+  font-weight: 700;
 }
 
-.colourBtn:hover {
+.guessChoice:hover {
   transform: scale(1.1);
   box-shadow:
     0 0 8px color-mix(in srgb, var(--spy-primary-strong) 48%, transparent),
     0 0 0 1px color-mix(in srgb, currentColor 56%, transparent);
 }
 
-.colourBtnSel {
+.guessChoiceSel {
   border-color: var(--spy-primary-strong);
   box-shadow:
     0 0 11px color-mix(in srgb, var(--spy-primary-strong) 70%, transparent),
     0 0 0 2px color-mix(in srgb, currentColor 54%, transparent);
 }
 
-.colourTokenIcon {
-  width: 124%;
-  height: 124%;
+.guessChoiceIcon {
+  width: 1rem;
+  height: 1rem;
   fill: currentColor;
   stroke: color-mix(in srgb, currentColor 36%, #111 64%);
   stroke-width: 0.8;
