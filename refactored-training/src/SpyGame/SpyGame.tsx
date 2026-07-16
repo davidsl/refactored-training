@@ -329,6 +329,25 @@ export default function SpyGame() {
     const occupied = new Set(SPY_COLORS.map(c => g.pos[c]));
     return (
       <div className={styles.page}>
+        <div className={styles.turnBar}>
+          <span><strong>{cur.name}</strong>&apos;s Turn</span>
+          <div className={styles.revealArea}>
+            {!showSec ? (
+              <button className={styles.revealBtn} onClick={() => setShowSec(true)}>
+                Reveal my spy
+              </button>
+            ) : (
+              <button
+                className={styles.revealBadge}
+                style={{ background: HEX[cur.secret] }}
+                onClick={() => setShowSec(false)}
+              >
+                {cur.secret.toUpperCase()} &times;
+              </button>
+            )}
+          </div>
+        </div>
+
         <div className={styles.playRow}>
           <div className={styles.boardGrid}>
             {SPACE_VAL.map((val, i) => {
