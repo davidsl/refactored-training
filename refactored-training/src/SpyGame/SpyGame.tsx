@@ -590,7 +590,7 @@ export default function SpyGame() {
     for (const player of g.players) {
       ownerByColor.set(player.secret, player.id);
     }
-    const rows = g.players.map(p => {
+    const playerRows = g.players.map(p => {
       const guessBoard = p.guessBoard;
       const correctColors = Object.entries(guessBoard)
         .filter(([color, occupant]) => {
@@ -604,7 +604,35 @@ export default function SpyGame() {
       return { p, correctColors, bonus, total: g.score[p.secret] + bonus };
     }).sort((a, b) => b.total - a.total);
 
-    const winner = rows[0];
+    const dummyRows = SPY_COLORS
+      .filter(color => !ownerByColor.has(color))
+      .map(color => ({
+        color,
+        label: `Dummy ${color.charAt(0).toUpperCase()}${color.slice(1)}`,
+        score: g.score[color],
+        bonus: 0,
+        total: g.score[color],
+      }));
+
+    const scoreRows = [
+      ...playerRows.map(({ p, bonus, total }) => ({
+        key: `player-${p.id}`,
+        name: p.name,
+        score: g.score[p.secret],
+        bonus,
+        total,
+      })),
+      ...dummyRows.map(({ color, label, score, bonus, total }) => ({
+        key: `dummy-${color}`,
+        name: label,
+        score,
+        bonus,
+        total,
+      })),
+    ].sort((a, b) => b.total - a.total);
+
+    const winnerTotal = playerRows[0]?.total ?? 0;
+    const winners = playerRows.filter(row => row.total === winnerTotal);
     const revealRows = SPY_COLORS.map(color => ({
       color,
       owner: g.players.find(player => player.secret === color) ?? null,
@@ -614,7 +642,12 @@ export default function SpyGame() {
         <div className={styles.overTop}>
           <h2 className={styles.overHeading}>Game Over!</h2>
           <p className={styles.overWinner}>
-            Winner: <span style={{ color: HEX[winner.p.secret] }}>{winner.p.name}</span>
+            Winner:{' '}
+            {winners.map((winner, index) => (
+              <span key={winner.p.id} style={{ color: HEX[winner.p.secret] }}>
+                {index > 0 ? ', ' : ''}{winner.p.name}
+              </span>
+            ))}
           </p>
         </div>
         <div className={styles.overColumns}>
@@ -626,12 +659,12 @@ export default function SpyGame() {
                 <span>Bonus</span>
                 <span>Total</span>
               </div>
-              {rows.map(({ p, bonus, total }) => (
-                <div key={p.id} className={styles.finalRow}>
-                  <span>{p.name}</span>
-                  <span>{g.score[p.secret]}</span>
-                  <span>+{bonus}</span>
-                  <span><strong>{total}</strong></span>
+              {scoreRows.map(row => (
+                <div key={row.key} className={styles.finalRow}>
+                  <span>{row.name}</span>
+                  <span>{row.score}</span>
+                  <span>+{row.bonus}</span>
+                  <span><strong>{row.total}</strong></span>
                 </div>
               ))}
             </div>
@@ -642,14 +675,14 @@ export default function SpyGame() {
               <div className={styles.correctGuessSection}>
                 <h3 className={styles.revealHeading}>Correct Guesses</h3>
                 <div className={styles.correctGuessGrid}>
-                  {rows.map(({ p, correctColors }) => (
+                  {playerRows.map(({ p, correctColors }) => (
                     <div key={p.id} className={styles.correctGuessCard}>
                       <div className={styles.correctGuessHeader}>
                         <span>{p.name}</span>
                         <span>{correctColors.length}/7 correct</span>
                       </div>
                       <div className={styles.correctGuessList}>
-                        {correctColors.length > 0 ? correctColors.map(color => (
+                        {correctColors.length > 0 ? correctColors.map((color: SpyColor) => (
                           <span key={color} className={styles.correctGuessChip} style={{ color: HEX[color] }}>
                             <SpyTokenIcon className={styles.guessAssignedIcon} />
                             {color}
