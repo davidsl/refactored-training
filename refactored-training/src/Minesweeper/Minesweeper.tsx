@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import type { MouseEvent } from 'react';
+import { useNavigate } from 'react-router-dom';
 import styles from './Minesweeper.module.css';
 import { ACTIVE_MOTION_PRESET, MOTION_DELAY_PRESETS } from '../motionPreset';
 
@@ -21,6 +22,8 @@ type WinRecord = {
   time: number;
   date: string;
 };
+
+type Position = { r: number; c: number };
 
 function generateBoard(rows: number, cols: number, mines: number): { board: Board; preReveal: PreReveal } {
   const board: Board = Array.from({ length: rows }, () =>
@@ -75,8 +78,20 @@ function cloneBoard(board: Board): Board {
   return board.map(row => row.map(cell => ({ ...cell })));
 }
 
+function getRandomBombCount(rows: number, cols: number): number {
+  const totalTiles = rows * cols;
+  const maxSafeMines = Math.max(1, totalTiles - 1);
+  const minRecommended = Math.max(1, Math.floor(totalTiles * 0.12));
+  const maxRecommended = Math.min(maxSafeMines, Math.max(minRecommended, Math.floor(totalTiles * 0.22)));
+  return Math.floor(Math.random() * (maxRecommended - minRecommended + 1)) + minRecommended;
+}
+
 function Minesweeper() {
+  const navigate = useNavigate();
   const motion = MOTION_DELAY_PRESETS[ACTIVE_MOTION_PRESET];
+  const CUSTOM_DEFAULT_ROWS = 30;
+  const CUSTOM_DEFAULT_COLS = 30;
+  const CUSTOM_DEFAULT_MINES = 150;
   const TILE_GAP = 0;
   const BOARD_PADDING = 10;
   const TILE_MIN = 10;
@@ -85,9 +100,10 @@ function Minesweeper() {
   const [rows, setRows] = useState(8);
   const [cols, setCols] = useState(8);
   const [mines, setMines] = useState(10);
-  const [draftRows, setDraftRows] = useState(8);
-  const [draftCols, setDraftCols] = useState(8);
-  const [draftMines, setDraftMines] = useState(10);
+  const [draftRows, setDraftRows] = useState(CUSTOM_DEFAULT_ROWS);
+  const [draftCols, setDraftCols] = useState(CUSTOM_DEFAULT_COLS);
+  const [draftMines, setDraftMines] = useState(CUSTOM_DEFAULT_MINES);
+  const [unknownBombCount, setUnknownBombCount] = useState(false);
   const [showCustomize, setShowCustomize] = useState(false);
 
   const initialGame = generateBoard(8, 8, 10);
@@ -95,6 +111,8 @@ function Minesweeper() {
   const [preReveal, setPreReveal] = useState<PreReveal>(initialGame.preReveal);
   const [gameOver, setGameOver] = useState(false);
   const [won, setWon] = useState(false);
+  const [showEndOverlay, setShowEndOverlay] = useState(false);
+  const [explodedBomb, setExplodedBomb] = useState<Position | null>(null);
   const [wrongFlags, setWrongFlags] = useState<{ r: number; c: number }[]>([]);
   const [elapsed, setElapsed] = useState(0);
   const [timerActive, setTimerActive] = useState(false);
@@ -102,6 +120,7 @@ function Minesweeper() {
   const [boardViewport, setBoardViewport] = useState({ width: 0, height: 0 });
   const timerRef = useRef<number | null>(null);
   const boardFrameRef = useRef<HTMLDivElement | null>(null);
+  const customBoardTooSmall = draftRows < 5 || draftCols < 5;
 
   function startNewGame(nextRows: number, nextCols: number, nextMines: number) {
     const { board, preReveal } = generateBoard(nextRows, nextCols, nextMines);
@@ -109,6 +128,8 @@ function Minesweeper() {
     setPreReveal(preReveal);
     setGameOver(false);
     setWon(false);
+    setShowEndOverlay(false);
+    setExplodedBomb(null);
     setWrongFlags([]);
     setElapsed(0);
     setTimerActive(false);
@@ -116,6 +137,7 @@ function Minesweeper() {
   }
 
   function applyPreset(nextRows: number, nextCols: number, nextMines: number) {
+    setShowCustomize(false);
     setRows(nextRows);
     setCols(nextCols);
     setMines(nextMines);
@@ -125,11 +147,38 @@ function Minesweeper() {
     startNewGame(nextRows, nextCols, nextMines);
   }
 
-  function applyDraftSettings() {
-    const nextRows = Math.max(5, Math.min(30, Number(draftRows)));
-    const nextCols = Math.max(5, Math.min(30, Number(draftCols)));
+  const hasGameStarted = timerActive || elapsed > 0 || boardState.some(row => row.some(cell => cell.revealed || cell.flagged));
+
+  function applyDraftSettings(overrides?: { rows?: number; cols?: number; mines?: number; unknownBombCount?: boolean }) {
+    const proposedRows = overrides?.rows ?? draftRows;
+    const proposedCols = overrides?.cols ?? draftCols;
+    const proposedMines = overrides?.mines ?? draftMines;
+    const useUnknownBombCount = overrides?.unknownBombCount ?? unknownBombCount;
+
+    const nextRows = Math.max(0, Math.min(30, Number(proposedRows)));
+    const nextCols = Math.max(0, Math.min(30, Number(proposedCols)));
+    const draftMaxMines = Math.max(1, nextRows * nextCols - 1);
+    const sanitizedDraftMines = Math.max(1, Math.min(draftMaxMines, Number(proposedMines)));
+
+    if (nextRows < 5 || nextCols < 5) {
+      setDraftRows(nextRows);
+      setDraftCols(nextCols);
+      setDraftMines(sanitizedDraftMines);
+      setUnknownBombCount(useUnknownBombCount);
+      return;
+    }
+
     const maxMines = nextRows * nextCols - 1;
-    const nextMines = Math.max(1, Math.min(maxMines, Number(draftMines)));
+    const nextMines = useUnknownBombCount
+      ? getRandomBombCount(nextRows, nextCols)
+      : Math.max(1, Math.min(maxMines, Number(proposedMines)));
+
+    if (!gameOver && hasGameStarted) {
+      const shouldRestart = window.confirm('Start a new custom game with these settings? Your current progress will be lost.');
+      if (!shouldRestart) {
+        return;
+      }
+    }
 
     setRows(nextRows);
     setCols(nextCols);
@@ -137,6 +186,7 @@ function Minesweeper() {
     setDraftRows(nextRows);
     setDraftCols(nextCols);
     setDraftMines(nextMines);
+    setUnknownBombCount(useUnknownBombCount);
     startNewGame(nextRows, nextCols, nextMines);
   }
 
@@ -231,6 +281,7 @@ function Minesweeper() {
     if (cell.revealed) {
       const newBoard = cloneBoard(boardState);
       let bombTriggered = false;
+      let triggeredBomb: Position | null = null;
       for (let dr = -1; dr <= 1; dr++) {
         for (let dc = -1; dc <= 1; dc++) {
           if (dr === 0 && dc === 0) continue;
@@ -241,6 +292,9 @@ function Minesweeper() {
               if (neighbor.mine) {
                 neighbor.revealed = true;
                 bombTriggered = true;
+                if (!triggeredBomb) {
+                  triggeredBomb = { r: nr, c: nc };
+                }
               } else if (neighbor.adjacent === 0) {
                 floodReveal(newBoard, nr, nc);
               } else {
@@ -266,8 +320,10 @@ function Minesweeper() {
         }
         setBoard(newBoard);
         setWrongFlags(wrongs);
+        setExplodedBomb(triggeredBomb);
         setTimerActive(false);
         setGameOver(true);
+        setShowEndOverlay(true);
         return;
       }
       setBoard(newBoard);
@@ -282,6 +338,7 @@ function Minesweeper() {
         setTimerActive(false);
         setGameOver(true);
         setWon(true);
+        setShowEndOverlay(true);
       }
       return;
     }
@@ -333,8 +390,10 @@ function Minesweeper() {
       }
       setBoard(newBoard);
       setWrongFlags(wrongs);
+      setExplodedBomb({ r, c });
       setTimerActive(false);
       setGameOver(true);
+      setShowEndOverlay(true);
       return;
     }
     flood(r, c);
@@ -349,6 +408,7 @@ function Minesweeper() {
       setTimerActive(false);
       setGameOver(true);
       setWon(true);
+      setShowEndOverlay(true);
     }
   }
 
@@ -369,13 +429,13 @@ function Minesweeper() {
       <header className={styles.headerBar}>
         <div>
           <h2>Minesweeper</h2>
-          <p className={styles.subtitle}>Sweep efficiently, mark confidently, and avoid cortisol spikes.</p>
         </div>
-        <button onClick={reset} className={styles.restartButton}>Restart</button>
       </header>
 
       <div className={styles.workspace}>
         <aside className={styles.controlRail}>
+          <button onClick={reset} className={styles.restartButton}>Restart</button>
+
           <section className={styles.panelCard}>
             <h3>Presets</h3>
             <div className={styles.presetGroup}>
@@ -406,14 +466,40 @@ function Minesweeper() {
               >
                 Large
               </button>
+              <button
+                type="button"
+                className={
+                  styles.presetButton +
+                  (rows === CUSTOM_DEFAULT_ROWS && cols === CUSTOM_DEFAULT_COLS && mines === CUSTOM_DEFAULT_MINES
+                    ? ' ' + styles.selectedButton
+                    : '')
+                }
+                onClick={() => applyPreset(CUSTOM_DEFAULT_ROWS, CUSTOM_DEFAULT_COLS, CUSTOM_DEFAULT_MINES)}
+              >
+                Max
+              </button>
+              <button
+                type="button"
+                className={
+                  styles.presetButton +
+                  (showCustomize && rows === draftRows && cols === draftCols && mines === draftMines
+                    ? ' ' + styles.selectedButton
+                    : '')
+                }
+                onClick={() => {
+                  setShowCustomize(true);
+                  setUnknownBombCount(false);
+                  applyDraftSettings({
+                    rows: CUSTOM_DEFAULT_ROWS,
+                    cols: CUSTOM_DEFAULT_COLS,
+                    mines: CUSTOM_DEFAULT_MINES,
+                    unknownBombCount: false,
+                  });
+                }}
+              >
+                Custom Game
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={() => setShowCustomize(v => !v)}
-              className={styles.customizeToggle + (showCustomize ? ' ' + styles.customizeToggleOpen : '')}
-            >
-              {showCustomize ? 'Hide Custom Settings' : 'Open Custom Settings'}
-            </button>
           </section>
 
           {showCustomize && (
@@ -421,7 +507,6 @@ function Minesweeper() {
               className={styles.customForm}
               onSubmit={e => {
                 e.preventDefault();
-                applyDraftSettings();
               }}
             >
               <label className={styles.customLabel}>
@@ -429,10 +514,13 @@ function Minesweeper() {
                 <input
                   className={styles.customInput}
                   type="number"
-                  min={5}
+                  min={0}
                   max={30}
                   value={draftRows}
-                  onChange={e => setDraftRows(Math.max(5, Math.min(30, Number(e.target.value))))}
+                  onChange={e => {
+                    const nextRows = Math.max(0, Math.min(30, Number(e.target.value)));
+                    applyDraftSettings({ rows: nextRows });
+                  }}
                 />
               </label>
               <label className={styles.customLabel}>
@@ -440,35 +528,58 @@ function Minesweeper() {
                 <input
                   className={styles.customInput}
                   type="number"
-                  min={5}
+                  min={0}
                   max={30}
                   value={draftCols}
-                  onChange={e => setDraftCols(Math.max(5, Math.min(30, Number(e.target.value))))}
-                />
-              </label>
-              <label className={styles.customLabel}>
-                Mines
-                <input
-                  className={styles.customInput}
-                  type="number"
-                  min={1}
-                  max={Math.max(1, draftRows * draftCols - 1)}
-                  value={draftMines}
                   onChange={e => {
-                    const maxMines = Math.max(1, draftRows * draftCols - 1);
-                    setDraftMines(Math.max(1, Math.min(maxMines, Number(e.target.value))));
+                    const nextCols = Math.max(0, Math.min(30, Number(e.target.value)));
+                    applyDraftSettings({ cols: nextCols });
                   }}
                 />
               </label>
-              <button type="submit" className={styles.applyButton}>Apply</button>
+              <label className={styles.customLabel}>
+                Bombs
+                <input
+                  className={styles.customInput}
+                  type={unknownBombCount ? 'text' : 'number'}
+                  min={unknownBombCount ? undefined : 1}
+                  max={unknownBombCount ? undefined : Math.max(1, draftRows * draftCols - 1)}
+                  value={unknownBombCount ? '??' : draftMines}
+                  disabled={unknownBombCount}
+                  onChange={e => {
+                    const maxMines = Math.max(1, draftRows * draftCols - 1);
+                    const nextMines = Math.max(1, Math.min(maxMines, Number(e.target.value)));
+                    applyDraftSettings({ mines: nextMines });
+                  }}
+                />
+              </label>
+              <label className={styles.customCheckboxLabel}>
+                <input
+                  type="checkbox"
+                  checked={unknownBombCount}
+                  onChange={e => {
+                    applyDraftSettings({ unknownBombCount: e.target.checked });
+                  }}
+                />
+                Start with unknown number of bombs
+              </label>
+              {customBoardTooSmall && (
+                <p className={styles.customValidationMessage}>Rows and columns lower than 5 are not possible.</p>
+              )}
             </form>
           )}
 
-          <section className={styles.panelCard}>
+          <section className={styles.panelCard + ' ' + styles.statusCard}>
             <h3>Round Status</h3>
             <div className={styles.statusRow}>
-              <span>💣 {bombsLeft}</span>
-              <span>⏱ {elapsed}s</span>
+              <div className={styles.statusItem}>
+                <span className={styles.statusLabel}>Bombs Left</span>
+                <span className={styles.statusValue}>💣 {unknownBombCount ? '??' : bombsLeft}</span>
+              </div>
+              <div className={styles.statusItem}>
+                <span className={styles.statusLabel}>Time</span>
+                <span className={styles.statusValue}>⏱ {elapsed}s</span>
+              </div>
             </div>
             <p className={styles.instructions}>Right click to flag. Click revealed cells to chord nearby safe tiles.</p>
           </section>
@@ -486,6 +597,7 @@ function Minesweeper() {
                   {row.map((cell, c) => {
                     const isPreReveal = preReveal && preReveal.r === r && preReveal.c === c;
                     const isWrongFlag = wrongFlags.some(f => f.r === r && f.c === c);
+                    const isExplodedBomb = explodedBomb?.r === r && explodedBomb?.c === c;
                     const tileDelay = Math.min(
                       r * motion.mineTileRowWeightMs + c * motion.mineTileColWeightMs,
                       motion.mineTileMaxMs
@@ -495,6 +607,7 @@ function Minesweeper() {
                         key={c}
                         className={
                           (cell.revealed ? styles.revealedTile : isPreReveal ? styles.preRevealTile : styles.tile) +
+                          (isExplodedBomb ? ' ' + styles.explodedBombTile : '') +
                           (isWrongFlag ? ' ' + styles.wrongFlagTile : '')
                         }
                         style={{
@@ -523,7 +636,9 @@ function Minesweeper() {
                       >
                         {cell.revealed
                           ? cell.mine
-                            ? '💣'
+                            ? isExplodedBomb
+                              ? '💥'
+                              : '💣'
                             : isWrongFlag
                               ? '❌'
                               : cell.adjacent > 0
@@ -538,16 +653,34 @@ function Minesweeper() {
                 </div>
               ))}
             </div>
+            {gameOver && showEndOverlay && (
+              <div className={styles.endOverlay} role="dialog" aria-modal="true" aria-label="Game result">
+                <div className={styles.endOverlayCard}>
+                  <h3 className={styles.endOverlayTitle}>{won ? 'You Win!' : 'Game Over!'}</h3>
+                  <p className={styles.endOverlaySubtitle}>
+                    {won
+                      ? `Solved in ${elapsed}s on a ${rows}x${cols} board with ${mines} mines.${unknownBombCount ? ` Hidden bomb count revealed: ${mines}.` : ''}`
+                      : `A mine was triggered. Take a breath and run it back.${unknownBombCount ? ` This board had ${mines} bombs.` : ''}`}
+                  </p>
+                  <div className={styles.endOverlayActions}>
+                    <button type="button" className={styles.overlayButton} onClick={() => setShowEndOverlay(false)}>
+                      Go Back To Board
+                    </button>
+                    <button type="button" className={styles.overlayButtonPrimary} onClick={reset}>
+                      New Game
+                    </button>
+                    <button type="button" className={styles.overlayButton} onClick={() => navigate('/leaderboard')}>
+                      Go To Leaderboard
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
           {tileSizeConstrained && !gameOver && (
             <p className={styles.boardScaleHint}>
               Board is heavily scaled to fit. For easier play, reduce rows/columns or mine density.
             </p>
-          )}
-          {gameOver && (
-            <div className={styles.gameOverMsg} style={{ color: won ? '#0f8e5f' : '#cc3040' }}>
-              {won ? 'You Win!' : 'Game Over!'}
-            </div>
           )}
         </section>
       </div>
