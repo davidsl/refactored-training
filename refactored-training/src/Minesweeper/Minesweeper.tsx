@@ -3,6 +3,7 @@ import type { MouseEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from './Minesweeper.module.css';
 import { ACTIVE_MOTION_PRESET, MOTION_DELAY_PRESETS } from '../motionPreset';
+import ConfirmModal from '../Leaderboard/ConfirmModal';
 
 type Cell = {
   mine: boolean;
@@ -114,13 +115,17 @@ function Minesweeper() {
   const [showEndOverlay, setShowEndOverlay] = useState(false);
   const [explodedBomb, setExplodedBomb] = useState<Position | null>(null);
   const [wrongFlags, setWrongFlags] = useState<{ r: number; c: number }[]>([]);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [confirmSelectionLabel, setConfirmSelectionLabel] = useState('Custom');
   const [elapsed, setElapsed] = useState(0);
   const [timerActive, setTimerActive] = useState(false);
   const [boardAnimKey, setBoardAnimKey] = useState(0);
   const [boardViewport, setBoardViewport] = useState({ width: 0, height: 0 });
   const timerRef = useRef<number | null>(null);
   const boardFrameRef = useRef<HTMLDivElement | null>(null);
+  const pendingConfirmActionRef = useRef<(() => void) | null>(null);
   const customBoardTooSmall = draftRows < 5 || draftCols < 5;
+  const hasGameStarted = timerActive || elapsed > 0 || boardState.some(row => row.some(cell => cell.revealed || cell.flagged));
 
   function startNewGame(nextRows: number, nextCols: number, nextMines: number) {
     const { board, preReveal } = generateBoard(nextRows, nextCols, nextMines);
@@ -136,20 +141,34 @@ function Minesweeper() {
     setBoardAnimKey(v => v + 1);
   }
 
-  function applyPreset(nextRows: number, nextCols: number, nextMines: number) {
-    setShowCustomize(false);
-    setRows(nextRows);
-    setCols(nextCols);
-    setMines(nextMines);
-    setDraftRows(nextRows);
-    setDraftCols(nextCols);
-    setDraftMines(nextMines);
-    startNewGame(nextRows, nextCols, nextMines);
+  function requestStartNewGame(selectionLabel: string, onConfirmAction: () => void) {
+    if (!gameOver && hasGameStarted) {
+      setConfirmSelectionLabel(selectionLabel);
+      pendingConfirmActionRef.current = onConfirmAction;
+      setShowConfirmModal(true);
+      return;
+    }
+
+    onConfirmAction();
   }
 
-  const hasGameStarted = timerActive || elapsed > 0 || boardState.some(row => row.some(cell => cell.revealed || cell.flagged));
+  function applyPreset(nextRows: number, nextCols: number, nextMines: number, presetLabel: string) {
+    requestStartNewGame(presetLabel, () => {
+      setShowCustomize(false);
+      setRows(nextRows);
+      setCols(nextCols);
+      setMines(nextMines);
+      setDraftRows(nextRows);
+      setDraftCols(nextCols);
+      setDraftMines(nextMines);
+      startNewGame(nextRows, nextCols, nextMines);
+    });
+  }
 
-  function applyDraftSettings(overrides?: { rows?: number; cols?: number; mines?: number; unknownBombCount?: boolean }) {
+  function applyDraftSettings(
+    overrides?: { rows?: number; cols?: number; mines?: number; unknownBombCount?: boolean },
+    selectionLabel = 'Custom'
+  ) {
     const proposedRows = overrides?.rows ?? draftRows;
     const proposedCols = overrides?.cols ?? draftCols;
     const proposedMines = overrides?.mines ?? draftMines;
@@ -173,21 +192,30 @@ function Minesweeper() {
       ? getRandomBombCount(nextRows, nextCols)
       : Math.max(1, Math.min(maxMines, Number(proposedMines)));
 
-    if (!gameOver && hasGameStarted) {
-      const shouldRestart = window.confirm('Start a new custom game with these settings? Your current progress will be lost.');
-      if (!shouldRestart) {
-        return;
-      }
-    }
+    requestStartNewGame(selectionLabel, () => {
+      setRows(nextRows);
+      setCols(nextCols);
+      setMines(nextMines);
+      setDraftRows(nextRows);
+      setDraftCols(nextCols);
+      setDraftMines(nextMines);
+      setUnknownBombCount(useUnknownBombCount);
+      startNewGame(nextRows, nextCols, nextMines);
+    });
+  }
 
-    setRows(nextRows);
-    setCols(nextCols);
-    setMines(nextMines);
-    setDraftRows(nextRows);
-    setDraftCols(nextCols);
-    setDraftMines(nextMines);
-    setUnknownBombCount(useUnknownBombCount);
-    startNewGame(nextRows, nextCols, nextMines);
+  function handleConfirmStartNewGame() {
+    const pendingAction = pendingConfirmActionRef.current;
+    pendingConfirmActionRef.current = null;
+    setShowConfirmModal(false);
+    if (pendingAction) {
+      pendingAction();
+    }
+  }
+
+  function handleCancelStartNewGame() {
+    pendingConfirmActionRef.current = null;
+    setShowConfirmModal(false);
   }
 
   // Count placed flags
@@ -421,7 +449,12 @@ function Minesweeper() {
   }
 
   function reset() {
-    startNewGame(rows, cols, mines);
+    const nextMines = unknownBombCount ? getRandomBombCount(rows, cols) : mines;
+    if (unknownBombCount) {
+      setMines(nextMines);
+      setDraftMines(nextMines);
+    }
+    startNewGame(rows, cols, nextMines);
   }
 
   return (
@@ -444,7 +477,7 @@ function Minesweeper() {
                 className={
                   styles.presetButton + (rows === 8 && cols === 8 && mines === 10 ? ' ' + styles.selectedButton : '')
                 }
-                onClick={() => applyPreset(8, 8, 10)}
+                onClick={() => applyPreset(8, 8, 10, 'Small')}
               >
                 Small
               </button>
@@ -453,7 +486,7 @@ function Minesweeper() {
                 className={
                   styles.presetButton + (rows === 16 && cols === 16 && mines === 40 ? ' ' + styles.selectedButton : '')
                 }
-                onClick={() => applyPreset(16, 16, 40)}
+                onClick={() => applyPreset(16, 16, 40, 'Medium')}
               >
                 Medium
               </button>
@@ -462,7 +495,7 @@ function Minesweeper() {
                 className={
                   styles.presetButton + (rows === 16 && cols === 30 && mines === 99 ? ' ' + styles.selectedButton : '')
                 }
-                onClick={() => applyPreset(16, 30, 99)}
+                onClick={() => applyPreset(16, 30, 99, 'Large')}
               >
                 Large
               </button>
@@ -474,7 +507,7 @@ function Minesweeper() {
                     ? ' ' + styles.selectedButton
                     : '')
                 }
-                onClick={() => applyPreset(CUSTOM_DEFAULT_ROWS, CUSTOM_DEFAULT_COLS, CUSTOM_DEFAULT_MINES)}
+                onClick={() => applyPreset(CUSTOM_DEFAULT_ROWS, CUSTOM_DEFAULT_COLS, CUSTOM_DEFAULT_MINES, 'Max')}
               >
                 Max
               </button>
@@ -494,7 +527,7 @@ function Minesweeper() {
                     cols: CUSTOM_DEFAULT_COLS,
                     mines: CUSTOM_DEFAULT_MINES,
                     unknownBombCount: false,
-                  });
+                  }, 'Custom');
                 }}
               >
                 Custom Game
@@ -684,6 +717,15 @@ function Minesweeper() {
           )}
         </section>
       </div>
+
+      <ConfirmModal
+        open={showConfirmModal}
+        message={`Start a new ${confirmSelectionLabel} game with these settings? Your current progress will be lost.`}
+        onConfirm={handleConfirmStartNewGame}
+        onCancel={handleCancelStartNewGame}
+        confirmText="Start New Game"
+        cancelText="Keep Current Game"
+      />
     </div>
   );
 }
