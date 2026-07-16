@@ -38,6 +38,7 @@ interface Player {
   id: number;
   name: string;
   secret: SpyColor;
+  guessBoard: Partial<Record<SpyColor, GuessOccupant>>;
 }
 
 type GuessOccupant =
@@ -165,6 +166,7 @@ export default function SpyGame() {
       id: i,
       name: n.trim() || `Player ${i + 1}`,
       secret: colors[i],
+      guessBoard: {},
     }));
     setG({
       phase: 'play', players,
@@ -271,20 +273,22 @@ export default function SpyGame() {
   function submitGuess() {
     setG(prev => {
       if (!prev) return prev;
+      const players = prev.players.map((player, index) => (
+        index === prev.guesser ? { ...player, guessBoard: prev.guessBoard } : player
+      ));
+
+      if (prev.guesser < prev.players.length - 1) {
+        return { ...prev, players, guesser: prev.guesser + 1, guessBoard: {} };
+      }
+
       const score = { ...prev.score };
-      const guessByPlayer = new Map<number, SpyColor>();
-      for (const [color, occupant] of Object.entries(prev.guessBoard) as Array<[SpyColor, GuessOccupant | undefined]>) {
-        if (occupant?.kind === 'player') {
-          guessByPlayer.set(occupant.playerId, color);
+      for (const player of players) {
+        const guess = Object.entries(player.guessBoard).find(([, occupant]) => occupant?.kind === 'player' && occupant.playerId === player.id)?.[0] as SpyColor | undefined;
+        if (guess === player.secret) {
+          score[player.secret] += 5;
         }
       }
-      for (const p of prev.players) {
-        const guess = guessByPlayer.get(p.id);
-        if (guess === p.secret) {
-          score[p.secret] += 5;
-        }
-      }
-      return { ...prev, phase: 'over' as Phase, score };
+      return { ...prev, players, phase: 'over' as Phase, score };
     });
   }
 
@@ -462,6 +466,7 @@ export default function SpyGame() {
   // ── Guessing phase ────────────────────────────────────────────────────────────
 
   if (g.phase === 'guess') {
+    const guesser = g.players[g.guesser];
     const playerCount = g.players.length;
     const dummyCount = SPY_COLORS.length - playerCount;
     const assignedPlayers = new Set<number>();
@@ -523,8 +528,20 @@ export default function SpyGame() {
           </div>
           <div className={styles.guessSidebar}>
             <h2 className={styles.guessHeading}>Final Guesses</h2>
+            <div className={styles.guessProgress}>
+              <div className={styles.guessProgressText}>
+                <span>Player {g.guesser + 1} of {g.players.length}</span>
+                <span>{g.players.length - g.guesser - 1} left</span>
+              </div>
+              <div className={styles.guessProgressBar} aria-hidden="true">
+                <div
+                  className={styles.guessProgressFill}
+                  style={{ width: `${((g.guesser + 1) / g.players.length) * 100}%` }}
+                />
+              </div>
+            </div>
             <p className={styles.guessSub}>
-              Drag each player and dummy onto a color slot. Each player can only be used once.
+              Pass to <strong>{guesser.name}</strong>. Drag each player and dummy onto a color slot. Each player can only be used once.
             </p>
             <div className={styles.guessPalette}>
             {g.players.map(player => (
@@ -555,7 +572,9 @@ export default function SpyGame() {
             ))}
             </div>
             <button className={styles.bigBtn} disabled={!allSet} onClick={submitGuess}>
-              Reveal Results
+              {g.guesser < g.players.length - 1
+                ? `Next → ${g.players[g.guesser + 1].name}`
+                : 'Reveal Results'}
             </button>
           </div>
         </div>
@@ -567,9 +586,11 @@ export default function SpyGame() {
 
   if (g.phase === 'over') {
     const guessByPlayer = new Map<number, SpyColor>();
-    for (const [color, occupant] of Object.entries(g.guessBoard) as Array<[SpyColor, GuessOccupant | undefined]>) {
-      if (occupant?.kind === 'player') {
-        guessByPlayer.set(occupant.playerId, color);
+    for (const player of g.players) {
+      for (const [color, occupant] of Object.entries(player.guessBoard) as Array<[SpyColor, GuessOccupant | undefined]>) {
+        if (occupant?.kind === 'player' && occupant.playerId === player.id) {
+          guessByPlayer.set(player.id, color);
+        }
       }
     }
     const rows = g.players.map(p => {
@@ -656,6 +677,18 @@ export default function SpyGame() {
     <div className={styles.page}>
       <div className={styles.turnBar}>
         <span><strong>{cur.name}</strong>&apos;s Turn</span>
+        <div className={styles.turnProgress}>
+          <div className={styles.turnProgressText}>
+            <span>Turn {g.cur + 1} of {g.players.length}</span>
+            <span>{g.players.length - g.cur - 1} after this</span>
+          </div>
+          <div className={styles.turnProgressBar} aria-hidden="true">
+            <div
+              className={styles.turnProgressFill}
+              style={{ width: `${((g.cur + 1) / g.players.length) * 100}%` }}
+            />
+          </div>
+        </div>
         <div className={styles.revealArea}>
           {!showSec ? (
             <button className={styles.revealBtn} onClick={() => setShowSec(true)}>

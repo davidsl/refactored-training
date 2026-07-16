@@ -269,6 +269,39 @@
   align-items: center;
 }
 
+.turnProgress {
+  flex: 1 1 240px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 220px;
+}
+
+.turnProgressText {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.72rem;
+  color: var(--spy-muted);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.turnProgressBar {
+  height: 0.45rem;
+  border-radius: 999px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--spy-surface-alt) 78%, #000 22%);
+  border: 1px solid color-mix(in srgb, var(--spy-border) 70%, transparent);
+}
+
+.turnProgressFill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--spy-primary), var(--spy-primary-strong));
+  transition: width 0.25s ease;
+}
+
 .revealBtn {
   min-width: 126px;
   height: 32px;
@@ -1012,6 +1045,37 @@
 .guessSidebar .guessSub {
   margin-bottom: 0.5rem;
   text-align: left;
+}
+
+.guessProgress {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.guessProgressText {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.72rem;
+  color: var(--spy-muted);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.guessProgressBar {
+  height: 0.45rem;
+  border-radius: 999px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--spy-surface-alt) 78%, #000 22%);
+  border: 1px solid color-mix(in srgb, var(--spy-border) 70%, transparent);
+}
+
+.guessProgressFill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--spy-primary), var(--spy-primary-strong));
+  transition: width 0.25s ease;
 }
 
 .guessList {
