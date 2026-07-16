@@ -72,6 +72,23 @@ function mkScore(): Record<SpyColor, number> {
   return Object.fromEntries(SPY_COLORS.map(c => [c, 0])) as Record<SpyColor, number>;
 }
 
+function TreasureIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      width="1em"
+      height="1em"
+      role="img"
+      aria-label="Treasure"
+    >
+      <path d="M12 2L21 10L12 22L3 10L12 2Z" />
+      <path d="M12 2L16 10L12 22L8 10L12 2Z" />
+      <path d="M3 10H21" />
+    </svg>
+  );
+}
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function SpyGame() {
@@ -304,7 +321,7 @@ export default function SpyGame() {
     return (
       <div className={styles.page}>
         <div className={styles.chooseTreasureBanner}>
-          <span className={styles.gemLarge}>💎</span>
+          <TreasureIcon className={styles.gemLarge} />
           <h2 className={styles.chooseTreasureHeading}>{cur.name}, where should the Treasure go?</h2>
           <button className={styles.showBoardBtn} onClick={() => setShowBoardWhileChoosing(!showBoardWhileChoosing)}>
             {showBoardWhileChoosing ? 'Hide' : 'Show'} current board
@@ -324,7 +341,7 @@ export default function SpyGame() {
                     style={{ gridRow: row + 1, gridColumn: col + 1 }}
                   >
                     <div className={styles.miniBoardTileTop}>
-                      {isSafe && <span className={styles.miniBoardLabel}>T</span>}
+                      {isSafe && <TreasureIcon className={styles.miniBoardLabel} />}
                       <span className={styles.miniBoardValue}>{val > 0 ? `+${val}` : val}</span>
                     </div>
                     <div className={styles.miniBoardTokens}>
@@ -479,6 +496,21 @@ export default function SpyGame() {
     <div className={styles.page}>
       <div className={styles.turnBar}>
         <span><strong>{cur.name}</strong>&apos;s Turn</span>
+        <div className={styles.revealArea}>
+          {!showSec ? (
+            <button className={styles.revealBtn} onClick={() => setShowSec(true)}>
+              Reveal my spy
+            </button>
+          ) : (
+            <button
+              className={styles.revealBadge}
+              style={{ background: HEX[cur.secret] }}
+              onClick={() => setShowSec(false)}
+            >
+              {cur.secret.toUpperCase()} &times;
+            </button>
+          )}
+        </div>
       </div>
 
       <div className={styles.playRow}>
@@ -504,7 +536,12 @@ export default function SpyGame() {
               onDrop={e => { e.preventDefault(); handleTileDrop(i); }}
             >
               <div className={styles.tileTop}>
-                {isSafe && <span className={styles.tileSafeLabel}>TREASURE</span>}
+                {isSafe && (
+                  <span className={styles.tileSafeLabel}>
+                    <TreasureIcon className={styles.treasureIconInline} />
+                    TREASURE
+                  </span>
+                )}
                 <span className={`${styles.tileVal} ${val > 0 ? styles.tilePos : val < 0 ? styles.tileNeg : ''}`}>
                   {val > 0 ? `+${val}` : val}
                 </span>
@@ -586,25 +623,6 @@ export default function SpyGame() {
           })}
         </div>
       </div>
-      </div>
-
-      <div className={styles.revealBottom}>
-        {!showSec
-          ? (
-            <button className={styles.revealBtnSmall} onClick={() => setShowSec(true)}>
-              Reveal my spy
-            </button>
-          )
-          : (
-            <button
-              className={styles.revealBadgeSmall}
-              style={{ background: HEX[cur.secret] }}
-              onClick={() => setShowSec(false)}
-            >
-              {cur.secret.toUpperCase()} &times;
-            </button>
-          )
-        }
       </div>
 
       {g.deltas !== null && !isAnimating && (
