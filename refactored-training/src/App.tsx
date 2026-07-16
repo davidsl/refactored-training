@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import './App.css'
 import Home from './Home/Home'
@@ -36,22 +36,23 @@ function App() {
   }, [theme])
 
   return (
-    <Router>
+    <Router basename={import.meta.env.BASE_URL}>
       <Header
         theme={theme}
         onToggleTheme={() => setTheme(currentTheme => (currentTheme === 'light' ? 'dark' : 'light'))}
       />
       <main className="appContent">
         <Routes>
-          <Route path="/refactored-training" element={<Home />} />
-          <Route path="/refactored-training/about" element={<About />} />
-          <Route path="/refactored-training/game" element={<Minesweeper />} />
-          <Route path="/refactored-training/leaderboard" element={<Leaderboard />} />
-          <Route path="/refactored-training/styling-examples" element={<StylingExamples />} />
-          <Route path="/refactored-training/thumbnails" element={<Thumbnails />} />
-          <Route path="/refactored-training/clicking-game" element={<ClickingGame />} />
-          <Route path="/refactored-training/table" element={<TableDemo />} />
-          <Route path="/refactored-training/spy-game" element={<SpyGame />} />
+          <Route path="/" element={<Home />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/game" element={<Minesweeper />} />
+          <Route path="/leaderboard" element={<Leaderboard />} />
+          <Route path="/styling-examples" element={<StylingExamples />} />
+          <Route path="/thumbnails" element={<Thumbnails />} />
+          <Route path="/clicking-game" element={<ClickingGame />} />
+          <Route path="/table" element={<TableDemo />} />
+          <Route path="/spy-game" element={<SpyGame />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
     </Router>
