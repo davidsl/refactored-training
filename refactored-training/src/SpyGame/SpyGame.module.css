@@ -1,14 +1,33 @@
 /* SpyGame.module.css — flat selectors only (no nesting) */
 
 .page {
-  min-height: calc(100dvh - 4rem);
-  background: #0d1b2a;
-  color: #d6e4f0;
+  --spy-bg: color-mix(in srgb, var(--surface) 92%, transparent);
+  --spy-surface: color-mix(in srgb, var(--surface-strong) 88%, transparent);
+  --spy-surface-alt: color-mix(in srgb, var(--surface-strong) 80%, var(--surface) 20%);
+  --spy-border: var(--border);
+  --spy-text: var(--text-strong);
+  --spy-muted: var(--text-muted);
+  --spy-primary: var(--primary);
+  --spy-primary-strong: var(--primary-strong);
+  --spy-success: var(--accent);
+  --spy-danger: var(--danger);
+  height: 100%;
+  max-height: 100%;
+  min-height: 0;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--spy-border);
+  box-shadow: var(--shadow-soft);
+  background:
+    radial-gradient(145% 160% at 0% 0%, color-mix(in srgb, var(--spy-primary) 14%, transparent) 0%, transparent 44%),
+    radial-gradient(145% 160% at 100% 0%, color-mix(in srgb, var(--spy-success) 11%, transparent) 0%, transparent 42%),
+    linear-gradient(150deg, var(--spy-surface), var(--spy-bg));
+  color: var(--spy-text);
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 1.25rem 1rem 2rem;
-  font-family: 'Segoe UI', system-ui, sans-serif;
+  font-family: 'Sora', 'Segoe UI', system-ui, sans-serif;
+  overflow: auto;
 }
 
 /* ── Setup ─────────────────────────────────────────────────────────────────── */
@@ -28,16 +47,16 @@
 .title {
   font-size: clamp(1.6rem, 4vw, 2.6rem);
   font-weight: 800;
-  color: #d4ac0d;
+  color: var(--spy-primary-strong);
   letter-spacing: 0.04em;
   text-transform: uppercase;
   margin: 0 0 0.25rem;
-  text-shadow: 0 0 18px rgba(212, 172, 13, 0.4);
+  text-shadow: 0 0 18px color-mix(in srgb, var(--spy-primary-strong) 40%, transparent);
 }
 
 .sub {
   font-size: 0.8rem;
-  color: #7f9cb5;
+  color: var(--spy-muted);
   margin: 0;
   letter-spacing: 0.06em;
 }
@@ -58,7 +77,7 @@
 
 .fieldLabel {
   font-size: 0.9rem;
-  color: #a0b8cc;
+  color: var(--spy-muted);
   min-width: 4.5rem;
 }
 
@@ -71,9 +90,9 @@
   width: 2.6rem;
   height: 2.6rem;
   border-radius: 50%;
-  border: 2px solid #2e4a63;
-  background: #1a2e42;
-  color: #a0b8cc;
+  border: 2px solid var(--spy-border);
+  background: var(--spy-surface-alt);
+  color: var(--spy-muted);
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
@@ -81,9 +100,9 @@
 }
 
 .numBtnActive {
-  background: #d4ac0d;
-  border-color: #d4ac0d;
-  color: #0d1b2a;
+  background: linear-gradient(125deg, var(--spy-primary), var(--spy-primary-strong));
+  border-color: transparent;
+  color: #fff;
 }
 
 .nameFields {
@@ -95,30 +114,34 @@
 .nameInput {
   width: 100%;
   padding: 0.55rem 0.85rem;
-  background: #1a2e42;
-  border: 1px solid #2e4a63;
+  background: var(--spy-surface-alt);
+  border: 1px solid var(--spy-border);
   border-radius: 6px;
-  color: #d6e4f0;
+  color: var(--spy-text);
   font-size: 0.95rem;
   box-sizing: border-box;
   outline: none;
   transition: border-color 0.15s;
 }
 
+.goalInput {
+  max-width: 8rem;
+}
+
 .nameInput:focus {
-  border-color: #d4ac0d;
+  border-color: var(--spy-primary);
 }
 
 .nameInput::placeholder {
-  color: #4a6a82;
+  color: color-mix(in srgb, var(--spy-muted) 70%, transparent);
 }
 
 .bigBtn {
   padding: 0.7rem 1.5rem;
-  background: #d4ac0d;
+  background: linear-gradient(125deg, var(--spy-primary), var(--spy-primary-strong));
   border: none;
   border-radius: 8px;
-  color: #0d1b2a;
+  color: #fff;
   font-size: 1rem;
   font-weight: 700;
   cursor: pointer;
@@ -130,7 +153,7 @@
 }
 
 .bigBtn:hover {
-  background: #e8be0f;
+  filter: brightness(1.06);
 }
 
 .bigBtn:disabled {
@@ -139,14 +162,14 @@
 }
 
 .rulesBox {
-  background: #1a2e42;
-  border: 1px solid #2e4a63;
+  background: var(--spy-surface-alt);
+  border: 1px solid var(--spy-border);
   border-radius: 8px;
   padding: 0.75rem 1rem;
 }
 
 .rulesSummary {
-  color: #a0b8cc;
+  color: var(--spy-muted);
   font-size: 0.9rem;
   cursor: pointer;
   user-select: none;
@@ -156,7 +179,7 @@
   margin: 0.6rem 0 0;
   padding-left: 1.2rem;
   font-size: 0.82rem;
-  color: #8faec6;
+  color: var(--spy-muted);
   line-height: 1.65;
 }
 
@@ -179,7 +202,7 @@
 
 .passHeading {
   font-size: 1.3rem;
-  color: #a0b8cc;
+  color: var(--spy-muted);
   margin: 0;
   text-align: center;
 }
@@ -187,7 +210,7 @@
 .passName {
   font-size: 2rem;
   font-weight: 800;
-  color: #d4ac0d;
+  color: var(--spy-primary-strong);
   text-align: center;
 }
 
@@ -199,7 +222,7 @@
 }
 
 .secretPre {
-  color: #a0b8cc;
+  color: var(--spy-muted);
   margin: 0;
   font-size: 0.95rem;
 }
@@ -217,7 +240,7 @@
 
 .secretNote {
   font-size: 0.82rem;
-  color: #7f9cb5;
+  color: var(--spy-muted);
   margin: 0;
   text-align: center;
 }
@@ -232,12 +255,12 @@
   align-items: center;
   flex-wrap: wrap;
   gap: 0.4rem;
-  background: #1a2e42;
-  border: 1px solid #2e4a63;
+  background: var(--spy-surface-alt);
+  border: 1px solid var(--spy-border);
   border-radius: 8px;
   padding: 0.55rem 1rem;
   font-size: 0.9rem;
-  color: #a0b8cc;
+  color: var(--spy-muted);
   margin-bottom: 0.6rem;
 }
 
@@ -246,12 +269,48 @@
   align-items: center;
 }
 
+.turnProgress {
+  flex: 1 1 240px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 220px;
+}
+
+.turnProgressText {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.72rem;
+  color: var(--spy-muted);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.turnProgressBar {
+  height: 0.45rem;
+  border-radius: 999px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--spy-surface-alt) 78%, #000 22%);
+  border: 1px solid color-mix(in srgb, var(--spy-border) 70%, transparent);
+}
+
+.turnProgressFill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--spy-primary), var(--spy-primary-strong));
+  transition: width 0.25s ease;
+}
+
 .revealBtn {
+  min-width: 126px;
+  height: 32px;
+  box-sizing: border-box;
   padding: 0.3rem 0.75rem;
   background: transparent;
-  border: 1px dashed #3a5a74;
+  border: 1px dashed var(--spy-border);
   border-radius: 5px;
-  color: #7f9cb5;
+  color: var(--spy-muted);
   font-size: 0.78rem;
   cursor: pointer;
   transition: border-color 0.15s, color 0.15s;
@@ -259,11 +318,14 @@
 }
 
 .revealBtn:hover {
-  border-color: #d4ac0d;
-  color: #d4ac0d;
+  border-color: var(--spy-primary);
+  color: var(--spy-primary-strong);
 }
 
 .revealBadge {
+  min-width: 126px;
+  height: 32px;
+  box-sizing: border-box;
   padding: 0.28rem 0.7rem;
   border: none;
   border-radius: 5px;
@@ -277,17 +339,19 @@
 }
 
 .dieInfo {
-  color: #d4ac0d;
+  color: var(--spy-primary-strong);
 }
 
 /* ── Board SVG ──────────────────────────────────────────────────────────────── */
 
 .playRow {
+  --play-row-gap: 0.75rem;
+  --board-gap-total: 21px;
   display: flex;
-  gap: 0.75rem;
+  gap: var(--play-row-gap);
   align-items: flex-start;
   width: 100%;
-  max-width: 720px;
+  max-width: 920px;
 }
 
 .boardGrid {
@@ -302,8 +366,8 @@
 }
 
 .tile {
-  background: #152233;
-  border: 1px solid #2e4a63;
+  background: var(--spy-surface-alt);
+  border: 1px solid var(--spy-border);
   border-radius: 8px;
   display: flex;
   flex-direction: column;
@@ -325,46 +389,77 @@
 }
 
 .tileSafe {
-  border-color: #00bcd4;
+  border-color: color-mix(in srgb, var(--spy-primary) 60%, #00bcd4);
   border-width: 2px;
-  background: #071e22;
-  box-shadow: 0 0 12px rgba(0, 188, 212, 0.45);
+  background: color-mix(in srgb, var(--spy-primary) 14%, var(--spy-surface));
+  box-shadow: 0 0 12px color-mix(in srgb, var(--spy-primary) 38%, transparent);
 }
 
 .tileReachable {
-  border-color: rgba(212, 172, 13, 0.55);
-  background: rgba(212, 172, 13, 0.07);
+  border-color: color-mix(in srgb, var(--spy-primary-strong) 55%, transparent);
+  background: color-mix(in srgb, var(--spy-primary) 10%, transparent);
 }
 
 .tileDragOver {
-  border-color: #d4ac0d;
+  border-color: var(--spy-primary-strong);
   border-width: 2px;
-  background: rgba(212, 172, 13, 0.22);
-  box-shadow: 0 0 12px rgba(212, 172, 13, 0.5);
+  background: color-mix(in srgb, var(--spy-primary) 22%, transparent);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--spy-primary-strong) 50%, transparent);
+}
+
+.tileChooseSelectable {
+  cursor: pointer;
+  border-color: var(--spy-primary);
+  background: color-mix(in srgb, var(--spy-primary) 10%, var(--spy-surface-alt));
+}
+
+.tileChooseSelectable:hover {
+  border-color: var(--spy-primary-strong);
+  background: color-mix(in srgb, var(--spy-primary) 18%, var(--spy-surface-alt));
+  box-shadow: 0 0 10px color-mix(in srgb, var(--spy-primary-strong) 28%, transparent);
+}
+
+.tileChooseOccupied {
+  cursor: not-allowed;
+  opacity: 0.66;
+  border-color: var(--spy-danger);
 }
 
 .tileSafeLabel {
   font-size: 0.38rem;
   font-weight: 800;
-  color: #00e5ff;
+  color: var(--spy-primary-strong);
   letter-spacing: 0.05em;
   text-transform: uppercase;
   line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.14rem;
+}
+
+.treasureIconInline {
+  color: var(--spy-primary-strong);
+  width: 0.72rem;
+  height: 0.72rem;
+  stroke: currentColor;
+  fill: color-mix(in srgb, currentColor 22%, transparent);
+  stroke-width: 1.8;
+  stroke-linejoin: round;
 }
 
 .tileVal {
   font-size: clamp(0.8rem, 2.4vw, 1.1rem);
   font-weight: 800;
-  color: #d6e4f0;
+  color: var(--spy-text);
   line-height: 1;
 }
 
 .tilePos {
-  color: #5dca8a;
+  color: var(--spy-success);
 }
 
 .tileNeg {
-  color: #e07070;
+  color: var(--spy-danger);
 }
 
 .tileInner {
@@ -376,9 +471,9 @@
 .boardCenter {
   grid-row: 2 / 4;
   grid-column: 2 / 4;
-  background: #0a1520;
+  background: color-mix(in srgb, var(--spy-surface) 90%, transparent);
   border-radius: 8px;
-  border: 1px solid #1a2e42;
+  border: 1px solid var(--spy-border);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -388,22 +483,94 @@
 }
 
 .rollBtn {
-  padding: 0.4rem 0.7rem;
-  background: #d4ac0d;
+  min-width: clamp(150px, 32vw, 240px);
+  min-height: clamp(58px, 11vw, 82px);
+  padding: 0.9rem 1.5rem;
+  background: linear-gradient(125deg, var(--spy-primary), var(--spy-primary-strong));
   border: none;
-  border-radius: 6px;
-  color: #0d1b2a;
-  font-size: clamp(0.62rem, 1.6vw, 0.8rem);
-  font-weight: 800;
+  border-radius: 14px;
+  color: #fff;
+  font-size: clamp(1rem, 2.4vw, 1.45rem);
+  font-weight: 900;
   cursor: pointer;
   text-transform: uppercase;
-  letter-spacing: 0.03em;
-  transition: background 0.15s;
+  letter-spacing: 0.08em;
+  box-shadow:
+    0 10px 20px color-mix(in srgb, var(--spy-primary-strong) 36%, transparent),
+    0 0 0 2px color-mix(in srgb, #fff 18%, transparent);
+  animation: rollPulse 0.95s ease-in-out infinite, rollTilt 1.7s ease-in-out infinite;
+  transition: transform 0.14s ease, filter 0.14s ease;
   white-space: nowrap;
 }
 
 .rollBtn:hover {
-  background: #e8be0f;
+  filter: brightness(1.12) saturate(1.12);
+  transform: scale(1.05);
+}
+
+.rollBtn:active {
+  transform: scale(0.97);
+}
+
+.endTurnBtn {
+  min-width: clamp(132px, 24vw, 190px);
+  min-height: clamp(48px, 8vw, 64px);
+  font-size: clamp(0.9rem, 1.8vw, 1.1rem);
+  letter-spacing: 0.05em;
+  animation: endTurnPulse 2.2s ease-in-out infinite;
+}
+
+.endTurnBtn:hover {
+  transform: scale(1.02);
+  filter: brightness(1.06) saturate(1.04);
+}
+
+.endTurnBtn:active {
+  transform: scale(0.98);
+}
+
+@keyframes rollPulse {
+  0% {
+    box-shadow:
+      0 10px 20px color-mix(in srgb, var(--spy-primary-strong) 26%, transparent),
+      0 0 0 0 color-mix(in srgb, var(--spy-primary-strong) 46%, transparent);
+  }
+  50% {
+    box-shadow:
+      0 12px 24px color-mix(in srgb, var(--spy-primary-strong) 48%, transparent),
+      0 0 0 10px color-mix(in srgb, var(--spy-primary-strong) 0%, transparent);
+  }
+  100% {
+    box-shadow:
+      0 10px 20px color-mix(in srgb, var(--spy-primary-strong) 26%, transparent),
+      0 0 0 0 color-mix(in srgb, var(--spy-primary-strong) 0%, transparent);
+  }
+}
+
+@keyframes rollTilt {
+  0% { transform: translateY(0) rotate(-1.6deg); }
+  25% { transform: translateY(-1px) rotate(1.6deg); }
+  50% { transform: translateY(0) rotate(-1.2deg); }
+  75% { transform: translateY(-1px) rotate(1.2deg); }
+  100% { transform: translateY(0) rotate(-1.6deg); }
+}
+
+@keyframes endTurnPulse {
+  0% {
+    box-shadow:
+      0 8px 16px color-mix(in srgb, var(--spy-primary-strong) 22%, transparent),
+      0 0 0 0 color-mix(in srgb, var(--spy-primary-strong) 22%, transparent);
+  }
+  50% {
+    box-shadow:
+      0 9px 17px color-mix(in srgb, var(--spy-primary-strong) 30%, transparent),
+      0 0 0 5px color-mix(in srgb, var(--spy-primary-strong) 0%, transparent);
+  }
+  100% {
+    box-shadow:
+      0 8px 16px color-mix(in srgb, var(--spy-primary-strong) 22%, transparent),
+      0 0 0 0 color-mix(in srgb, var(--spy-primary-strong) 0%, transparent);
+  }
 }
 
 .dieDisplay {
@@ -416,45 +583,62 @@
 .dieNumber {
   font-size: clamp(1.5rem, 4.5vw, 2.2rem);
   font-weight: 900;
-  color: #d4ac0d;
+  color: var(--spy-primary-strong);
   line-height: 1;
 }
 
 .dieLeft {
   font-size: clamp(0.5rem, 1.3vw, 0.65rem);
-  color: #7f9cb5;
+  color: var(--spy-muted);
   line-height: 1;
 }
 
 .dieReady {
   font-size: clamp(0.5rem, 1.3vw, 0.65rem);
-  color: #5dca8a;
+  color: var(--spy-success);
   font-weight: 700;
   line-height: 1;
 }
 
 .centerHint {
   font-size: clamp(0.48rem, 1.2vw, 0.6rem);
-  color: #4a6a82;
+  color: var(--spy-muted);
   margin: 0;
   text-align: center;
   line-height: 1.2;
 }
 
+.chooseHint {
+  font-size: clamp(0.58rem, 1.4vw, 0.76rem);
+  color: var(--spy-muted);
+  margin: 0;
+  text-align: center;
+  font-weight: 700;
+}
+
+.chooseCenterHeading {
+  margin: 0;
+  font-size: clamp(0.72rem, 1.9vw, 0.96rem);
+  line-height: 1.25;
+  color: var(--spy-primary-strong);
+  text-align: center;
+  font-weight: 800;
+}
+
 .undoSmall {
   padding: 0.18rem 0.4rem;
   background: transparent;
-  border: 1px solid #2e4a63;
+  border: 1px solid var(--spy-border);
   border-radius: 4px;
-  color: #5a7a94;
+  color: var(--spy-muted);
   font-size: clamp(0.5rem, 1.3vw, 0.65rem);
   cursor: pointer;
   transition: border-color 0.15s, color 0.15s;
 }
 
 .undoSmall:hover {
-  border-color: #d4ac0d;
-  color: #d4ac0d;
+  border-color: var(--spy-primary);
+  color: var(--spy-primary-strong);
 }
 
 .centerActions {
@@ -465,7 +649,7 @@
 
 .confirmBtn {
   padding: 0.18rem 0.5rem;
-  background: #27ae60;
+  background: color-mix(in srgb, var(--spy-success) 82%, #1b8f53);
   border: none;
   border-radius: 4px;
   color: white;
@@ -476,7 +660,7 @@
 }
 
 .confirmBtn:hover {
-  background: #2ecc71;
+  filter: brightness(1.06);
 }
 
 .tileTokens {
@@ -492,13 +676,26 @@
 }
 
 .token {
-  width: clamp(18px, 4.8vw, 30px);
-  height: clamp(18px, 4.8vw, 30px);
+  width: clamp(24px, 6.4vw, 42px);
+  height: clamp(24px, 6.4vw, 42px);
   border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, 0.7);
+  border: 2px solid color-mix(in srgb, currentColor 74%, #fff 26%);
+  background: color-mix(in srgb, var(--spy-surface) 76%, transparent);
+  display: grid;
+  place-items: center;
   position: relative;
   flex-shrink: 0;
   transition: transform 0.1s, box-shadow 0.1s;
+}
+
+.tokenIcon {
+  width: 124%;
+  height: 124%;
+  fill: currentColor;
+  stroke: color-mix(in srgb, currentColor 36%, #111 64%);
+  stroke-width: 0.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .tokenClickable {
@@ -507,8 +704,10 @@
 
 .tokenClickable:hover {
   transform: scale(1.2);
-  border-color: #f1c40f;
-  box-shadow: 0 0 8px rgba(241, 196, 15, 0.55);
+  border-color: var(--spy-primary-strong);
+  box-shadow:
+    0 0 8px color-mix(in srgb, var(--spy-primary-strong) 55%, transparent),
+    0 0 0 1px color-mix(in srgb, currentColor 58%, transparent);
 }
 
 .tokenPending {
@@ -538,10 +737,10 @@
 /* ── Score track ────────────────────────────────────────────────────────────── */
 
 .scoreSide {
-  width: 155px;
+  width: calc((100% - var(--play-row-gap) - var(--board-gap-total)) / 5);
   flex-shrink: 0;
-  background: #152233;
-  border: 1px solid #2e4a63;
+  background: var(--spy-surface-alt);
+  border: 1px solid var(--spy-border);
   border-radius: 8px;
   padding: 0.65rem 0.75rem;
   align-self: stretch;
@@ -550,7 +749,7 @@
 .scoreLabel {
   display: block;
   font-size: 0.72rem;
-  color: #5a7a94;
+  color: var(--spy-muted);
   text-transform: uppercase;
   letter-spacing: 0.07em;
   margin-bottom: 0.45rem;
@@ -566,6 +765,14 @@
   display: flex;
   align-items: center;
   gap: 0.55rem;
+}
+
+.scoreDot {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, #fff 58%, transparent);
+  flex-shrink: 0;
 }
 
 .scoreDelta {
@@ -596,7 +803,7 @@
 .animTitle {
   font-size: clamp(0.6rem, 1.6vw, 0.78rem);
   font-weight: 900;
-  color: #00e5ff;
+  color: var(--spy-primary-strong);
   letter-spacing: 0.1em;
   text-transform: uppercase;
 }
@@ -605,17 +812,17 @@
   margin-top: 0.3rem;
   padding: 0.22rem 0.65rem;
   background: transparent;
-  border: 1px dashed #2e4a63;
+  border: 1px dashed var(--spy-border);
   border-radius: 4px;
-  color: #4a6a82;
+  color: var(--spy-muted);
   font-size: 0.7rem;
   cursor: pointer;
   transition: border-color 0.15s, color 0.15s;
 }
 
 .showLastBtn:hover {
-  border-color: #00bcd4;
-  color: #00bcd4;
+  border-color: var(--spy-primary);
+  color: var(--spy-primary-strong);
 }
 
 .deltaModal {
@@ -629,8 +836,8 @@
 }
 
 .deltaModalInner {
-  background: #0f1b2d;
-  border: 1px solid #2e4a63;
+  background: var(--spy-surface);
+  border: 1px solid var(--spy-border);
   border-radius: 12px;
   padding: 1.4rem 1.6rem;
   width: min(440px, 92vw);
@@ -644,7 +851,7 @@
 .barWrap {
   flex: 1;
   height: 8px;
-  background: #1e3348;
+  background: color-mix(in srgb, var(--spy-surface-alt) 86%, #000 14%);
   border-radius: 4px;
   overflow: hidden;
 }
@@ -658,7 +865,7 @@
 .scoreNum {
   font-size: 0.8rem;
   font-weight: 700;
-  color: #c0d4e4;
+  color: var(--spy-text);
   min-width: 2.2rem;
   text-align: right;
 }
@@ -677,7 +884,7 @@
 
 .hint {
   font-size: 0.85rem;
-  color: #7f9cb5;
+  color: var(--spy-muted);
   margin: 0;
   text-align: center;
 }
@@ -685,17 +892,17 @@
 .undoBtn {
   padding: 0.5rem 1.1rem;
   background: transparent;
-  border: 1px solid #3a5a74;
+  border: 1px solid var(--spy-border);
   border-radius: 6px;
-  color: #7f9cb5;
+  color: var(--spy-muted);
   font-size: 0.88rem;
   cursor: pointer;
   transition: border-color 0.15s, color 0.15s;
 }
 
 .undoBtn:hover {
-  border-color: #d4ac0d;
-  color: #d4ac0d;
+  border-color: var(--spy-primary);
+  color: var(--spy-primary-strong);
 }
 
 .confirmRow {
@@ -704,51 +911,17 @@
   align-items: center;
 }
 
-.revealBottom {
-  margin-top: 0.3rem;
-  display: flex;
-  justify-content: center;
-}
-
-.revealBtnSmall {
-  padding: 0.22rem 0.6rem;
-  background: transparent;
-  border: 1px dashed #2e4a63;
-  border-radius: 4px;
-  color: #4a6a82;
-  font-size: 0.7rem;
-  cursor: pointer;
-  transition: border-color 0.15s, color 0.15s;
-}
-
-.revealBtnSmall:hover {
-  border-color: #d4ac0d;
-  color: #d4ac0d;
-}
-
-.revealBadgeSmall {
-  padding: 0.2rem 0.55rem;
-  border: none;
-  border-radius: 4px;
-  color: white;
-  font-size: 0.7rem;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  cursor: pointer;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
-}
-
 /* ── Scoring event ──────────────────────────────────────────────────────────── */
 
 .scoringHeading {
   font-size: clamp(1.1rem, 3vw, 1.6rem);
   font-weight: 800;
-  color: #d4ac0d;
+  color: var(--spy-primary-strong);
   text-align: center;
   margin: 1rem 0;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  text-shadow: 0 0 14px rgba(212, 172, 13, 0.4);
+  text-shadow: 0 0 14px color-mix(in srgb, var(--spy-primary-strong) 40%, transparent);
 }
 
 .deltaList {
@@ -764,8 +937,8 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  background: #152233;
-  border: 1px solid #2e4a63;
+  background: var(--spy-surface-alt);
+  border: 1px solid var(--spy-border);
   border-radius: 6px;
   padding: 0.5rem 0.85rem;
 }
@@ -783,7 +956,7 @@
 .deltaName {
   flex: 1;
   font-size: 0.9rem;
-  color: #c0d4e4;
+  color: var(--spy-text);
   text-transform: capitalize;
 }
 
@@ -795,37 +968,37 @@
 }
 
 .pos {
-  color: #2ecc71;
+  color: var(--spy-success);
 }
 
 .neg {
-  color: #e74c3c;
+  color: var(--spy-danger);
 }
 
 .zero {
-  color: #7f9cb5;
+  color: var(--spy-muted);
 }
 
 .deltaTo {
   font-size: 0.9rem;
-  color: #a0b8cc;
+  color: var(--spy-muted);
   min-width: 5rem;
 }
 
 .trigger {
-  color: #e74c3c;
+  color: var(--spy-danger);
   font-weight: 700;
   font-size: 0.75rem;
 }
 
 .safeMoved {
   font-size: 0.82rem;
-  color: #d4ac0d;
+  color: var(--spy-primary-strong);
   text-align: center;
   margin: 0.2rem 0 1rem;
   padding: 0.4rem 0.9rem;
-  background: rgba(212, 172, 13, 0.1);
-  border: 1px dashed rgba(212, 172, 13, 0.4);
+  background: color-mix(in srgb, var(--spy-primary) 12%, transparent);
+  border: 1px dashed color-mix(in srgb, var(--spy-primary-strong) 42%, transparent);
   border-radius: 6px;
 }
 
@@ -833,7 +1006,7 @@
 
 .guessHeading {
   font-size: clamp(1.2rem, 3.5vw, 1.7rem);
-  color: #d4ac0d;
+  color: var(--spy-primary-strong);
   text-align: center;
   margin: 0.5rem 0 0.3rem;
   text-transform: uppercase;
@@ -842,57 +1015,308 @@
 
 .guessSub {
   font-size: 0.88rem;
-  color: #7f9cb5;
+  color: var(--spy-muted);
   text-align: center;
   margin: 0 0 1.1rem;
 }
 
-.guessList {
+.guessLayout {
   width: 100%;
-  max-width: 440px;
+  max-width: 980px;
   display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
+  align-items: flex-start;
+  gap: 1rem;
   margin-bottom: 1.2rem;
 }
 
-.guessRow {
-  background: #152233;
-  border: 1px solid #2e4a63;
-  border-radius: 8px;
-  padding: 0.65rem 0.9rem;
+.guessSidebar {
+  width: 100%;
+  max-width: 320px;
   display: flex;
   flex-direction: column;
+  gap: 0.55rem;
+  flex: 0 0 320px;
+}
+
+.guessSidebar .guessHeading {
+  margin-top: 0;
+}
+
+.guessSidebar .guessSub {
+  margin-bottom: 0.5rem;
+  text-align: left;
+}
+
+.guessProgress {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.guessProgressText {
+  display: flex;
+  justify-content: space-between;
   gap: 0.5rem;
+  font-size: 0.72rem;
+  color: var(--spy-muted);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.guessProgressBar {
+  height: 0.45rem;
+  border-radius: 999px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--spy-surface-alt) 78%, #000 22%);
+  border: 1px solid color-mix(in srgb, var(--spy-border) 70%, transparent);
+}
+
+.guessProgressFill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--spy-primary), var(--spy-primary-strong));
+  transition: width 0.25s ease;
+}
+
+.guessList {
+  width: 100%;
+  max-width: 560px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  flex: 1 1 0;
+}
+
+.guessRow {
+  background: var(--spy-surface-alt);
+  border: 1px solid var(--spy-border);
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
 }
 
 .guessTarget {
   font-size: 0.9rem;
-  color: #a0b8cc;
+  color: var(--spy-muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
 }
 
-.colourRow {
+.guessColorIcon {
+  width: 1.05rem;
+  height: 1.05rem;
+  fill: currentColor;
+  stroke: color-mix(in srgb, currentColor 36%, #111 64%);
+  stroke-width: 0.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex-shrink: 0;
+}
+
+.guessPalette {
+  width: 100%;
+  max-width: 320px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+  align-content: flex-start;
+  flex: 0 0 320px;
+}
+
+.guessPaletteToken {
+  width: 100%;
+  min-width: 0;
+  min-height: 2.45rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  border: 2px solid color-mix(in srgb, currentColor 74%, #fff 26%);
+  background: color-mix(in srgb, var(--spy-surface) 76%, transparent);
+  color: var(--spy-text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.38rem;
+  cursor: grab;
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  transition: transform 0.1s, box-shadow 0.15s, border-color 0.15s, opacity 0.15s, background 0.15s;
+}
+
+.guessPalettePlayer {
+  background: color-mix(in srgb, var(--spy-primary) 12%, var(--spy-surface) 88%);
+}
+
+.guessPaletteToken:hover {
+  transform: translateY(-1px) scale(1.03);
+  box-shadow:
+    0 0 8px color-mix(in srgb, var(--spy-primary-strong) 44%, transparent),
+    0 0 0 1px color-mix(in srgb, currentColor 56%, transparent);
+}
+
+.guessPaletteTokenDragging {
+  opacity: 0.7;
+  cursor: grabbing;
+}
+
+.guessPaletteTokenUsed {
+  border-style: dashed;
+  opacity: 0.86;
+}
+
+.guessPaletteDummy {
+  color: var(--spy-muted);
+  background: color-mix(in srgb, var(--spy-surface-alt) 72%, transparent);
+}
+
+.guessPaletteIcon {
+  width: 1rem;
+  height: 1rem;
+  fill: currentColor;
+  stroke: color-mix(in srgb, currentColor 36%, #111 64%);
+  stroke-width: 0.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.guessRowDropActive {
+  border-color: var(--spy-primary-strong);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--spy-primary-strong) 42%, transparent);
+}
+
+.guessDropZone {
+  min-height: 2.55rem;
+  border-radius: 8px;
+  border: 1px dashed color-mix(in srgb, var(--spy-border) 84%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem;
+  background: color-mix(in srgb, var(--spy-surface) 70%, transparent);
+}
+
+.guessEmpty {
+  font-size: 0.78rem;
+  color: var(--spy-muted);
+  letter-spacing: 0.03em;
+}
+
+.guessAssigned {
+  min-width: 6rem;
+  min-height: 2.4rem;
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  border: 2px solid color-mix(in srgb, currentColor 74%, #fff 26%);
+  background: color-mix(in srgb, var(--spy-surface) 76%, transparent);
+  color: var(--spy-text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: grab;
+  transition: transform 0.1s, box-shadow 0.15s;
+}
+
+.guessAssignedDummy {
+  color: var(--spy-muted);
+  border-style: dashed;
+}
+
+.guessAssigned:hover {
+  transform: scale(1.03);
+  box-shadow:
+    0 0 8px color-mix(in srgb, var(--spy-primary-strong) 42%, transparent),
+    0 0 0 1px color-mix(in srgb, currentColor 56%, transparent);
+}
+
+.guessAssignedIcon {
+  width: 1rem;
+  height: 1rem;
+  fill: currentColor;
+  stroke: color-mix(in srgb, currentColor 36%, #111 64%);
+  stroke-width: 0.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+@media (max-width: 860px) {
+  .guessLayout {
+    flex-direction: column;
+  }
+
+  .guessSidebar {
+    max-width: 100%;
+    flex-basis: auto;
+    order: 2;
+  }
+
+  .guessPalette {
+    max-width: 100%;
+    flex-basis: auto;
+    order: 2;
+  }
+
+  .guessList {
+    max-width: 100%;
+    order: 1;
+  }
+}
+
+.guessChoices {
   display: flex;
   gap: 0.4rem;
   flex-wrap: wrap;
 }
 
-.colourBtn {
-  width: 2.2rem;
-  height: 2.2rem;
-  border-radius: 50%;
-  border: 3px solid transparent;
+.guessChoice {
+  min-height: 2.4rem;
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, currentColor 74%, #fff 26%);
+  background: color-mix(in srgb, var(--spy-surface) 76%, transparent);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  place-items: center;
   cursor: pointer;
-  transition: border-color 0.15s, transform 0.1s;
+  transition: border-color 0.15s, transform 0.1s, box-shadow 0.15s, background 0.15s;
+  color: var(--spy-text);
+  font-size: 0.8rem;
+  font-weight: 700;
 }
 
-.colourBtn:hover {
+.guessChoice:hover {
   transform: scale(1.1);
+  box-shadow:
+    0 0 8px color-mix(in srgb, var(--spy-primary-strong) 48%, transparent),
+    0 0 0 1px color-mix(in srgb, currentColor 56%, transparent);
 }
 
-.colourBtnSel {
-  border-color: #f1c40f;
-  box-shadow: 0 0 8px rgba(241, 196, 15, 0.7);
+.guessChoiceSel {
+  border-color: var(--spy-primary-strong);
+  box-shadow:
+    0 0 11px color-mix(in srgb, var(--spy-primary-strong) 70%, transparent),
+    0 0 0 2px color-mix(in srgb, currentColor 54%, transparent);
+}
+
+.guessChoiceIcon {
+  width: 1rem;
+  height: 1rem;
+  fill: currentColor;
+  stroke: color-mix(in srgb, currentColor 36%, #111 64%);
+  stroke-width: 0.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 /* ── Game over ──────────────────────────────────────────────────────────────── */
@@ -900,6 +1324,26 @@
 .overTop {
   text-align: center;
   margin-bottom: 1.2rem;
+}
+
+.overColumns {
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.overMainColumn {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.overSideColumn {
+  flex: 0 0 280px;
+  max-width: 280px;
 }
 
 .trophy {
@@ -910,7 +1354,7 @@
 .overHeading {
   font-size: clamp(1.4rem, 4vw, 2rem);
   font-weight: 800;
-  color: #d4ac0d;
+  color: var(--spy-primary-strong);
   margin: 0.25rem 0 0.3rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -918,15 +1362,15 @@
 
 .overWinner {
   font-size: 1.1rem;
-  color: #c0d4e4;
+  color: var(--spy-text);
   margin: 0;
 }
 
 .finalTable {
   width: 100%;
   max-width: 500px;
-  background: #152233;
-  border: 1px solid #2e4a63;
+  background: var(--spy-surface-alt);
+  border: 1px solid var(--spy-border);
   border-radius: 8px;
   overflow: hidden;
   margin-bottom: 1.2rem;
@@ -934,43 +1378,128 @@
 
 .finalHeader {
   display: grid;
-  grid-template-columns: 2fr 1.5fr 1fr 1fr 1fr;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
   gap: 0.5rem;
   padding: 0.5rem 0.85rem;
-  background: #1a2e42;
+  background: var(--spy-surface);
   font-size: 0.72rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: #5a7a94;
+  color: var(--spy-muted);
 }
 
 .finalRow {
   display: grid;
-  grid-template-columns: 2fr 1.5fr 1fr 1fr 1fr;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
   gap: 0.5rem;
   padding: 0.55rem 0.85rem;
-  border-top: 1px solid #1e3348;
+  border-top: 1px solid var(--spy-border);
   font-size: 0.88rem;
   align-items: center;
-  color: #c0d4e4;
+  color: var(--spy-text);
 }
 
 .finalScore {
   font-weight: 700;
-  color: #d4ac0d;
+  color: var(--spy-primary-strong);
 }
 
 .revealSection {
   width: 100%;
+  max-width: 100%;
+  margin-bottom: 1.2rem;
+}
+
+.revealDetailsBtn {
+  width: 100%;
+  max-width: 500px;
+  display: block;
+  margin-bottom: 1rem;
+  padding: 0.45rem 0.9rem;
+  border: 1px dashed var(--spy-border);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--spy-muted);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+
+.revealDetailsBtn:hover {
+  border-color: var(--spy-primary);
+  color: var(--spy-primary-strong);
+  background: color-mix(in srgb, var(--spy-primary) 8%, transparent);
+}
+
+.correctGuessSection {
+  width: 100%;
   max-width: 500px;
   margin-bottom: 1.2rem;
+}
+
+.correctGuessGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.6rem;
+}
+
+.correctGuessCard {
+  background: var(--spy-surface-alt);
+  border: 1px solid var(--spy-border);
+  border-radius: 8px;
+  padding: 0.7rem 0.8rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.correctGuessHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.78rem;
+  color: var(--spy-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.correctGuessList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.correctGuessChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.32rem;
+  padding: 0.28rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, currentColor 68%, #fff 32%);
+  background: color-mix(in srgb, var(--spy-surface) 78%, transparent);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+@media (max-width: 860px) {
+  .overColumns {
+    flex-direction: column;
+  }
+
+  .overSideColumn {
+    flex: 1 1 auto;
+    max-width: 100%;
+  }
 }
 
 .revealHeading {
   font-size: 0.85rem;
   text-transform: uppercase;
   letter-spacing: 0.07em;
-  color: #5a7a94;
+  color: var(--spy-muted);
   margin: 0 0 0.6rem;
   text-align: center;
 }
@@ -987,7 +1516,7 @@
   flex-direction: column;
   align-items: center;
   gap: 0.4rem;
-  background: #1a2e42;
+  background: var(--spy-surface);
   border: 2px solid;
   border-radius: 8px;
   padding: 0.55rem 0.9rem;
@@ -995,7 +1524,7 @@
 
 .revealName {
   font-size: 0.85rem;
-  color: #a0b8cc;
+  color: var(--spy-muted);
 }
 
 .revealBadge {
@@ -1018,166 +1547,30 @@
   margin-bottom: 1.5rem;
 }
 
-.showBoardBtn {
-  padding: 0.4rem 0.9rem;
-  background: #2e4a63;
-  border: 1px solid #3a6a8a;
-  border-radius: 6px;
-  color: #7f9cb5;
-  font-size: 0.8rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.15s, border-color 0.15s, color 0.15s;
-}
-
-.showBoardBtn:hover {
-  background: #3a5a74;
-  border-color: #00bcd4;
-  color: #00e5ff;
-}
-
-.miniBoard {
-  width: 100%;
-  max-width: 280px;
-  margin-bottom: 1.5rem;
-  padding: 1rem;
-  background: #152233;
-  border: 1px solid #2e4a63;
-  border-radius: 8px;
-}
-
-.miniBoardGrid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  grid-template-rows: repeat(4, 1fr);
-  gap: 4px;
-  aspect-ratio: 1;
-}
-
-.miniBoardTile {
-  background: #0a1520;
-  border: 1px solid #1a2e42;
-  border-radius: 4px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 2px;
-  padding: 3px;
-  font-size: 0.65rem;
-  position: relative;
-}
-
-.miniBoardTileSafe {
-  border-color: #00bcd4;
-  background: rgba(0, 188, 212, 0.12);
-  box-shadow: 0 0 6px rgba(0, 188, 212, 0.25);
-}
-
-.miniBoardTileTop {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1px;
-  font-size: 0.6rem;
-  font-weight: 700;
-}
-
-.miniBoardLabel {
-  color: #00e5ff;
-  font-size: 0.55rem;
-  font-weight: 900;
-}
-
-.miniBoardValue {
-  color: #c0d4e4;
-}
-
-.miniBoardTokens {
-  display: flex;
-  gap: 2px;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-content: center;
-}
-
-.miniBoardToken {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  border: 0.5px solid rgba(255, 255, 255, 0.5);
-}
-
 .gemLarge {
   font-size: clamp(2rem, 5vw, 3rem);
   animation: gemPulse 0.6s ease-in-out infinite alternate;
+  color: var(--spy-primary-strong);
+  stroke: currentColor;
+  fill: color-mix(in srgb, currentColor 22%, transparent);
+  stroke-width: 1.6;
+  stroke-linejoin: round;
 }
 
 .chooseTreasureHeading {
   font-size: clamp(1.1rem, 3vw, 1.6rem);
   font-weight: 800;
-  color: #d4ac0d;
+  color: var(--spy-primary-strong);
   margin: 0;
   text-align: center;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  text-shadow: 0 0 14px rgba(212, 172, 13, 0.4);
-}
-
-.chooseTreasureGrid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 0.5rem;
-  width: 100%;
-  max-width: 420px;
-  margin-bottom: 1rem;
-}
-
-.treasureTile {
-  aspect-ratio: 1;
-  background: #152233;
-  border: 2px solid #2e4a63;
-  border-radius: 8px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.3rem;
-  padding: 0.5rem;
-  cursor: default;
-  font-family: inherit;
-  position: relative;
-  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
-}
-
-.treasureTileClickable {
-  cursor: pointer;
-  border-color: #00bcd4;
-  background: rgba(0, 188, 212, 0.08);
-}
-
-.treasureTileClickable:hover {
-  border-color: #00e5ff;
-  background: rgba(0, 188, 212, 0.15);
-  box-shadow: 0 0 12px rgba(0, 188, 212, 0.4);
-}
-
-.treasureTileOccupied {
-  border-color: #c0392b;
-  background: rgba(192, 57, 43, 0.1);
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-
-.treasureTileValue {
-  font-size: clamp(0.85rem, 2.2vw, 1rem);
-  font-weight: 800;
-  color: #d6e4f0;
+  text-shadow: 0 0 14px color-mix(in srgb, var(--spy-primary-strong) 40%, transparent);
 }
 
 .treasureTileX {
   font-size: 1.2rem;
-  color: #e74c3c;
+  color: var(--spy-danger);
   font-weight: 900;
   position: absolute;
   opacity: 0.8;

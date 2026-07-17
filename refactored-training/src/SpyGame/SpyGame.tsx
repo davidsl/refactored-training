@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { type CSSProperties, useEffect, useState } from 'react';
 import styles from './SpyGame.module.css';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -17,7 +17,7 @@ const HEX: Record<SpyColor, string> = {
 };
 
 const NUM_SPACES = 12;
-const WIN = 42;
+const DEFAULT_GOAL = 42;
 
 // Point value of each space on the board (no nulls — Treasure is a movable marker)
 const SPACE_VAL: number[] = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, -3];
@@ -38,8 +38,12 @@ interface Player {
   id: number;
   name: string;
   secret: SpyColor;
-  guesses: Record<number, SpyColor>;
+  guessBoard: Partial<Record<SpyColor, GuessOccupant>>;
 }
+
+type GuessOccupant =
+  | { kind: 'player'; playerId: number }
+  | { kind: 'dummy'; dummyId: number };
 
 interface Delta {
   c: SpyColor;
@@ -50,6 +54,8 @@ interface Delta {
 interface G {
   phase: Phase;
   players: Player[];
+  targetGoal: number;
+  guessBoard: Partial<Record<SpyColor, GuessOccupant>>;
   pos: Record<SpyColor, number>;
   score: Record<SpyColor, number>;
   safePos: number;
@@ -72,18 +78,47 @@ function mkScore(): Record<SpyColor, number> {
   return Object.fromEntries(SPY_COLORS.map(c => [c, 0])) as Record<SpyColor, number>;
 }
 
+function TreasureIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      width="1em"
+      height="1em"
+      role="img"
+      aria-label="Treasure"
+    >
+      <path d="M12 2L21 10L12 22L3 10L12 2Z" />
+      <path d="M12 2L16 10L12 22L8 10L12 2Z" />
+      <path d="M3 10H21" />
+    </svg>
+  );
+}
+
+function SpyTokenIcon({ className, style }: { className?: string; style?: CSSProperties }) {
+  return (
+    <svg className={className} style={style} viewBox="0 0 24 24" width="1em" height="1em" role="img" aria-label="Spy token">
+      <path d="M5 10H19L17.2 7.4H6.8L5 10Z" />
+      <circle cx="12" cy="12.3" r="3.3" />
+      <path d="M7.1 18.5C8.1 16.1 9.8 14.8 12 14.8C14.2 14.8 15.9 16.1 16.9 18.5H7.1Z" />
+    </svg>
+  );
+}
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function SpyGame() {
   const [np, setNp] = useState(2);
   const [names, setNames] = useState(['Player 1', 'Player 2', 'Player 3', 'Player 4']);
+  const [targetGoal, setTargetGoal] = useState(DEFAULT_GOAL);
   const [g, setG] = useState<G | null>(null);
   const [showSec, setShowSec] = useState(false);
+  const [showCorrectGuesses, setShowCorrectGuesses] = useState(false);
   const [dragSpy, setDragSpy] = useState<SpyColor | null>(null);
+  const [dragGuessToken, setDragGuessToken] = useState<GuessOccupant | null>(null);
   const [draggingOver, setDraggingOver] = useState<number | null>(null);
   const [animScores, setAnimScores] = useState<Record<SpyColor, number> | null>(null);
   const [showLastDeltas, setShowLastDeltas] = useState(false);
-  const [showBoardWhileChoosing, setShowBoardWhileChoosing] = useState(false);
 
   useEffect(() => {
     if (g?.phase !== 'scoring' || !g.animFrom) return;
@@ -132,10 +167,12 @@ export default function SpyGame() {
       id: i,
       name: n.trim() || `Player ${i + 1}`,
       secret: colors[i],
-      guesses: {},
+      guessBoard: {},
     }));
     setG({
       phase: 'play', players,
+      targetGoal,
+      guessBoard: {},
       pos: mkPos(), score: mkScore(),
       safePos: 7,
       cur: 0, die: null, left: 0,
@@ -184,12 +221,14 @@ export default function SpyGame() {
           score[c] += d;
           return { c, d, to: score[c] };
         });
+        const endFlag = Object.values(score).some(s => s >= prev.targetGoal);
         return {
           ...prev, score,
-          phase: 'chooseTreasure' as Phase, deltas,
+          phase: endFlag ? ('guess' as Phase) : ('chooseTreasure' as Phase), deltas,
           animFrom: prev.score,
+          guesser: endFlag ? 0 : prev.guesser,
           die: null, left: 0,
-          endFlag: Object.values(score).some(s => s >= WIN),
+          endFlag,
         };
       }
 
@@ -212,30 +251,45 @@ export default function SpyGame() {
     });
   }
 
-  function setGuess(playerId: number, c: SpyColor) {
+  function placeGuess(color: SpyColor, occupant: GuessOccupant) {
     setG(prev => {
       if (!prev) return prev;
-      const players = prev.players.map((p, i) =>
-        i === prev.guesser ? { ...p, guesses: { ...p.guesses, [playerId]: c } } : p
-      );
-      return { ...prev, players };
+      const nextBoard: Partial<Record<SpyColor, GuessOccupant>> = {};
+      for (const [slot, placed] of Object.entries(prev.guessBoard) as Array<[SpyColor, GuessOccupant | undefined]>) {
+        if (!placed) continue;
+        if (placed.kind === occupant.kind) {
+          if (placed.kind === 'player' && occupant.kind === 'player' && placed.playerId === occupant.playerId) continue;
+          if (placed.kind === 'dummy' && occupant.kind === 'dummy' && placed.dummyId === occupant.dummyId) continue;
+        }
+        if (placed.kind === 'player' && occupant.kind === 'player' && placed.playerId === occupant.playerId) continue;
+        if (placed.kind === 'dummy' && occupant.kind === 'dummy' && placed.dummyId === occupant.dummyId) continue;
+        nextBoard[slot] = placed;
+      }
+      nextBoard[color] = occupant;
+      return { ...prev, guessBoard: nextBoard };
     });
+    setDragGuessToken(null);
   }
 
   function submitGuess() {
     setG(prev => {
       if (!prev) return prev;
-      if (prev.guesser < prev.players.length - 1) return { ...prev, guesser: prev.guesser + 1 };
-      // All guessed — add bonus points then go to gameover
+      const players = prev.players.map((player, index) => (
+        index === prev.guesser ? { ...player, guessBoard: prev.guessBoard } : player
+      ));
+
+      if (prev.guesser < prev.players.length - 1) {
+        return { ...prev, players, guesser: prev.guesser + 1, guessBoard: {} };
+      }
+
       const score = { ...prev.score };
-      for (const p of prev.players) {
-        for (const other of prev.players) {
-          if (other.id !== p.id && p.guesses[other.id] === other.secret) {
-            score[p.secret] += 5;
-          }
+      for (const player of players) {
+        const guess = Object.entries(player.guessBoard).find(([, occupant]) => occupant?.kind === 'player' && occupant.playerId === player.id)?.[0] as SpyColor | undefined;
+        if (guess === player.secret) {
+          score[player.secret] += 5;
         }
       }
-      return { ...prev, phase: 'over' as Phase, score };
+      return { ...prev, players, phase: 'over' as Phase, score };
     });
   }
 
@@ -264,6 +318,20 @@ export default function SpyGame() {
               ))}
             </div>
           </div>
+          <div className={styles.fieldRow}>
+            <span className={styles.fieldLabel}>Goal</span>
+            <input
+              className={`${styles.nameInput} ${styles.goalInput}`}
+              type="number"
+              min={1}
+              step={1}
+              value={targetGoal}
+              onChange={e => {
+                const next = Number(e.target.value);
+                setTargetGoal(Number.isFinite(next) && next > 0 ? Math.floor(next) : DEFAULT_GOAL);
+              }}
+            />
+          </div>
           <div className={styles.nameFields}>
             {Array.from({ length: np }).map((_, i) => (
               <input
@@ -285,7 +353,7 @@ export default function SpyGame() {
               <li>On your turn, roll the die. Click any spy token to move it one space clockwise; each click uses one move point. You can move any spy, not just your own.</li>
               <li>You must use all your move points. Once they&apos;re gone, click <strong>End Turn</strong>.</li>
               <li>If any spy is sitting <em>on</em> the Treasure tile when you click End Turn, all spies immediately score points equal to their current space value (0 to +10, or −3 for the penalty tile). The Treasure then jumps to a new random empty tile.</li>
-              <li>First spy to reach <strong>{WIN} points</strong> triggers the endgame.</li>
+              <li>First spy to reach <strong>{targetGoal} points</strong> triggers the endgame.</li>
               <li>Each player secretly guesses which colour the others control. Each correct guess earns <strong>+5 bonus points</strong>.</li>
               <li>Highest total score wins. Move carefully — and bluff!</li>
             </ul>
@@ -303,56 +371,94 @@ export default function SpyGame() {
     const occupied = new Set(SPY_COLORS.map(c => g.pos[c]));
     return (
       <div className={styles.page}>
-        <div className={styles.chooseTreasureBanner}>
-          <span className={styles.gemLarge}>💎</span>
-          <h2 className={styles.chooseTreasureHeading}>{cur.name}, where should the Treasure go?</h2>
-          <button className={styles.showBoardBtn} onClick={() => setShowBoardWhileChoosing(!showBoardWhileChoosing)}>
-            {showBoardWhileChoosing ? 'Hide' : 'Show'} current board
-          </button>
+        <div className={styles.turnBar}>
+          <span><strong>{cur.name}</strong>&apos;s Turn</span>
+          <div className={styles.revealArea}>
+            {!showSec ? (
+              <button className={styles.revealBtn} onClick={() => setShowSec(true)}>
+                Reveal my spy
+              </button>
+            ) : (
+              <button
+                className={styles.revealBadge}
+                style={{ background: HEX[cur.secret] }}
+                onClick={() => setShowSec(false)}
+              >
+                {cur.secret.toUpperCase()} &times;
+              </button>
+            )}
+          </div>
         </div>
-        {showBoardWhileChoosing && (
-          <div className={styles.miniBoard}>
-            <div className={styles.miniBoardGrid}>
-              {SPACE_VAL.map((val, i) => {
-                const [row, col] = GRID_POS[i];
-                const isSafe = i === g.safePos;
-                const spiesHere = SPY_COLORS.filter(c => g.pos[c] === i);
-                return (
-                  <div
-                    key={i}
-                    className={`${styles.miniBoardTile} ${isSafe ? styles.miniBoardTileSafe : ''}`}
-                    style={{ gridRow: row + 1, gridColumn: col + 1 }}
-                  >
-                    <div className={styles.miniBoardTileTop}>
-                      {isSafe && <span className={styles.miniBoardLabel}>T</span>}
-                      <span className={styles.miniBoardValue}>{val > 0 ? `+${val}` : val}</span>
-                    </div>
-                    <div className={styles.miniBoardTokens}>
-                      {spiesHere.map(c => (
-                        <div key={c} className={styles.miniBoardToken} style={{ background: HEX[c] }} />
-                      ))}
-                    </div>
+
+        <div className={styles.playRow}>
+          <div className={styles.boardGrid}>
+            {SPACE_VAL.map((val, i) => {
+              const isOccupied = occupied.has(i);
+              const [row, col] = GRID_POS[i];
+              const isSafe = i === g.safePos;
+              const spiesHere = SPY_COLORS.filter(c => g.pos[c] === i);
+              return (
+                <button
+                  key={i}
+                  type="button"
+                  className={[
+                    styles.tile,
+                    isSafe ? styles.tileSafe : '',
+                    isOccupied ? styles.tileChooseOccupied : styles.tileChooseSelectable,
+                  ].join(' ')}
+                  style={{ gridRow: row + 1, gridColumn: col + 1 }}
+                  onClick={() => { if (!isOccupied) chooseTreasureLocation(i); }}
+                  disabled={isOccupied}
+                >
+                  <div className={styles.tileTop}>
+                    {isSafe && (
+                      <span className={styles.tileSafeLabel}>
+                        <TreasureIcon className={styles.treasureIconInline} />
+                        TREASURE
+                      </span>
+                    )}
+                    <span className={`${styles.tileVal} ${val > 0 ? styles.tilePos : val < 0 ? styles.tileNeg : ''}`}>
+                      {val > 0 ? `+${val}` : val}
+                    </span>
                   </div>
-                );
-              })}
+                  <div className={styles.tileTokens}>
+                    {spiesHere.map(c => (
+                      <div key={c} className={styles.token} style={{ color: HEX[c] }}>
+                        <SpyTokenIcon className={styles.tokenIcon} />
+                      </div>
+                    ))}
+                  </div>
+                  {isOccupied && <span className={styles.treasureTileX}>✕</span>}
+                </button>
+              );
+            })}
+            <div className={styles.boardCenter}>
+              <TreasureIcon className={styles.gemLarge} />
+              <h2 className={styles.chooseCenterHeading}>{cur.name}, where should the Treasure go?</h2>
+              <p className={styles.chooseHint}>Choose any empty tile</p>
             </div>
           </div>
-        )}
-        <div className={styles.chooseTreasureGrid}>
-          {SPACE_VAL.map((val, i) => {
-            const isOccupied = occupied.has(i);
-            return (
-              <button
-                key={i}
-                className={`${styles.treasureTile} ${isOccupied ? styles.treasureTileOccupied : styles.treasureTileClickable}`}
-                onClick={() => { if (!isOccupied) chooseTreasureLocation(i); }}
-                disabled={isOccupied}
-              >
-                <span className={styles.treasureTileValue}>{val > 0 ? `+${val}` : val}</span>
-                {isOccupied && <span className={styles.treasureTileX}>✕</span>}
-              </button>
-            );
-          })}
+
+          <div className={styles.scoreSide}>
+            <span className={styles.scoreLabel}>Score (/{g.targetGoal})</span>
+            <div className={styles.scoreRows}>
+              {SPY_COLORS.map(c => (
+                <div key={c} className={styles.scoreRow}>
+                  <div className={styles.scoreDot} style={{ background: HEX[c] }} />
+                  <div className={styles.barWrap}>
+                    <div
+                      className={styles.barFill}
+                      style={{
+                        width: `${Math.max(0, Math.min(100, (g.score[c] / g.targetGoal) * 100))}%`,
+                        background: HEX[c],
+                      }}
+                    />
+                  </div>
+                  <span className={styles.scoreNum}>{g.score[c]}</span>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -362,37 +468,117 @@ export default function SpyGame() {
 
   if (g.phase === 'guess') {
     const guesser = g.players[g.guesser];
-    const others = g.players.filter(p => p.id !== guesser.id);
-    const allSet = others.every(p => guesser.guesses[p.id] !== undefined);
+    const playerCount = g.players.length;
+    const dummyCount = SPY_COLORS.length - playerCount;
+    const assignedPlayers = new Set<number>();
+    const assignedDummies = new Set<number>();
+    for (const occupant of Object.values(g.guessBoard)) {
+      if (!occupant) continue;
+      if (occupant.kind === 'player') assignedPlayers.add(occupant.playerId);
+      else assignedDummies.add(occupant.dummyId);
+    }
+    const allSet = SPY_COLORS.every(color => g.guessBoard[color] !== undefined);
     return (
       <div className={styles.page}>
-        <h2 className={styles.guessHeading}>Final Guesses</h2>
-        <p className={styles.guessSub}>
-          Pass to <strong>{guesser.name}</strong> — which spy does each player control?
-        </p>
-        <div className={styles.guessList}>
-          {others.map(target => (
-            <div key={target.id} className={styles.guessRow}>
-              <span className={styles.guessTarget}>{target.name} is&hellip;</span>
-              <div className={styles.colourRow}>
-                {SPY_COLORS.map(c => (
-                  <button
-                    key={c}
-                    className={`${styles.colourBtn} ${guesser.guesses[target.id] === c ? styles.colourBtnSel : ''}`}
-                    style={{ background: HEX[c] }}
-                    onClick={() => setGuess(target.id, c)}
-                    title={c}
-                  />
-                ))}
+        <div className={styles.guessLayout}>
+          <div className={styles.guessList}>
+            {SPY_COLORS.map(color => {
+              const occupant = g.guessBoard[color];
+              return (
+                <div
+                  key={color}
+                  className={`${styles.guessRow} ${dragGuessToken ? styles.guessRowDropActive : ''}`}
+                  onDragOver={e => {
+                    if (dragGuessToken) e.preventDefault();
+                  }}
+                  onDrop={e => {
+                    e.preventDefault();
+                    if (dragGuessToken) placeGuess(color, dragGuessToken);
+                  }}
+                >
+                  <span className={styles.guessTarget}>
+                    <SpyTokenIcon className={styles.guessColorIcon} style={{ color: HEX[color] }} />
+                    {color.toUpperCase()}
+                  </span>
+                  <div className={styles.guessDropZone}>
+                    {occupant ? (
+                      <button
+                        type="button"
+                        className={`${styles.guessAssigned} ${occupant.kind === 'dummy' ? styles.guessAssignedDummy : ''}`}
+                        draggable
+                        onDragStart={() => setDragGuessToken(occupant)}
+                        onDragEnd={() => setDragGuessToken(null)}
+                        onDoubleClick={() => setG(prev => {
+                          if (!prev) return prev;
+                          const guessBoard = { ...prev.guessBoard };
+                          delete guessBoard[color];
+                          return { ...prev, guessBoard };
+                        })}
+                        title={`${color} is ${occupant.kind === 'player' ? g.players[occupant.playerId].name : 'Dummy'}`}
+                      >
+                        <SpyTokenIcon className={styles.guessAssignedIcon} />
+                        <span>{occupant.kind === 'player' ? g.players[occupant.playerId].name : `Dummy ${occupant.dummyId + 1}`}</span>
+                      </button>
+                    ) : (
+                      <div className={styles.guessEmpty}>Drop a color here</div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <div className={styles.guessSidebar}>
+            <h2 className={styles.guessHeading}>Final Guesses</h2>
+            <div className={styles.guessProgress}>
+              <div className={styles.guessProgressText}>
+                <span>Player {g.guesser + 1} of {g.players.length}</span>
+                <span>{g.players.length - g.guesser - 1} left</span>
+              </div>
+              <div className={styles.guessProgressBar} aria-hidden="true">
+                <div
+                  className={styles.guessProgressFill}
+                  style={{ width: `${((g.guesser + 1) / g.players.length) * 100}%` }}
+                />
               </div>
             </div>
-          ))}
+            <p className={styles.guessSub}>
+              Pass to <strong>{guesser.name}</strong>. Drag each player and dummy onto a color slot. Each player can only be used once.
+            </p>
+            <div className={styles.guessPalette}>
+            {g.players.map(player => (
+              <button
+                key={player.id}
+                className={`${styles.guessPaletteToken} ${styles.guessPalettePlayer} ${assignedPlayers.has(player.id) ? styles.guessPaletteTokenUsed : ''} ${dragGuessToken?.kind === 'player' && dragGuessToken.playerId === player.id ? styles.guessPaletteTokenDragging : ''}`}
+                draggable
+                onDragStart={() => setDragGuessToken({ kind: 'player', playerId: player.id })}
+                onDragEnd={() => setDragGuessToken(null)}
+                title={player.name}
+              >
+                <SpyTokenIcon className={styles.guessPaletteIcon} />
+                <span>{player.name}</span>
+              </button>
+            ))}
+            {Array.from({ length: dummyCount }).map((_, dummyId) => (
+              <button
+                key={`dummy-${dummyId}`}
+                className={`${styles.guessPaletteToken} ${styles.guessPaletteDummy} ${assignedDummies.has(dummyId) ? styles.guessPaletteTokenUsed : ''} ${dragGuessToken?.kind === 'dummy' && dragGuessToken.dummyId === dummyId ? styles.guessPaletteTokenDragging : ''}`}
+                draggable
+                onDragStart={() => setDragGuessToken({ kind: 'dummy', dummyId })}
+                onDragEnd={() => setDragGuessToken(null)}
+                title={`Dummy ${dummyId + 1}`}
+              >
+                <SpyTokenIcon className={styles.guessPaletteIcon} />
+                <span>Dummy {dummyId + 1}</span>
+              </button>
+            ))}
+            </div>
+            <button className={styles.bigBtn} disabled={!allSet} onClick={submitGuess}>
+              {g.guesser < g.players.length - 1
+                ? `Next → ${g.players[g.guesser + 1].name}`
+                : 'Reveal Results'}
+            </button>
+          </div>
         </div>
-        <button className={styles.bigBtn} disabled={!allSet} onClick={submitGuess}>
-          {g.guesser < g.players.length - 1
-            ? `Next \u2192 ${g.players[g.guesser + 1].name}`
-            : 'Reveal Results'}
-        </button>
       </div>
     );
   }
@@ -400,58 +586,136 @@ export default function SpyGame() {
   // ── Game over screen ──────────────────────────────────────────────────────────
 
   if (g.phase === 'over') {
-    const rows = g.players.map(p => {
-      const bonus = g.players
-        .filter(o => o.id !== p.id && p.guesses[o.id] === o.secret)
-        .length * 5;
-      return { p, track: g.score[p.secret] - bonus, bonus, total: g.score[p.secret] };
+    const ownerByColor = new Map<SpyColor, number>();
+    for (const player of g.players) {
+      ownerByColor.set(player.secret, player.id);
+    }
+    const playerRows = g.players.map(p => {
+      const guessBoard = p.guessBoard;
+      const correctColors = Object.entries(guessBoard)
+        .filter(([color, occupant]) => {
+          if (!occupant) return false;
+          const owner = ownerByColor.get(color as SpyColor);
+          if (occupant.kind === 'player') return owner === occupant.playerId;
+          return owner === undefined;
+        })
+        .map(([color]) => color as SpyColor);
+      const bonus = correctColors.length * 5;
+      return { p, correctColors, bonus, total: g.score[p.secret] + bonus };
     }).sort((a, b) => b.total - a.total);
 
-    const winner = rows[0];
+    const dummyRows = SPY_COLORS
+      .filter(color => !ownerByColor.has(color))
+      .map(color => ({
+        color,
+        label: `Dummy ${color.charAt(0).toUpperCase()}${color.slice(1)}`,
+        score: g.score[color],
+        bonus: 0,
+        total: g.score[color],
+      }));
+
+    const scoreRows = [
+      ...playerRows.map(({ p, bonus, total }) => ({
+        key: `player-${p.id}`,
+        name: p.name,
+        score: g.score[p.secret],
+        bonus,
+        total,
+      })),
+      ...dummyRows.map(({ color, label, score, bonus, total }) => ({
+        key: `dummy-${color}`,
+        name: label,
+        score,
+        bonus,
+        total,
+      })),
+    ].sort((a, b) => b.total - a.total);
+
+    const winnerTotal = playerRows[0]?.total ?? 0;
+    const winners = playerRows.filter(row => row.total === winnerTotal);
+    const revealRows = SPY_COLORS.map(color => ({
+      color,
+      owner: g.players.find(player => player.secret === color) ?? null,
+    }));
     return (
       <div className={styles.page}>
         <div className={styles.overTop}>
-          <div className={styles.trophy}>🏆</div>
           <h2 className={styles.overHeading}>Game Over!</h2>
           <p className={styles.overWinner}>
-            Winner: <span style={{ color: HEX[winner.p.secret] }}>{winner.p.name}</span>
+            Winner:{' '}
+            {winners.map((winner, index) => (
+              <span key={winner.p.id} style={{ color: HEX[winner.p.secret] }}>
+                {index > 0 ? ', ' : ''}{winner.p.name}
+              </span>
+            ))}
           </p>
         </div>
-        <div className={styles.finalTable}>
-          <div className={styles.finalHeader}>
-            <span>Player</span>
-            <span>Spy</span>
-            <span>Track</span>
-            <span>Guesses</span>
-            <span>Total</span>
-          </div>
-          {rows.map(({ p, track, bonus, total }) => (
-            <div key={p.id} className={styles.finalRow}>
-              <span>{p.name}</span>
-              <span>
-                <span className={styles.dot} style={{ background: HEX[p.secret] }} />
-                {p.secret}
-              </span>
-              <span>{track}</span>
-              <span>+{bonus}</span>
-              <span><strong>{total}</strong></span>
-            </div>
-          ))}
-        </div>
-        <div className={styles.revealSection}>
-          <h3 className={styles.revealHeading}>Identities Revealed</h3>
-          <div className={styles.revealGrid}>
-            {g.players.map(p => (
-              <div key={p.id} className={styles.revealCard} style={{ borderColor: HEX[p.secret] }}>
-                <span className={styles.revealName}>{p.name}</span>
-                <span className={styles.revealBadge} style={{ background: HEX[p.secret] }}>
-                  {p.secret.toUpperCase()}
-                </span>
+        <div className={styles.overColumns}>
+          <div className={styles.overMainColumn}>
+            <div className={styles.finalTable}>
+              <div className={styles.finalHeader}>
+                <span>Player</span>
+                <span>Score</span>
+                <span>Bonus</span>
+                <span>Total</span>
               </div>
-            ))}
+              {scoreRows.map(row => (
+                <div key={row.key} className={styles.finalRow}>
+                  <span>{row.name}</span>
+                  <span>{row.score}</span>
+                  <span>+{row.bonus}</span>
+                  <span><strong>{row.total}</strong></span>
+                </div>
+              ))}
+            </div>
+            <button className={styles.revealDetailsBtn} onClick={() => setShowCorrectGuesses(v => !v)}>
+              {showCorrectGuesses ? 'Hide correct guesses' : 'Reveal correct guesses'}
+            </button>
+            {showCorrectGuesses && (
+              <div className={styles.correctGuessSection}>
+                <h3 className={styles.revealHeading}>Correct Guesses</h3>
+                <div className={styles.correctGuessGrid}>
+                  {playerRows.map(({ p, correctColors }) => (
+                    <div key={p.id} className={styles.correctGuessCard}>
+                      <div className={styles.correctGuessHeader}>
+                        <span>{p.name}</span>
+                        <span>{correctColors.length}/7 correct</span>
+                      </div>
+                      <div className={styles.correctGuessList}>
+                        {correctColors.length > 0 ? correctColors.map((color: SpyColor) => (
+                          <span key={color} className={styles.correctGuessChip} style={{ color: HEX[color] }}>
+                            <SpyTokenIcon className={styles.guessAssignedIcon} />
+                            {color}
+                          </span>
+                        )) : (
+                          <span className={styles.finalGuessDummy}>No correct guesses</span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+          <div className={styles.overSideColumn}>
+            <div className={styles.revealSection}>
+              <h3 className={styles.revealHeading}>Identities Revealed</h3>
+              <div className={styles.revealGrid}>
+                {revealRows.map(({ color, owner }) => (
+                  <div key={color} className={styles.revealCard} style={{ borderColor: HEX[color] }}>
+                    <span className={styles.revealBadge} style={{ background: HEX[color] }}>
+                      {color.toUpperCase()}
+                    </span>
+                    <span className={styles.revealName}>
+                      {owner ? owner.name : 'Dummy'}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
-        <button className={styles.bigBtn} onClick={() => { setG(null); setShowSec(false); }}>
+        <button className={styles.bigBtn} onClick={() => { setG(null); setShowSec(false); setShowCorrectGuesses(false); }}>
           New Game
         </button>
       </div>
@@ -479,6 +743,33 @@ export default function SpyGame() {
     <div className={styles.page}>
       <div className={styles.turnBar}>
         <span><strong>{cur.name}</strong>&apos;s Turn</span>
+        <div className={styles.turnProgress}>
+          <div className={styles.turnProgressText}>
+            <span>Turn {g.cur + 1} of {g.players.length}</span>
+            <span>{g.players.length - g.cur - 1} after this</span>
+          </div>
+          <div className={styles.turnProgressBar} aria-hidden="true">
+            <div
+              className={styles.turnProgressFill}
+              style={{ width: `${((g.cur + 1) / g.players.length) * 100}%` }}
+            />
+          </div>
+        </div>
+        <div className={styles.revealArea}>
+          {!showSec ? (
+            <button className={styles.revealBtn} onClick={() => setShowSec(true)}>
+              Reveal my spy
+            </button>
+          ) : (
+            <button
+              className={styles.revealBadge}
+              style={{ background: HEX[cur.secret] }}
+              onClick={() => setShowSec(false)}
+            >
+              {cur.secret.toUpperCase()} &times;
+            </button>
+          )}
+        </div>
       </div>
 
       <div className={styles.playRow}>
@@ -504,7 +795,12 @@ export default function SpyGame() {
               onDrop={e => { e.preventDefault(); handleTileDrop(i); }}
             >
               <div className={styles.tileTop}>
-                {isSafe && <span className={styles.tileSafeLabel}>TREASURE</span>}
+                {isSafe && (
+                  <span className={styles.tileSafeLabel}>
+                    <TreasureIcon className={styles.treasureIconInline} />
+                    TREASURE
+                  </span>
+                )}
                 <span className={`${styles.tileVal} ${val > 0 ? styles.tilePos : val < 0 ? styles.tileNeg : ''}`}>
                   {val > 0 ? `+${val}` : val}
                 </span>
@@ -514,7 +810,7 @@ export default function SpyGame() {
                   <div
                     key={c}
                     className={`${styles.token} ${canPick ? styles.tokenClickable : ''}`}
-                    style={{ background: HEX[c] }}
+                    style={{ color: HEX[c] }}
                     draggable={canPick}
                     onDragStart={e => {
                       setDragSpy(c);
@@ -526,7 +822,9 @@ export default function SpyGame() {
                     }}
                     onClick={() => { if (canPick) pickSpy(c); }}
                     title={c}
-                  />
+                  >
+                    <SpyTokenIcon className={styles.tokenIcon} />
+                  </div>
                 ))}
               </div>
             </div>
@@ -540,7 +838,7 @@ export default function SpyGame() {
             </div>
           )}
           {!isAnimating && canRoll && (
-            <button className={styles.rollBtn} onClick={roll}>Roll Die</button>
+            <button className={styles.rollBtn} onClick={roll}>Roll</button>
           )}
           {!isAnimating && g.die !== null && (
             <div className={styles.dieDisplay}>
@@ -553,13 +851,13 @@ export default function SpyGame() {
           )}
           {canPick && <p className={styles.centerHint}>tap spies</p>}
           {!canPick && !isAnimating && g.die !== null && (
-            <button className={styles.rollBtn} onClick={endTurn}>End Turn</button>
+            <button className={`${styles.rollBtn} ${styles.endTurnBtn}`} onClick={endTurn}>End Turn</button>
           )}
         </div>
       </div>
 
       <div className={styles.scoreSide}>
-        <span className={styles.scoreLabel}>Score (/{WIN})</span>
+        <span className={styles.scoreLabel}>Score (/{g.targetGoal})</span>
         <div className={styles.scoreRows}>
           {SPY_COLORS.map(c => {
             const delta = isAnimating ? (g.deltas?.find(d => d.c === c)?.d ?? 0) : null;
@@ -570,7 +868,7 @@ export default function SpyGame() {
                   <div
                     className={styles.barFill}
                     style={{
-                      width: `${Math.max(0, Math.min(100, (displayedScores[c] / WIN) * 100))}%`,
+                      width: `${Math.max(0, Math.min(100, (displayedScores[c] / g.targetGoal) * 100))}%`,
                       background: HEX[c],
                     }}
                   />
@@ -586,25 +884,6 @@ export default function SpyGame() {
           })}
         </div>
       </div>
-      </div>
-
-      <div className={styles.revealBottom}>
-        {!showSec
-          ? (
-            <button className={styles.revealBtnSmall} onClick={() => setShowSec(true)}>
-              Reveal my spy
-            </button>
-          )
-          : (
-            <button
-              className={styles.revealBadgeSmall}
-              style={{ background: HEX[cur.secret] }}
-              onClick={() => setShowSec(false)}
-            >
-              {cur.secret.toUpperCase()} &times;
-            </button>
-          )
-        }
       </div>
 
       {g.deltas !== null && !isAnimating && (
@@ -631,7 +910,7 @@ export default function SpyGame() {
                   </span>
                   <span className={styles.deltaTo}>
                     &rarr; <strong>{to}</strong>
-                    {to >= WIN && <span className={styles.trigger}> TRIGGERED!</span>}
+                    {to >= g.targetGoal && <span className={styles.trigger}> TRIGGERED!</span>}
                   </span>
                 </div>
               ))}

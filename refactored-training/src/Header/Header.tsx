@@ -27,15 +27,14 @@ function Header({ theme, onToggleTheme }: HeaderProps) {
         <span className={styles.logo}>Menu</span>
       </div>
       <nav id="main-nav" className={`${styles.navMenu} ${menuOpen ? styles.navOpen : styles.navClosed}`}>
-        <Link to="/refactored-training" onClick={() => setMenuOpen(false)}>Home</Link>
-        <Link to="/refactored-training/about" onClick={() => setMenuOpen(false)}>About</Link>
-        <Link to="/refactored-training/game" onClick={() => setMenuOpen(false)}>Minesweeper</Link>
-        <Link to="/refactored-training/leaderboard" onClick={() => setMenuOpen(false)}>Leaderboard</Link>
-        <Link to="/refactored-training/styling-examples" onClick={() => setMenuOpen(false)}>Styling Examples</Link>
-        <Link to="/refactored-training/thumbnails" onClick={() => setMenuOpen(false)}>Thumbnails</Link>
-        <Link to="/refactored-training/clicking-game" onClick={() => setMenuOpen(false)}>Clicking Game</Link>
-        <Link to="/refactored-training/table" onClick={() => setMenuOpen(false)}>Table</Link>
-        <Link to="/refactored-training/spy-game" onClick={() => setMenuOpen(false)}>Spy Game</Link>
+        <Link to="/" onClick={() => setMenuOpen(false)}>Home</Link>
+        <Link to="/about" onClick={() => setMenuOpen(false)}>About</Link>
+        <Link to="/game" onClick={() => setMenuOpen(false)}>Minesweeper</Link>
+        <Link to="/leaderboard" onClick={() => setMenuOpen(false)}>Leaderboard</Link>
+        <Link to="/styling-examples" onClick={() => setMenuOpen(false)}>Styling Examples</Link>
+        <Link to="/clicking-game" onClick={() => setMenuOpen(false)}>Clicking Game</Link>
+        <Link to="/table" onClick={() => setMenuOpen(false)}>Table</Link>
+        <Link to="/spy-game" onClick={() => setMenuOpen(false)}>Spy Game</Link>
         <button
           type="button"
           className={styles.themeToggle}

@@ -19,15 +19,16 @@ type LeaderboardRow = {
   time: number;
 };
 
-type CategoryKey = 'Small' | 'Medium' | 'Large' | 'Custom';
+type CategoryKey = 'Small' | 'Medium' | 'Large' | 'Max' | 'Custom';
 
-const CATEGORY_ORDER: CategoryKey[] = ['Small', 'Medium', 'Large', 'Custom'];
+const CATEGORY_ORDER: CategoryKey[] = ['Small', 'Medium', 'Large', 'Max', 'Custom'];
 
 const CATEGORY_LABELS: Record<CategoryKey, { title: string; description: string }> = {
   Small: { title: 'Small', description: '8x8 board, 10 mines' },
   Medium: { title: 'Medium', description: '16x16 board, 40 mines' },
   Large: { title: 'Large', description: '16x30 board, 99 mines' },
-  Custom: { title: 'Custom', description: 'Any custom setup' },
+  Max: { title: 'Max', description: '30x30 board, 150 mines' },
+  Custom: { title: 'Custom', description: 'Any non-preset setup' },
 };
 
 function getLeaderboard(): WinRecord[] {
@@ -42,10 +43,11 @@ function getLeaderboard(): WinRecord[] {
   return wins;
 }
 
-function categorizeWin(win: WinRecord): 'Small' | 'Medium' | 'Large' | 'Custom' {
+function categorizeWin(win: WinRecord): 'Small' | 'Medium' | 'Large' | 'Max' | 'Custom' {
   if (win.rows === 8 && win.cols === 8 && win.mines === 10) return 'Small';
   if (win.rows === 16 && win.cols === 16 && win.mines === 40) return 'Medium';
   if (win.rows === 16 && win.cols === 30 && win.mines === 99) return 'Large';
+  if (win.rows === 30 && win.cols === 30 && win.mines === 150) return 'Max';
   return 'Custom';
 }
 
@@ -104,6 +106,7 @@ const Leaderboard: React.FC = () => {
     Small: [] as WinRecord[],
     Medium: [] as WinRecord[],
     Large: [] as WinRecord[],
+    Max: [] as WinRecord[],
     Custom: [] as WinRecord[],
   };
   leaderboard.forEach(win => {

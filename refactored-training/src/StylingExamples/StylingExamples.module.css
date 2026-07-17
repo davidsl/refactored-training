@@ -98,6 +98,65 @@
   flex-wrap: wrap;
   gap: 0.42rem;
 }
+.controlsSection {
+  display: grid;
+  gap: 0.38rem;
+}
+.controlsLabel {
+  margin: 0;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+.controlsFieldGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.4rem;
+}
+.controlsField {
+  display: grid;
+  gap: 0.2rem;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  font-weight: 700;
+}
+.controlsInput,
+.controlsSelect {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 0.4rem 0.48rem;
+  background: color-mix(in srgb, var(--surface-strong) 90%, transparent);
+  color: var(--text-strong);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+.segmentGroup {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.segmentButton {
+  border: 0;
+  background: color-mix(in srgb, var(--surface-strong) 92%, transparent);
+  color: var(--text-muted);
+  font-size: 0.74rem;
+  font-weight: 800;
+  padding: 0.4rem 0.35rem;
+  cursor: pointer;
+}
+.segmentButton + .segmentButton {
+  border-left: 1px solid var(--border);
+}
+.segmentButtonActive {
+  background: linear-gradient(120deg, color-mix(in srgb, var(--primary) 28%, transparent), color-mix(in srgb, var(--primary-strong) 22%, transparent));
+  color: var(--primary-strong);
+}
 
 .primaryButton,
 .ghostButton,
@@ -634,6 +693,9 @@
 @media (max-width: 760px) {
   .examplesPage {
     padding: 0.72rem;
+  }
+  .controlsFieldGrid {
+    grid-template-columns: 1fr;
   }
 
   .hero {
