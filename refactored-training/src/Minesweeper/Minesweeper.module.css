@@ -270,19 +270,7 @@
   display: flex;
   gap: 0;
   margin-bottom: 0;
-  opacity: 0;
-  animation: boardRowIn var(--motion-mine-row) cubic-bezier(0.22, 1, 0.36, 1) forwards;
-}
-
-@keyframes boardRowIn {
-  from {
-    opacity: 0;
-    transform: translateY(5px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  opacity: 1;
 }
 
 .tile,
@@ -299,57 +287,18 @@
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary) 26%, transparent);
   background: linear-gradient(145deg, color-mix(in srgb, var(--primary) 24%, transparent), color-mix(in srgb, var(--primary) 16%, transparent));
   cursor: pointer;
-  transition: transform 0.12s ease, filter 0.12s ease;
-}
-
-.tile:hover {
-  transform: translateY(-1px);
-  filter: brightness(1.05);
 }
 
 .revealedTile {
   border: none;
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--text-muted) 28%, transparent);
   background: color-mix(in srgb, var(--surface-strong) 95%, transparent);
-  backface-visibility: hidden;
-  transform-style: preserve-3d;
-  opacity: 0;
-  transform: rotateY(88deg) scale(0.88);
-  animation: flipReveal calc(var(--motion-mine-reveal) * 0.35) cubic-bezier(0.4, 0.2, 0.2, 1) forwards;
-}
-
-@keyframes flipReveal {
-  0% {
-    opacity: 0;
-    transform: rotateY(88deg) scale(0.88);
-  }
-  70% {
-    opacity: 1;
-    transform: rotateY(-6deg) scale(1.03);
-  }
-  100% {
-    opacity: 1;
-    transform: rotateY(0deg) scale(1);
-  }
 }
 
 .preRevealTile {
   border: none;
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary) 52%, transparent);
   background: color-mix(in srgb, var(--primary) 20%, transparent);
-  animation: preRevealPulse var(--motion-mine-pulse) ease-in-out infinite;
-}
-
-@keyframes preRevealPulse {
-  0%,
-  100% {
-    transform: scale(1);
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary) 52%, transparent), 0 0 8px color-mix(in srgb, var(--primary) 35%, transparent);
-  }
-  50% {
-    transform: scale(1.05);
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary) 52%, transparent), 0 0 16px color-mix(in srgb, var(--primary) 55%, transparent);
-  }
 }
 
 .wrongFlagTile {
@@ -373,7 +322,6 @@
   backdrop-filter: blur(2px);
   z-index: 2;
   padding: 0.8rem;
-  animation: resultPopIn var(--motion-mine-result) ease-out;
 }
 
 .endOverlayCard {
@@ -440,17 +388,6 @@
   text-align: center;
 }
 
-@keyframes resultPopIn {
-  from {
-    opacity: 0;
-    transform: translateY(5px) scale(0.98);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
 @media (max-width: 980px) {
   .gameContainer {
     padding: 0.72rem;
@@ -492,26 +429,4 @@
     font-size: 1.05rem !important;
   }
 
-  .boardRow {
-    animation-duration: var(--motion-mine-row-mobile);
-  }
-
-  .revealedTile {
-    animation-duration: calc(var(--motion-mine-reveal-mobile) * 0.35);
-  }
-
-  .preRevealTile {
-    animation-duration: var(--motion-mine-pulse-mobile);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .preRevealTile,
-  .boardRow,
-  .gameOverMsg,
-  .revealedTile {
-    animation: none !important;
-    opacity: 1;
-    transform: none;
-  }
 }
