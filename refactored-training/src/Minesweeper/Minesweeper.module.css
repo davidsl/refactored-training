@@ -322,6 +322,7 @@
   backdrop-filter: blur(2px);
   z-index: 2;
   padding: 0.8rem;
+  animation: endOverlayFadeIn 820ms ease-out;
 }
 
 .endOverlayCard {
@@ -332,6 +333,34 @@
   padding: 0.9rem;
   display: grid;
   gap: 0.62rem;
+  animation: endOverlayCardIn 920ms cubic-bezier(0.2, 0.75, 0.2, 1);
+}
+
+@keyframes endOverlayFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes endOverlayCardIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .endOverlay,
+  .endOverlayCard {
+    animation: none;
+  }
 }
 
 .endOverlayTitle {
