@@ -1,14 +1,7 @@
 .mapContainer {
   height: 100%;
   width: 100%;
-  border-radius: var(--radius-xl);
-  overflow: hidden;
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow-soft);
   position: relative;
-  opacity: 1 !important;
-  transform: none !important;
-  animation: none !important;
 }
 
 .sceneView {

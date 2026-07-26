@@ -9,7 +9,7 @@ function MapWidget() {
     <div className={styles.mapContainer}>
       <arcgis-map
         className={styles.sceneView}
-        basemap="hybrid"
+        basemap="dark-gray"
         center="9,60"
         zoom="8"
       />
