@@ -4,7 +4,7 @@ import { viteStaticCopy } from 'vite-plugin-static-copy'
 import path from 'path'
 import fs from 'fs'
 
-const arcgisAssetsDir = path.resolve(__dirname, 'node_modules/@arcgis/core/assets')
+const arcgisAssetsDir = path.resolve(import.meta.dirname, 'node_modules/@arcgis/core/assets')
 
 const mimeMap: Record<string, string> = {
   '.css': 'text/css',
