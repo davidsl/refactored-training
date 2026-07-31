@@ -3,5 +3,11 @@
         "npm run lint": true,
         "Test-Path": true,
         "npm run build": true
+    },
+    "[json]": {
+        "editor.defaultFormatter": "vscode.json-language-features"
+    },
+    "[jsonc]": {
+        "editor.defaultFormatter": "vscode.json-language-features"
     }
 }
