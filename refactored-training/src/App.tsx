@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import './App.css'
-import Home from './Home/Home'
+import MapWidget from './MapWidget/MapWidget'
 import About from './About/About'
 import Minesweeper from './Minesweeper/Minesweeper'
 import Leaderboard from './Leaderboard/Leaderboard'
@@ -42,7 +42,7 @@ function App() {
       />
       <main className="appContent">
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<MapWidget />} />
           <Route path="/about" element={<About />} />
           <Route path="/game" element={<Minesweeper />} />
           <Route path="/leaderboard" element={<Leaderboard />} />

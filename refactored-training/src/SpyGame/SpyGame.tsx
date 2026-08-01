@@ -354,7 +354,7 @@ export default function SpyGame() {
               <li>You must use all your move points. Once they&apos;re gone, click <strong>End Turn</strong>.</li>
               <li>If any spy is sitting <em>on</em> the Treasure tile when you click End Turn, all spies immediately score points equal to their current space value (0 to +10, or −3 for the penalty tile). The Treasure then jumps to a new random empty tile.</li>
               <li>First spy to reach <strong>{targetGoal} points</strong> triggers the endgame.</li>
-              <li>Each player secretly guesses which colour the others control. Each correct guess earns <strong>+5 bonus points</strong>.</li>
+              <li>When the endgame triggers, each player privately takes the device and assigns <em>every</em> spy colour to a player or a dummy token by dragging tokens onto colour slots. Each correct assignment earns <strong>+5 bonus points</strong>.</li>
               <li>Highest total score wins. Move carefully — and bluff!</li>
             </ul>
           </details>
