@@ -2,8 +2,11 @@ import React from 'react';
 import styles from './Leaderboard.module.css';
 import ConfirmModal from './ConfirmModal';
 import ReusableTable, { type TableColumn } from '../components/ReusableTable/ReusableTable';
+import { deleteAllGameResults, getGameResults, type GameResult } from '../api/gameResultsApi';
 
 export type WinRecord = {
+  id: number;
+  playerName: string;
   rows: number;
   cols: number;
   mines: number;
@@ -32,15 +35,21 @@ const CATEGORY_LABELS: Record<CategoryKey, { title: string; description: string 
 };
 
 function getLeaderboard(): WinRecord[] {
-  const prev = sessionStorage.getItem('minesweeperWins');
-  let wins: WinRecord[] = [];
-  if (prev) {
-    try {
-      wins = JSON.parse(prev);
-    } catch { /* ignore parse error */ }
-  }
+  const wins: WinRecord[] = [];
   wins.sort((a: WinRecord, b: WinRecord) => a.time - b.time);
   return wins;
+}
+
+function toWinRecord(gameResult: GameResult): WinRecord {
+  return {
+    id: gameResult.gameResultId,
+    playerName: gameResult.playerName,
+    rows: gameResult.boardHeight,
+    cols: gameResult.boardWidth,
+    mines: gameResult.minesCount,
+    time: gameResult.durationSeconds,
+    date: gameResult.playedAtUtc,
+  };
 }
 
 function categorizeWin(win: WinRecord): 'Small' | 'Medium' | 'Large' | 'Max' | 'Custom' {
@@ -91,14 +100,43 @@ const leaderboardColumns: Array<TableColumn<LeaderboardRow>> = [
 
 const Leaderboard: React.FC = () => {
   const [leaderboard, setLeaderboard] = React.useState<WinRecord[]>(getLeaderboard());
+  const [isLoading, setIsLoading] = React.useState(true);
+  const [loadError, setLoadError] = React.useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = React.useState<CategoryKey>('Small');
   const [showConfirm, setShowConfirm] = React.useState(false);
 
   React.useEffect(() => {
-    // Listen for storage changes in case another tab updates
-    const handler = () => setLeaderboard(getLeaderboard());
-    window.addEventListener('storage', handler);
-    return () => window.removeEventListener('storage', handler);
+    let cancelled = false;
+
+    async function loadLeaderboard() {
+      setIsLoading(true);
+      setLoadError(null);
+      try {
+        const gameResults = await getGameResults();
+        if (cancelled) return;
+
+        const wins = gameResults
+          .filter(result => result.result.toLowerCase() === 'win')
+          .map(toWinRecord)
+          .sort((a, b) => a.time - b.time);
+
+        setLeaderboard(wins);
+      } catch (error) {
+        if (cancelled) return;
+        setLoadError('Unable to load leaderboard results from the server.');
+        console.error('Failed to load leaderboard', error);
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    void loadLeaderboard();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   // Categorize wins
@@ -140,10 +178,17 @@ const Leaderboard: React.FC = () => {
     );
   }
 
-  function clearLeaderboard() {
-    sessionStorage.removeItem('minesweeperWins');
-    setLeaderboard([]);
-    setShowConfirm(false);
+  async function clearLeaderboard() {
+    const ids = leaderboard.map(win => win.id);
+    try {
+      await deleteAllGameResults(ids);
+      setLeaderboard([]);
+      setShowConfirm(false);
+      setLoadError(null);
+    } catch (error) {
+      setLoadError('Unable to clear leaderboard records on the server.');
+      console.error('Failed to clear leaderboard', error);
+    }
   }
 
   return (
@@ -200,7 +245,10 @@ const Leaderboard: React.FC = () => {
               <h4>{selectedMeta.title}</h4>
               <p>{selectedMeta.description}</p>
             </div>
-            <div className={styles.tableWrap}>{renderTable(selectedWins)}</div>
+            <div className={styles.tableWrap}>
+              {isLoading ? <p>Loading leaderboard...</p> : renderTable(selectedWins)}
+              {loadError ? <p>{loadError}</p> : null}
+            </div>
           </div>
         </section>
       </div>
@@ -208,7 +256,9 @@ const Leaderboard: React.FC = () => {
       <ConfirmModal
         open={showConfirm}
         message="Are you sure you want to clear the leaderboard? This cannot be undone."
-        onConfirm={clearLeaderboard}
+        onConfirm={() => {
+          void clearLeaderboard();
+        }}
         onCancel={() => setShowConfirm(false)}
         confirmText="Yes, clear"
         cancelText="Cancel"

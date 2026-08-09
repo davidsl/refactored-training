@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import styles from './Minesweeper.module.css';
 import { ACTIVE_MOTION_PRESET, MOTION_DELAY_PRESETS } from '../motionPreset';
 import ConfirmModal from '../Leaderboard/ConfirmModal';
+import { createGameResult } from '../api/gameResultsApi';
 
 type Cell = {
   mine: boolean;
@@ -16,15 +17,15 @@ type Board = Cell[][];
 
 type PreReveal = { r: number; c: number } | null;
 
-type WinRecord = {
-  rows: number;
-  cols: number;
-  mines: number;
-  time: number;
-  date: string;
-};
-
 type Position = { r: number; c: number };
+
+function getDifficultyLabel(rows: number, cols: number, mines: number): string {
+  if (rows === 8 && cols === 8 && mines === 10) return 'Small';
+  if (rows === 16 && cols === 16 && mines === 40) return 'Medium';
+  if (rows === 16 && cols === 30 && mines === 99) return 'Large';
+  if (rows === 30 && cols === 30 && mines === 150) return 'Max';
+  return 'Custom';
+}
 
 function generateBoard(rows: number, cols: number, mines: number): { board: Board; preReveal: PreReveal } {
   const board: Board = Array.from({ length: rows }, () =>
@@ -118,12 +119,14 @@ function Minesweeper() {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [confirmSelectionLabel, setConfirmSelectionLabel] = useState('Custom');
   const [elapsed, setElapsed] = useState(0);
+  const [movesCount, setMovesCount] = useState(0);
   const [timerActive, setTimerActive] = useState(false);
   const [boardAnimKey, setBoardAnimKey] = useState(0);
   const [boardViewport, setBoardViewport] = useState({ width: 0, height: 0 });
   const timerRef = useRef<number | null>(null);
   const boardFrameRef = useRef<HTMLDivElement | null>(null);
   const pendingConfirmActionRef = useRef<(() => void) | null>(null);
+  const resultPersistedRef = useRef(false);
   const customBoardTooSmall = draftRows < 5 || draftCols < 5;
   const hasGameStarted = timerActive || elapsed > 0 || boardState.some(row => row.some(cell => cell.revealed || cell.flagged));
 
@@ -137,8 +140,10 @@ function Minesweeper() {
     setExplodedBomb(null);
     setWrongFlags([]);
     setElapsed(0);
+    setMovesCount(0);
     setTimerActive(false);
     setBoardAnimKey(v => v + 1);
+    resultPersistedRef.current = false;
   }
 
   function requestStartNewGame(selectionLabel: string, onConfirmAction: () => void) {
@@ -241,26 +246,31 @@ function Minesweeper() {
   }, [timerActive, gameOver]);
 
   useEffect(() => {
-    if (won) {
-      // Save win to sessionStorage
-      const winRecord = {
-        rows,
-        cols,
-        mines,
-        time: elapsed,
-        date: new Date().toISOString(),
-      };
-      const prev = sessionStorage.getItem('minesweeperWins');
-      let wins: WinRecord[] = [];
-      if (prev) {
-        try {
-          wins = JSON.parse(prev);
-        } catch { /* ignore parse error */ }
-      }
-      wins.push(winRecord);
-      sessionStorage.setItem('minesweeperWins', JSON.stringify(wins));
-    }
-  }, [won, elapsed, rows, cols, mines]);
+    if (!gameOver || resultPersistedRef.current) return;
+
+    resultPersistedRef.current = true;
+
+    const score = won
+      ? Math.max(0, rows * cols * 12 + mines * 10 - elapsed * 3 - movesCount)
+      : 0;
+
+    void createGameResult({
+      playerName: 'Anonymous',
+      difficulty: getDifficultyLabel(rows, cols, mines),
+      result: won ? 'Win' : 'Loss',
+      durationSeconds: elapsed,
+      boardWidth: cols,
+      boardHeight: rows,
+      minesCount: mines,
+      movesCount,
+      score,
+      playedAtUtc: new Date().toISOString(),
+    }).catch(error => {
+      // Allow a retry if save fails and game state toggles.
+      resultPersistedRef.current = false;
+      console.error('Failed to save game result', error);
+    });
+  }, [gameOver, won, elapsed, rows, cols, mines, movesCount]);
 
   useEffect(() => {
     if (!boardFrameRef.current) return;
@@ -307,6 +317,7 @@ function Minesweeper() {
     const cell = boardState[r][c];
     // Chord: if already revealed, open all adjacent unopened, unflagged tiles in one batch
     if (cell.revealed) {
+      setMovesCount(count => count + 1);
       const newBoard = cloneBoard(boardState);
       let bombTriggered = false;
       let triggeredBomb: Position | null = null;
@@ -371,6 +382,7 @@ function Minesweeper() {
       return;
     }
     if (cell.revealed || cell.flagged) return;
+    setMovesCount(count => count + 1);
     // If this is the pre-revealed tile, clear the preReveal marker
     if (preReveal && preReveal.r === r && preReveal.c === c) {
       setPreReveal(null);
@@ -446,6 +458,7 @@ function Minesweeper() {
     const newBoard = cloneBoard(boardState);
     newBoard[r][c].flagged = !newBoard[r][c].flagged;
     setBoard(newBoard);
+    setMovesCount(count => count + 1);
   }
 
   function reset() {
