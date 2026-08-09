@@ -20,10 +20,9 @@ type PreReveal = { r: number; c: number } | null;
 type Position = { r: number; c: number };
 
 function getDifficultyLabel(rows: number, cols: number, mines: number): string {
-  if (rows === 8 && cols === 8 && mines === 10) return 'Small';
-  if (rows === 16 && cols === 16 && mines === 40) return 'Medium';
-  if (rows === 16 && cols === 30 && mines === 99) return 'Large';
-  if (rows === 30 && cols === 30 && mines === 150) return 'Max';
+  if (rows === 8 && cols === 8 && mines === 10) return 'Beginner';
+  if (rows === 16 && cols === 16 && mines === 40) return 'Intermediate';
+  if (rows === 16 && cols === 30 && mines === 99) return 'Expert';
   return 'Custom';
 }
 

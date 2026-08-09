@@ -25,6 +25,15 @@ export type CreateGameResultInput = {
   playedAtUtc?: string;
 };
 
+export type GameResultsApiErrorDetail = {
+  method: string;
+  url: string;
+  status: number | null;
+  message: string;
+};
+
+export const GAME_RESULTS_API_ERROR_EVENT = 'game-results-api-error';
+
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.replace(/\/$/, '') ?? '';
 const GAME_RESULTS_PATH = '/GameResults';
 
@@ -32,17 +41,33 @@ function buildUrl(path: string): string {
   return `${API_BASE_URL}${path}`;
 }
 
+function emitApiError(detail: GameResultsApiErrorDetail): void {
+  window.dispatchEvent(new CustomEvent<GameResultsApiErrorDetail>(GAME_RESULTS_API_ERROR_EVENT, { detail }));
+}
+
 async function requestJson<T>(input: RequestInfo | URL, init?: RequestInit): Promise<T> {
-  const response = await fetch(input, {
-    headers: {
-      'Content-Type': 'application/json',
-      ...(init?.headers ?? {}),
-    },
-    ...init,
-  });
+  const method = (init?.method ?? 'GET').toUpperCase();
+  const url = typeof input === 'string' ? input : input.toString();
+  let response: Response;
+
+  try {
+    response = await fetch(input, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...(init?.headers ?? {}),
+      },
+      ...init,
+    });
+  } catch {
+    const message = 'Could not reach the Minesweeper API. Check that the backend is running and trusted for HTTPS.';
+    emitApiError({ method, url, status: null, message });
+    throw new Error(message);
+  }
 
   if (!response.ok) {
-    throw new Error(`GameResults API request failed: ${response.status}`);
+    const message = `${method} request failed (${response.status}).`;
+    emitApiError({ method, url, status: response.status, message });
+    throw new Error(message);
   }
 
   if (response.status === 204) {

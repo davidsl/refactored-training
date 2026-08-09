@@ -12,6 +12,27 @@ builder.Services.AddOpenApi();
 builder.Services.AddDbContext<MinesweeperDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("MinesweeperDb")));
 
+var corsOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>();
+if (corsOrigins is null || corsOrigins.Length == 0)
+{
+    corsOrigins =
+    [
+        "https://localhost:5173",
+        "http://localhost:5173"
+    ];
+}
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("Frontend", policy =>
+    {
+        policy
+            .WithOrigins(corsOrigins)
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -22,6 +43,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors("Frontend");
 
 app.UseAuthorization();
 

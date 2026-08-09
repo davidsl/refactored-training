@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import basicSsl from '@vitejs/plugin-basic-ssl'
 import { viteStaticCopy } from 'vite-plugin-static-copy'
 import path from 'path'
 import fs from 'fs'
@@ -23,7 +24,11 @@ const mimeMap: Record<string, string> = {
 // https://vite.dev/config/
 export default defineConfig({
   base: '/refactored-training/', // <-- THIS IS IMPORTANT!
+  server: {
+    https: {},
+  },
   plugins: [
+    basicSsl(),
     react(),
     viteStaticCopy({
       targets: [
