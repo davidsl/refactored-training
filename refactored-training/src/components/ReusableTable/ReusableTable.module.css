@@ -33,6 +33,30 @@
   border-bottom: 1px solid var(--border);
 }
 
+.sortButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: inherit;
+  cursor: pointer;
+}
+
+.sortButton:focus-visible {
+  outline: 2px solid var(--text-strong);
+  outline-offset: 3px;
+}
+
+.sortIndicator {
+  color: var(--text-muted);
+  font-size: 0.72rem;
+}
+
 .table th,
 .table td {
   padding: 0.62rem 0.82rem;

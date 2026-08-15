@@ -12,7 +12,7 @@
   color: var(--text-strong);
   overflow: hidden;
   display: grid;
-  grid-template-rows: auto auto auto minmax(0, 1fr);
+  grid-template-rows: auto auto auto auto minmax(0, 1fr);
   gap: 0.95rem;
 }
 
@@ -111,6 +111,41 @@
   font-size: 1.02rem;
   font-weight: 700;
   color: var(--text-strong);
+}
+
+.scoreCalculation {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.65rem 0.75rem;
+  border-left: 3px solid var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, var(--surface-strong));
+}
+
+.scoreCalculation h4,
+.scoreCalculation p {
+  margin: 0;
+}
+
+.scoreCalculation h4 {
+  font-size: 0.92rem;
+}
+
+.scoreCalculation p {
+  margin-top: 0.18rem;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.scoreCalculation .scoreFormula {
+  margin: 0;
+  color: var(--text-strong);
+  font-family: 'Sora', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-align: right;
+  white-space: nowrap;
 }
 
 .contentGrid {
@@ -347,6 +382,17 @@
 
   .metricsRow {
     grid-template-columns: 1fr;
+  }
+
+  .scoreCalculation {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .scoreCalculation .scoreFormula {
+    text-align: left;
+    white-space: normal;
   }
 
   .tablePanel {

@@ -311,6 +311,16 @@ const Leaderboard: React.FC = () => {
         </div>
       </section>
 
+      <section className={styles.scoreCalculation} aria-labelledby="score-calculation-title">
+        <div>
+          <h4 id="score-calculation-title">How is the score calculated?</h4>
+          <p>Wins earn points for board size and mines, with deductions for time and moves.</p>
+        </div>
+        <p className={styles.scoreFormula}>
+          Score = max(0, cells x 12 + mines x 10 - seconds x 3 - moves)
+        </p>
+      </section>
+
       <div className={styles.contentGrid}>
         <aside className={styles.categoryRail}>
           {CATEGORY_ORDER.map(category => (
