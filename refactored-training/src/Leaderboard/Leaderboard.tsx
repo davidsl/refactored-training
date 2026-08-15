@@ -10,6 +10,7 @@ export type WinRecord = {
   rows: number;
   cols: number;
   mines: number;
+  score: number;
   time: number;
   date: string;
 };
@@ -19,10 +20,19 @@ type LeaderboardRow = {
   date: string;
   size: string;
   mines: number;
+  score: number;
   time: number;
 };
 
 type CategoryKey = 'Small' | 'Medium' | 'Large' | 'Max' | 'Custom';
+
+type StatsSummary = {
+  wins: number;
+  bestTime: number | null;
+  averageTime: number | null;
+  medianTime: number | null;
+  bestScore: number | null;
+};
 
 const CATEGORY_ORDER: CategoryKey[] = ['Small', 'Medium', 'Large', 'Max', 'Custom'];
 
@@ -47,6 +57,7 @@ function toWinRecord(gameResult: GameResult): WinRecord {
     rows: gameResult.boardHeight,
     cols: gameResult.boardWidth,
     mines: gameResult.minesCount,
+    score: gameResult.score,
     time: gameResult.durationSeconds,
     date: gameResult.playedAtUtc,
   };
@@ -58,6 +69,47 @@ function categorizeWin(win: WinRecord): 'Small' | 'Medium' | 'Large' | 'Max' | '
   if (win.rows === 16 && win.cols === 30 && win.mines === 99) return 'Large';
   if (win.rows === 30 && win.cols === 30 && win.mines === 150) return 'Max';
   return 'Custom';
+}
+
+function parseUtcDate(value: string): Date {
+  const hasTimezoneInfo = /(?:Z|[+-]\d{2}:\d{2})$/i.test(value);
+  const normalizedValue = hasTimezoneInfo ? value : `${value}Z`;
+  return new Date(normalizedValue);
+}
+
+function roundToTenths(value: number): number {
+  return Math.round(value * 10) / 10;
+}
+
+function computeStats(wins: WinRecord[]): StatsSummary {
+  if (wins.length === 0) {
+    return {
+      wins: 0,
+      bestTime: null,
+      averageTime: null,
+      medianTime: null,
+      bestScore: null,
+    };
+  }
+
+  const sortedTimes = wins.map(win => win.time).sort((a, b) => a - b);
+  const middle = Math.floor(sortedTimes.length / 2);
+  const medianTime =
+    sortedTimes.length % 2 === 0
+      ? roundToTenths((sortedTimes[middle - 1] + sortedTimes[middle]) / 2)
+      : sortedTimes[middle];
+
+  return {
+    wins: wins.length,
+    bestTime: sortedTimes[0],
+    averageTime: roundToTenths(sortedTimes.reduce((sum, time) => sum + time, 0) / sortedTimes.length),
+    medianTime,
+    bestScore: wins.reduce((max, win) => Math.max(max, win.score), wins[0].score),
+  };
+}
+
+function formatSeconds(value: number | null): string {
+  return value === null ? '--' : `${value}s`;
 }
 
 const leaderboardColumns: Array<TableColumn<LeaderboardRow>> = [
@@ -76,7 +128,10 @@ const leaderboardColumns: Array<TableColumn<LeaderboardRow>> = [
     key: 'date',
     header: 'Date',
     render: value => {
-      const d = new Date(String(value));
+      const d = parseUtcDate(String(value));
+      if (Number.isNaN(d.getTime())) {
+        return <span className={styles.leaderDateCell}>Invalid date</span>;
+      }
       const dateStr = d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
       const timeStr = d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
@@ -90,6 +145,7 @@ const leaderboardColumns: Array<TableColumn<LeaderboardRow>> = [
   },
   { key: 'size', header: 'Size', align: 'center' },
   { key: 'mines', header: 'Mines', align: 'center' },
+  { key: 'score', header: 'Score', align: 'center' },
   {
     key: 'time',
     header: 'Time (s)',
@@ -151,14 +207,12 @@ const Leaderboard: React.FC = () => {
     categorized[categorizeWin(win)].push(win);
   });
 
-  const totalWins = leaderboard.length;
-  const fastestTime = leaderboard.length > 0 ? leaderboard[0].time : null;
-  const averageTime =
-    leaderboard.length > 0
-      ? Math.round(leaderboard.reduce((sum, win) => sum + win.time, 0) / leaderboard.length)
-      : null;
   const selectedWins = categorized[selectedCategory];
   const selectedMeta = CATEGORY_LABELS[selectedCategory];
+  const overallStats = computeStats(leaderboard);
+  const selectedStats = computeStats(selectedWins);
+  const selectedWinShare =
+    overallStats.wins > 0 ? Math.round((selectedStats.wins / overallStats.wins) * 100) : 0;
 
   function renderTable(wins: WinRecord[]) {
     const rows: LeaderboardRow[] = wins.map((win, i) => ({
@@ -166,6 +220,7 @@ const Leaderboard: React.FC = () => {
       date: win.date,
       size: `${win.rows}x${win.cols}`,
       mines: win.mines,
+      score: win.score,
       time: win.time,
     }));
 
@@ -210,17 +265,51 @@ const Leaderboard: React.FC = () => {
       <div className={styles.metricsRow}>
         <article className={styles.metricCard}>
           <span className={styles.metricLabel}>Total wins</span>
-          <strong className={styles.metricValue}>{totalWins}</strong>
+          <strong className={styles.metricValue}>{overallStats.wins}</strong>
         </article>
         <article className={styles.metricCard}>
           <span className={styles.metricLabel}>Best time</span>
-          <strong className={styles.metricValue}>{fastestTime === null ? '--' : `${fastestTime}s`}</strong>
+          <strong className={styles.metricValue}>{formatSeconds(overallStats.bestTime)}</strong>
         </article>
         <article className={styles.metricCard}>
           <span className={styles.metricLabel}>Average time</span>
-          <strong className={styles.metricValue}>{averageTime === null ? '--' : `${averageTime}s`}</strong>
+          <strong className={styles.metricValue}>{formatSeconds(overallStats.averageTime)}</strong>
         </article>
       </div>
+
+      <section className={styles.statisticsSection} aria-label="Statistics">
+        <div className={styles.statisticsHeader}>
+          <h4>Statistics</h4>
+          <p>Overall performance and details for {selectedMeta.title} boards.</p>
+        </div>
+
+        <div className={styles.statisticsGrid}>
+          <article className={styles.statCard}>
+            <span className={styles.statLabel}>Overall median time</span>
+            <strong className={styles.statValue}>{formatSeconds(overallStats.medianTime)}</strong>
+          </article>
+          <article className={styles.statCard}>
+            <span className={styles.statLabel}>Overall best score</span>
+            <strong className={styles.statValue}>{overallStats.bestScore ?? '--'}</strong>
+          </article>
+          <article className={styles.statCard}>
+            <span className={styles.statLabel}>{selectedMeta.title} wins</span>
+            <strong className={styles.statValue}>{selectedStats.wins}</strong>
+          </article>
+          <article className={styles.statCard}>
+            <span className={styles.statLabel}>{selectedMeta.title} share</span>
+            <strong className={styles.statValue}>{selectedWinShare}%</strong>
+          </article>
+          <article className={styles.statCard}>
+            <span className={styles.statLabel}>{selectedMeta.title} best time</span>
+            <strong className={styles.statValue}>{formatSeconds(selectedStats.bestTime)}</strong>
+          </article>
+          <article className={styles.statCard}>
+            <span className={styles.statLabel}>{selectedMeta.title} average time</span>
+            <strong className={styles.statValue}>{formatSeconds(selectedStats.averageTime)}</strong>
+          </article>
+        </div>
+      </section>
 
       <div className={styles.contentGrid}>
         <aside className={styles.categoryRail}>
