@@ -26,6 +26,14 @@ function getDifficultyLabel(rows: number, cols: number, mines: number): string {
   return 'Custom';
 }
 
+function getLeaderboardCategory(rows: number, cols: number, mines: number): string {
+  if (rows === 8 && cols === 8 && mines === 10) return 'Small';
+  if (rows === 16 && cols === 16 && mines === 40) return 'Medium';
+  if (rows === 16 && cols === 30 && mines === 99) return 'Large';
+  if (rows === 30 && cols === 30 && mines === 150) return 'Max';
+  return 'Custom';
+}
+
 function generateBoard(rows: number, cols: number, mines: number): { board: Board; preReveal: PreReveal } {
   const board: Board = Array.from({ length: rows }, () =>
     Array.from({ length: cols }, () => ({ mine: false, revealed: false, adjacent: 0, flagged: false }))
@@ -714,7 +722,11 @@ function Minesweeper() {
                     <button type="button" className={styles.overlayButtonPrimary} onClick={reset}>
                       New Game
                     </button>
-                    <button type="button" className={styles.overlayButton} onClick={() => navigate('/leaderboard')}>
+                    <button
+                      type="button"
+                      className={styles.overlayButton}
+                      onClick={() => navigate(`/leaderboard?category=${getLeaderboardCategory(rows, cols, mines)}`)}
+                    >
                       Go To Leaderboard
                     </button>
                   </div>

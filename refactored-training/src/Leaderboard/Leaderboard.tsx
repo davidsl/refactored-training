@@ -1,4 +1,5 @@
 import React from 'react';
+import { useSearchParams } from 'react-router-dom';
 import styles from './Leaderboard.module.css';
 import ConfirmModal from './ConfirmModal';
 import ReusableTable, { type TableColumn } from '../components/ReusableTable/ReusableTable';
@@ -43,6 +44,10 @@ const CATEGORY_LABELS: Record<CategoryKey, { title: string; description: string 
   Max: { title: 'Max', description: '30x30 board, 150 mines' },
   Custom: { title: 'Custom', description: 'Any non-preset setup' },
 };
+
+function getInitialCategory(category: string | null): CategoryKey {
+  return CATEGORY_ORDER.includes(category as CategoryKey) ? (category as CategoryKey) : 'Small';
+}
 
 function getLeaderboard(): WinRecord[] {
   const wins: WinRecord[] = [];
@@ -155,10 +160,11 @@ const leaderboardColumns: Array<TableColumn<LeaderboardRow>> = [
 ];
 
 const Leaderboard: React.FC = () => {
+  const [searchParams] = useSearchParams();
   const [leaderboard, setLeaderboard] = React.useState<WinRecord[]>(getLeaderboard());
   const [isLoading, setIsLoading] = React.useState(true);
   const [loadError, setLoadError] = React.useState<string | null>(null);
-  const [selectedCategory, setSelectedCategory] = React.useState<CategoryKey>('Small');
+  const [selectedCategory, setSelectedCategory] = React.useState<CategoryKey>(() => getInitialCategory(searchParams.get('category')));
   const [showConfirm, setShowConfirm] = React.useState(false);
 
   React.useEffect(() => {
