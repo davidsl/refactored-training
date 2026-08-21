@@ -320,10 +320,10 @@ const Leaderboard: React.FC = () => {
       <section className={styles.scoreCalculation} aria-labelledby="score-calculation-title">
         <div>
           <h4 id="score-calculation-title">How is the score calculated?</h4>
-          <p>Wins earn points for board size and mines, with deductions for time and moves.</p>
+          <p>Wins earn points for board size and mine density, with a deduction for time.</p>
         </div>
         <p className={styles.scoreFormula}>
-          Score = max(0, cells x 12 + mines x 10 - seconds x 3 - moves)
+          Score = max(0, round(cells x 12 x (1 + 2.5 x sqrt(mines / cells)) - seconds x 3))
         </p>
       </section>
 

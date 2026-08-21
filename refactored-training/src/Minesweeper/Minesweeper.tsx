@@ -257,8 +257,10 @@ function Minesweeper() {
 
     resultPersistedRef.current = true;
 
+    const cells = rows * cols;
+    const mineDensity = mines / cells;
     const score = won
-      ? Math.max(0, rows * cols * 12 + mines * 10 - elapsed * 3 - movesCount)
+      ? Math.max(0, Math.round(cells * 12 * (1 + 2.5 * Math.sqrt(mineDensity)) - elapsed * 3))
       : 0;
 
     void createGameResult({
