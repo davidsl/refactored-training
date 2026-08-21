@@ -232,7 +232,8 @@ function Minesweeper() {
 
   // Count placed flags
   const flagCount = boardState.reduce((acc, row) => acc + row.filter(cell => cell.flagged).length, 0);
-  const bombsLeft = mines - flagCount;
+  const bombsLeft = Math.max(0, mines - flagCount);
+  const shouldRevealBombsLeft = !unknownBombCount || bombsLeft <= 10;
 
   // Start/stop timer based on timerActive and game state
   useEffect(() => {
@@ -629,7 +630,7 @@ function Minesweeper() {
             <div className={styles.statusRow}>
               <div className={styles.statusItem}>
                 <span className={styles.statusLabel}>Bombs Left</span>
-                <span className={styles.statusValue}>💣 {unknownBombCount ? '??' : bombsLeft}</span>
+                <span className={styles.statusValue}>💣 {shouldRevealBombsLeft ? bombsLeft : '??'}</span>
               </div>
               <div className={styles.statusItem}>
                 <span className={styles.statusLabel}>Time</span>
