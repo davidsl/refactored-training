@@ -1,7 +1,8 @@
 .gameContainer {
-  height: 100%;
-  max-height: 100%;
+  height: auto;
+  max-height: none;
   min-height: 0;
+  flex: 0 0 auto;
   border-radius: var(--radius-xl);
   border: 1px solid var(--border);
   box-shadow: var(--shadow-soft);
@@ -12,21 +13,12 @@
   color: var(--text-strong);
   overflow: hidden;
   padding: 1rem;
-  display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
-  gap: 0.7rem;
 }
 
-.headerBar {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 0.8rem;
-}
-
-.headerBar h2 {
+.pageTitle {
   margin: 0;
   font-size: clamp(1.3rem, 2.3vw, 1.9rem);
+  line-height: 1.1;
 }
 
 .subtitle {
@@ -39,6 +31,7 @@
   min-height: 0;
   display: grid;
   grid-template-columns: 280px minmax(0, 1fr);
+  align-items: start;
   gap: 0.62rem;
 }
 
@@ -242,18 +235,51 @@
 .boardStage {
   min-height: 0;
   display: grid;
-  grid-template-rows: minmax(0, 1fr) auto;
-  gap: 0.46rem;
+  grid-template-rows: auto auto;
+  align-content: start;
+  gap: 0.34rem;
+}
+
+.boardStageTall {
+  gap: 0.22rem;
+}
+
+.boardStageVeryTall {
+  gap: 0.14rem;
+}
+
+.boardViewport {
+  height: clamp(360px, 68dvh, 780px);
+  min-height: 0;
+}
+
+.boardViewportTall {
+  height: clamp(440px, 78dvh, 900px);
+}
+
+.boardViewportVeryTall {
+  height: clamp(560px, calc(100dvh - 11rem), 1220px);
 }
 
 .boardFrame {
   position: relative;
+  height: 100%;
   min-height: 0;
   overflow: hidden;
-  padding: 0.58rem;
+  padding: 0.24rem 0.58rem;
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+.boardFrameStartAligned {
+  justify-content: flex-start;
+  align-items: flex-start;
+  padding: 0.14rem 0.38rem;
+}
+
+.boardFrameVeryTall {
+  padding: 0.08rem 0.3rem;
 }
 
 .boardWrapper {
@@ -264,6 +290,14 @@
   background:
     radial-gradient(120% 140% at 0% 0%, color-mix(in srgb, var(--primary) 10%, transparent) 0%, transparent 44%),
     color-mix(in srgb, var(--surface-strong) 90%, transparent);
+}
+
+.boardWrapperTall {
+  padding: 0.28rem;
+}
+
+.boardWrapperVeryTall {
+  padding: 0.2rem;
 }
 
 .boardRow {
@@ -415,6 +449,7 @@
   font-size: 0.74rem;
   color: var(--text-muted);
   text-align: center;
+  max-width: 100%;
 }
 
 @media (max-width: 980px) {
@@ -424,7 +459,7 @@
 
   .workspace {
     grid-template-columns: 1fr;
-    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-rows: auto;
   }
 
   .controlRail {
@@ -433,9 +468,24 @@
 }
 
 @media (max-width: 760px) {
-  .headerBar {
-    flex-direction: column;
-    align-items: stretch;
+  .boardViewport {
+    height: clamp(260px, 56dvh, 560px);
+  }
+
+  .boardViewportTall {
+    height: clamp(300px, 62dvh, 640px);
+  }
+
+  .boardViewportVeryTall {
+    height: clamp(340px, calc(100dvh - 12.8rem), 760px);
+  }
+
+  .boardWrapperTall {
+    padding: 0.2rem;
+  }
+
+  .boardWrapperVeryTall {
+    padding: 0.16rem;
   }
 
   .customForm {
