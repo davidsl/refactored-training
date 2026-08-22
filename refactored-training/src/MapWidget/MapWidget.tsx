@@ -9,9 +9,13 @@ esriConfig.assetsPath = `${import.meta.env.BASE_URL}assets`;
 
 const contaminatedLandLayerUrl =
   'https://testarcgis02.miljodirektoratet.no/arcgis/rest/services/grunnforurensningutv/GrunnforurensningTemakart/MapServer';
+const contaminatedLandLayerId = 'contaminated-land-layer';
 
 type ArcgisMapElement = HTMLElement & {
-  map?: { add: (layer: MapImageLayer) => void };
+  map?: {
+    add: (layer: MapImageLayer) => void;
+    findLayerById: (id: string) => MapImageLayer | undefined;
+  };
   viewOnReady: () => Promise<void>;
 };
 
@@ -26,8 +30,15 @@ function MapWidget() {
     }
 
     void mapElement.viewOnReady().then(() => {
-      mapElement.map?.add(
+      const map = mapElement.map;
+
+      if (!map || map.findLayerById(contaminatedLandLayerId)) {
+        return;
+      }
+
+      map.add(
         new MapImageLayer({
+          id: contaminatedLandLayerId,
           title: 'Grunnforurensning',
           url: contaminatedLandLayerUrl,
         }),
