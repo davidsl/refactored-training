@@ -10,3 +10,16 @@
   position: relative;
   overflow: hidden;
 }
+
+.sceneView arcgis-layer-list {
+  width: min(20rem, calc(100vw - 3rem));
+  max-height: min(32rem, calc(100% - 2rem));
+  margin: 1rem;
+}
+
+@media (max-width: 800px) {
+  .sceneView arcgis-layer-list {
+    width: min(17rem, calc(100vw - 2rem));
+    margin: 0.5rem;
+  }
+}

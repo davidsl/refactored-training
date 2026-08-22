@@ -95,6 +95,13 @@ function getRandomBombCount(rows: number, cols: number): number {
   return Math.floor(Math.random() * (maxRecommended - minRecommended + 1)) + minRecommended;
 }
 
+function calculateScore(rows: number, cols: number, mines: number, elapsed: number, won: boolean): number {
+  if (!won) return 0;
+  const cells = rows * cols;
+  const mineDensity = mines / cells;
+  return Math.max(0, Math.round(cells * 12 * (1 + 2.5 * Math.sqrt(mineDensity)) - elapsed * 3));
+}
+
 function Minesweeper() {
   const navigate = useNavigate();
   const motion = MOTION_DELAY_PRESETS[ACTIVE_MOTION_PRESET];
@@ -136,6 +143,7 @@ function Minesweeper() {
   const resultPersistedRef = useRef(false);
   const customBoardTooSmall = draftRows < 5 || draftCols < 5;
   const hasGameStarted = timerActive || elapsed > 0 || boardState.some(row => row.some(cell => cell.revealed || cell.flagged));
+  const currentScore = calculateScore(rows, cols, mines, elapsed, won);
 
   function startNewGame(nextRows: number, nextCols: number, nextMines: number) {
     const { board, preReveal } = generateBoard(nextRows, nextCols, nextMines);
@@ -258,12 +266,6 @@ function Minesweeper() {
 
     resultPersistedRef.current = true;
 
-    const cells = rows * cols;
-    const mineDensity = mines / cells;
-    const score = won
-      ? Math.max(0, Math.round(cells * 12 * (1 + 2.5 * Math.sqrt(mineDensity)) - elapsed * 3))
-      : 0;
-
     void createGameResult({
       playerName: 'Anonymous',
       difficulty: getDifficultyLabel(rows, cols, mines),
@@ -273,14 +275,14 @@ function Minesweeper() {
       boardHeight: rows,
       minesCount: mines,
       movesCount,
-      score,
+      score: currentScore,
       playedAtUtc: new Date().toISOString(),
     }).catch(error => {
       // Allow a retry if save fails and game state toggles.
       resultPersistedRef.current = false;
       console.error('Failed to save game result', error);
     });
-  }, [gameOver, won, elapsed, rows, cols, mines, movesCount]);
+  }, [gameOver, won, elapsed, rows, cols, mines, movesCount, currentScore]);
 
   useEffect(() => {
     if (!boardFrameRef.current) return;
@@ -715,7 +717,7 @@ function Minesweeper() {
                   <h3 className={styles.endOverlayTitle}>{won ? 'You Win!' : 'Game Over!'}</h3>
                   <p className={styles.endOverlaySubtitle}>
                     {won
-                      ? `Solved in ${elapsed}s on a ${rows}x${cols} board with ${mines} mines.${unknownBombCount ? ` Hidden bomb count revealed: ${mines}.` : ''}`
+                      ? `Solved in ${elapsed}s on a ${rows}x${cols} board with ${mines} mines. Score: ${currentScore}.${unknownBombCount ? ` Hidden bomb count revealed: ${mines}.` : ''}`
                       : `A mine was triggered. Take a breath and run it back.${unknownBombCount ? ` This board had ${mines} bombs.` : ''}`}
                   </p>
                   <div className={styles.endOverlayActions}>
