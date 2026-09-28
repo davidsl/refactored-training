@@ -1,6 +1,6 @@
 @RefactoredWebapi_HostAddress = http://localhost:5149
 
-GET {{RefactoredWebapi_HostAddress}}/weatherforecast/
+GET {{RefactoredWebapi_HostAddress}}/GameResults
 Accept: application/json
 
 ###

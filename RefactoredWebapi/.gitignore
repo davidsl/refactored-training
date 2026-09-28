@@ -21,6 +21,9 @@ TestResults/
 # Logs
 *.log
 
+# Local SQL scripts
+sql/
+
 # OS files
 .DS_Store
 Thumbs.db

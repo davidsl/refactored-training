@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import styles from './Minesweeper.module.css';
 import { ACTIVE_MOTION_PRESET, MOTION_DELAY_PRESETS } from '../motionPreset';
 import ConfirmModal from '../Leaderboard/ConfirmModal';
+import { createGameResult } from '../api/gameResultsApi';
 
 type Cell = {
   mine: boolean;
@@ -16,15 +17,22 @@ type Board = Cell[][];
 
 type PreReveal = { r: number; c: number } | null;
 
-type WinRecord = {
-  rows: number;
-  cols: number;
-  mines: number;
-  time: number;
-  date: string;
-};
-
 type Position = { r: number; c: number };
+
+function getDifficultyLabel(rows: number, cols: number, mines: number): string {
+  if (rows === 8 && cols === 8 && mines === 10) return 'Beginner';
+  if (rows === 16 && cols === 16 && mines === 40) return 'Intermediate';
+  if (rows === 16 && cols === 30 && mines === 99) return 'Expert';
+  return 'Custom';
+}
+
+function getLeaderboardCategory(rows: number, cols: number, mines: number): string {
+  if (rows === 8 && cols === 8 && mines === 10) return 'Small';
+  if (rows === 16 && cols === 16 && mines === 40) return 'Medium';
+  if (rows === 16 && cols === 30 && mines === 99) return 'Large';
+  if (rows === 30 && cols === 30 && mines === 150) return 'Max';
+  return 'Custom';
+}
 
 function generateBoard(rows: number, cols: number, mines: number): { board: Board; preReveal: PreReveal } {
   const board: Board = Array.from({ length: rows }, () =>
@@ -87,15 +95,26 @@ function getRandomBombCount(rows: number, cols: number): number {
   return Math.floor(Math.random() * (maxRecommended - minRecommended + 1)) + minRecommended;
 }
 
+function calculateScore(rows: number, cols: number, mines: number, elapsed: number, won: boolean): number {
+  if (!won) return 0;
+  const cells = rows * cols;
+  const mineDensity = mines / cells;
+  return Math.max(0, Math.round(cells * 12 * (1 + 2.5 * Math.sqrt(mineDensity)) - elapsed * 3));
+}
+
 function Minesweeper() {
   const navigate = useNavigate();
   const motion = MOTION_DELAY_PRESETS[ACTIVE_MOTION_PRESET];
+  const CUSTOM_MAX_ROWS = 50;
+  const CUSTOM_MAX_COLS = 30;
   const CUSTOM_DEFAULT_ROWS = 30;
   const CUSTOM_DEFAULT_COLS = 30;
   const CUSTOM_DEFAULT_MINES = 150;
   const TILE_GAP = 0;
   const BOARD_PADDING = 10;
+  const BOARD_PADDING_TALL = 6;
   const TILE_MIN = 10;
+  const TILE_MIN_TALL = 9;
   const TILE_MAX = 48;
   const TILE_READABLE_THRESHOLD = 18;
   const [rows, setRows] = useState(8);
@@ -118,14 +137,17 @@ function Minesweeper() {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [confirmSelectionLabel, setConfirmSelectionLabel] = useState('Custom');
   const [elapsed, setElapsed] = useState(0);
+  const [movesCount, setMovesCount] = useState(0);
   const [timerActive, setTimerActive] = useState(false);
   const [boardAnimKey, setBoardAnimKey] = useState(0);
   const [boardViewport, setBoardViewport] = useState({ width: 0, height: 0 });
   const timerRef = useRef<number | null>(null);
   const boardFrameRef = useRef<HTMLDivElement | null>(null);
   const pendingConfirmActionRef = useRef<(() => void) | null>(null);
+  const resultPersistedRef = useRef(false);
   const customBoardTooSmall = draftRows < 5 || draftCols < 5;
   const hasGameStarted = timerActive || elapsed > 0 || boardState.some(row => row.some(cell => cell.revealed || cell.flagged));
+  const currentScore = calculateScore(rows, cols, mines, elapsed, won);
 
   function startNewGame(nextRows: number, nextCols: number, nextMines: number) {
     const { board, preReveal } = generateBoard(nextRows, nextCols, nextMines);
@@ -137,8 +159,10 @@ function Minesweeper() {
     setExplodedBomb(null);
     setWrongFlags([]);
     setElapsed(0);
+    setMovesCount(0);
     setTimerActive(false);
     setBoardAnimKey(v => v + 1);
+    resultPersistedRef.current = false;
   }
 
   function requestStartNewGame(selectionLabel: string, onConfirmAction: () => void) {
@@ -174,8 +198,8 @@ function Minesweeper() {
     const proposedMines = overrides?.mines ?? draftMines;
     const useUnknownBombCount = overrides?.unknownBombCount ?? unknownBombCount;
 
-    const nextRows = Math.max(0, Math.min(30, Number(proposedRows)));
-    const nextCols = Math.max(0, Math.min(30, Number(proposedCols)));
+    const nextRows = Math.max(0, Math.min(CUSTOM_MAX_ROWS, Number(proposedRows)));
+    const nextCols = Math.max(0, Math.min(CUSTOM_MAX_COLS, Number(proposedCols)));
     const draftMaxMines = Math.max(1, nextRows * nextCols - 1);
     const sanitizedDraftMines = Math.max(1, Math.min(draftMaxMines, Number(proposedMines)));
 
@@ -220,7 +244,8 @@ function Minesweeper() {
 
   // Count placed flags
   const flagCount = boardState.reduce((acc, row) => acc + row.filter(cell => cell.flagged).length, 0);
-  const bombsLeft = mines - flagCount;
+  const bombsLeft = Math.max(0, mines - flagCount);
+  const shouldRevealBombsLeft = !unknownBombCount || bombsLeft <= 10;
 
   // Start/stop timer based on timerActive and game state
   useEffect(() => {
@@ -241,26 +266,27 @@ function Minesweeper() {
   }, [timerActive, gameOver]);
 
   useEffect(() => {
-    if (won) {
-      // Save win to sessionStorage
-      const winRecord = {
-        rows,
-        cols,
-        mines,
-        time: elapsed,
-        date: new Date().toISOString(),
-      };
-      const prev = sessionStorage.getItem('minesweeperWins');
-      let wins: WinRecord[] = [];
-      if (prev) {
-        try {
-          wins = JSON.parse(prev);
-        } catch { /* ignore parse error */ }
-      }
-      wins.push(winRecord);
-      sessionStorage.setItem('minesweeperWins', JSON.stringify(wins));
-    }
-  }, [won, elapsed, rows, cols, mines]);
+    if (!gameOver || resultPersistedRef.current) return;
+
+    resultPersistedRef.current = true;
+
+    void createGameResult({
+      playerName: 'Anonymous',
+      difficulty: getDifficultyLabel(rows, cols, mines),
+      result: won ? 'Win' : 'Loss',
+      durationSeconds: elapsed,
+      boardWidth: cols,
+      boardHeight: rows,
+      minesCount: mines,
+      movesCount,
+      score: currentScore,
+      playedAtUtc: new Date().toISOString(),
+    }).catch(error => {
+      // Allow a retry if save fails and game state toggles.
+      resultPersistedRef.current = false;
+      console.error('Failed to save game result', error);
+    });
+  }, [gameOver, won, elapsed, rows, cols, mines, movesCount, currentScore]);
 
   useEffect(() => {
     if (!boardFrameRef.current) return;
@@ -284,22 +310,32 @@ function Minesweeper() {
     };
   }, [rows, cols]);
 
+  const isVeryTallBoard = rows > cols && rows >= 45;
+  const effectiveTileMin = isVeryTallBoard ? TILE_MIN_TALL : TILE_MIN;
+  const effectiveBoardPadding = rows > cols ? BOARD_PADDING_TALL : BOARD_PADDING;
+
   const computedTileSize = (() => {
     if (!boardViewport.width || !boardViewport.height) {
       return rows > 18 || cols > 18 ? 36 : 48;
     }
 
-    const availableWidth = Math.max(0, boardViewport.width - BOARD_PADDING * 2);
-    const availableHeight = Math.max(0, boardViewport.height - BOARD_PADDING * 2);
+    const availableWidth = Math.max(0, boardViewport.width - effectiveBoardPadding * 2);
+    const availableHeight = Math.max(0, boardViewport.height - effectiveBoardPadding * 2);
     const widthByCols = (availableWidth - TILE_GAP * (cols - 1)) / cols;
     const heightByRows = (availableHeight - TILE_GAP * (rows - 1)) / rows;
     const size = Math.floor(Math.min(widthByCols, heightByRows));
 
-    return Math.max(TILE_MIN, Math.min(TILE_MAX, size));
+    return Math.max(effectiveTileMin, Math.min(TILE_MAX, size));
   })();
 
   const tileFontSize = Math.max(10, Math.floor(computedTileSize * 0.52));
   const tileSizeConstrained = computedTileSize <= TILE_READABLE_THRESHOLD;
+  const isTallBoard = rows > cols;
+  const boardAspectRatio = rows / Math.max(1, cols);
+  const preferBoardStartAlignment = isTallBoard;
+  const preferTallBoardViewport = isTallBoard;
+  const preferVeryTallBoardViewport = isTallBoard && boardAspectRatio >= 1.6;
+  const preferVeryTallBoardMode = preferVeryTallBoardViewport;
 
   function reveal(r: number, c: number) {
     if (gameOver) return;
@@ -307,6 +343,7 @@ function Minesweeper() {
     const cell = boardState[r][c];
     // Chord: if already revealed, open all adjacent unopened, unflagged tiles in one batch
     if (cell.revealed) {
+      setMovesCount(count => count + 1);
       const newBoard = cloneBoard(boardState);
       let bombTriggered = false;
       let triggeredBomb: Position | null = null;
@@ -371,6 +408,7 @@ function Minesweeper() {
       return;
     }
     if (cell.revealed || cell.flagged) return;
+    setMovesCount(count => count + 1);
     // If this is the pre-revealed tile, clear the preReveal marker
     if (preReveal && preReveal.r === r && preReveal.c === c) {
       setPreReveal(null);
@@ -446,6 +484,7 @@ function Minesweeper() {
     const newBoard = cloneBoard(boardState);
     newBoard[r][c].flagged = !newBoard[r][c].flagged;
     setBoard(newBoard);
+    setMovesCount(count => count + 1);
   }
 
   function reset() {
@@ -459,14 +498,9 @@ function Minesweeper() {
 
   return (
     <div className={styles.gameContainer}>
-      <header className={styles.headerBar}>
-        <div>
-          <h2>Minesweeper</h2>
-        </div>
-      </header>
-
       <div className={styles.workspace}>
         <aside className={styles.controlRail}>
+          <h2 className={styles.pageTitle}>Minesweeper</h2>
           <button onClick={reset} className={styles.restartButton}>Restart</button>
 
           <section className={styles.panelCard}>
@@ -548,10 +582,10 @@ function Minesweeper() {
                   className={styles.customInput}
                   type="number"
                   min={0}
-                  max={30}
+                  max={CUSTOM_MAX_ROWS}
                   value={draftRows}
                   onChange={e => {
-                    const nextRows = Math.max(0, Math.min(30, Number(e.target.value)));
+                    const nextRows = Math.max(0, Math.min(CUSTOM_MAX_ROWS, Number(e.target.value)));
                     applyDraftSettings({ rows: nextRows });
                   }}
                 />
@@ -562,10 +596,10 @@ function Minesweeper() {
                   className={styles.customInput}
                   type="number"
                   min={0}
-                  max={30}
+                  max={CUSTOM_MAX_COLS}
                   value={draftCols}
                   onChange={e => {
-                    const nextCols = Math.max(0, Math.min(30, Number(e.target.value)));
+                    const nextCols = Math.max(0, Math.min(CUSTOM_MAX_COLS, Number(e.target.value)));
                     applyDraftSettings({ cols: nextCols });
                   }}
                 />
@@ -607,7 +641,7 @@ function Minesweeper() {
             <div className={styles.statusRow}>
               <div className={styles.statusItem}>
                 <span className={styles.statusLabel}>Bombs Left</span>
-                <span className={styles.statusValue}>💣 {unknownBombCount ? '??' : bombsLeft}</span>
+                <span className={styles.statusValue}>💣 {shouldRevealBombsLeft ? bombsLeft : '??'}</span>
               </div>
               <div className={styles.statusItem}>
                 <span className={styles.statusLabel}>Time</span>
@@ -618,97 +652,130 @@ function Minesweeper() {
           </section>
         </aside>
 
-        <section className={styles.boardStage}>
-          <div className={styles.boardFrame} ref={boardFrameRef}>
-            <div className={styles.boardWrapper} key={boardAnimKey} onContextMenu={e => e.preventDefault()}>
-              {boardState.map((row, r) => (
-                <div
-                  key={r}
-                  className={styles.boardRow}
-                  style={{ animationDelay: `${Math.min(r * motion.mineRowStepMs, motion.mineRowMaxMs)}ms` }}
-                >
-                  {row.map((cell, c) => {
-                    const isPreReveal = preReveal && preReveal.r === r && preReveal.c === c;
-                    const isWrongFlag = wrongFlags.some(f => f.r === r && f.c === c);
-                    const isExplodedBomb = explodedBomb?.r === r && explodedBomb?.c === c;
-                    const tileDelay = Math.min(
-                      r * motion.mineTileRowWeightMs + c * motion.mineTileColWeightMs,
-                      motion.mineTileMaxMs
-                    );
-                    return (
-                      <button
-                        key={c}
-                        className={
-                          (cell.revealed ? styles.revealedTile : isPreReveal ? styles.preRevealTile : styles.tile) +
-                          (isExplodedBomb ? ' ' + styles.explodedBombTile : '') +
-                          (isWrongFlag ? ' ' + styles.wrongFlagTile : '')
-                        }
-                        style={{
-                          width: computedTileSize,
-                          height: computedTileSize,
-                          fontSize: tileFontSize,
-                          color: cell.mine
-                            ? '#ff6b6b'
-                            : isWrongFlag
-                              ? '#ff4455'
-                              : cell.adjacent === 1 ? '#5ba3ff'
-                              : cell.adjacent === 2 ? '#4dcc7a'
-                              : cell.adjacent === 3 ? '#ff6b6b'
-                              : cell.adjacent === 4 ? '#a07bff'
-                              : cell.adjacent === 5 ? '#ff9944'
-                              : cell.adjacent === 6 ? '#44ddcc'
-                              : cell.adjacent === 7 ? '#e0c06a'
-                              : cell.adjacent === 8 ? '#aabbd0'
-                              : '#c8daf5',
-                          animationDelay: cell.revealed || isPreReveal ? `${tileDelay}ms` : undefined,
-                        }}
-                        data-tile-index={r * cols + c}
-                        onClick={() => reveal(r, c)}
-                        onContextMenu={e => flagCell(e, r, c)}
-                        disabled={gameOver}
-                      >
-                        {cell.revealed
-                          ? cell.mine
-                            ? isExplodedBomb
-                              ? '💥'
-                              : '💣'
-                            : isWrongFlag
-                              ? '❌'
-                              : cell.adjacent > 0
-                                ? cell.adjacent
-                                : ''
-                          : cell.flagged
-                            ? '🚩'
-                            : ''}
+        <section
+          className={
+            styles.boardStage +
+            (preferTallBoardViewport ? ' ' + styles.boardStageTall : '') +
+            (preferVeryTallBoardMode ? ' ' + styles.boardStageVeryTall : '')
+          }
+        >
+          <div
+            className={
+              styles.boardViewport +
+              (preferTallBoardViewport ? ' ' + styles.boardViewportTall : '') +
+              (preferVeryTallBoardViewport ? ' ' + styles.boardViewportVeryTall : '')
+            }
+          >
+            <div
+              className={
+                styles.boardFrame +
+                (preferBoardStartAlignment ? ' ' + styles.boardFrameStartAligned : '') +
+                (preferVeryTallBoardMode ? ' ' + styles.boardFrameVeryTall : '')
+              }
+              ref={boardFrameRef}
+            >
+              <div
+                className={
+                  styles.boardWrapper +
+                  (preferTallBoardViewport ? ' ' + styles.boardWrapperTall : '') +
+                  (preferVeryTallBoardMode ? ' ' + styles.boardWrapperVeryTall : '')
+                }
+                key={boardAnimKey}
+                onContextMenu={e => e.preventDefault()}
+              >
+                {boardState.map((row, r) => (
+                  <div
+                    key={r}
+                    className={styles.boardRow}
+                    style={{ animationDelay: `${Math.min(r * motion.mineRowStepMs, motion.mineRowMaxMs)}ms` }}
+                  >
+                    {row.map((cell, c) => {
+                      const isPreReveal = preReveal && preReveal.r === r && preReveal.c === c;
+                      const isWrongFlag = wrongFlags.some(f => f.r === r && f.c === c);
+                      const isExplodedBomb = explodedBomb?.r === r && explodedBomb?.c === c;
+                      const tileDelay = Math.min(
+                        r * motion.mineTileRowWeightMs + c * motion.mineTileColWeightMs,
+                        motion.mineTileMaxMs
+                      );
+                      return (
+                        <button
+                          key={c}
+                          className={
+                            (cell.revealed ? styles.revealedTile : isPreReveal ? styles.preRevealTile : styles.tile) +
+                            (isExplodedBomb ? ' ' + styles.explodedBombTile : '') +
+                            (isWrongFlag ? ' ' + styles.wrongFlagTile : '')
+                          }
+                          style={{
+                            width: computedTileSize,
+                            height: computedTileSize,
+                            fontSize: tileFontSize,
+                            color: cell.mine
+                              ? '#ff6b6b'
+                              : isWrongFlag
+                                ? '#ff4455'
+                                : cell.adjacent === 1 ? '#5ba3ff'
+                                : cell.adjacent === 2 ? '#4dcc7a'
+                                : cell.adjacent === 3 ? '#ff6b6b'
+                                : cell.adjacent === 4 ? '#a07bff'
+                                : cell.adjacent === 5 ? '#ff9944'
+                                : cell.adjacent === 6 ? '#44ddcc'
+                                : cell.adjacent === 7 ? '#e0c06a'
+                                : cell.adjacent === 8 ? '#aabbd0'
+                                : '#c8daf5',
+                            animationDelay: cell.revealed || isPreReveal ? `${tileDelay}ms` : undefined,
+                          }}
+                          data-tile-index={r * cols + c}
+                          onClick={() => reveal(r, c)}
+                          onContextMenu={e => flagCell(e, r, c)}
+                          disabled={gameOver}
+                        >
+                          {cell.revealed
+                            ? cell.mine
+                              ? isExplodedBomb
+                                ? '💥'
+                                : '💣'
+                              : isWrongFlag
+                                ? '❌'
+                                : cell.adjacent > 0
+                                  ? cell.adjacent
+                                  : ''
+                            : cell.flagged
+                              ? '🚩'
+                              : ''}
+                        </button>
+                      );
+                    })}
+                  </div>
+                ))}
+              </div>
+              {gameOver && showEndOverlay && (
+                <div className={styles.endOverlay} role="dialog" aria-modal="true" aria-label="Game result">
+                  <div className={styles.endOverlayCard}>
+                    <h3 className={styles.endOverlayTitle}>{won ? 'You Win!' : 'Game Over!'}</h3>
+                    <p className={styles.endOverlaySubtitle}>
+                      {won
+                        ? `Solved in ${elapsed}s on a ${rows}x${cols} board with ${mines} mines. Score: ${currentScore}.${unknownBombCount ? ` Hidden bomb count revealed: ${mines}.` : ''}`
+                        : `A mine was triggered. Take a breath and run it back.${unknownBombCount ? ` This board had ${mines} bombs.` : ''}`}
+                    </p>
+                    <div className={styles.endOverlayActions}>
+                      <button type="button" className={styles.overlayButton} onClick={() => setShowEndOverlay(false)}>
+                        Go Back To Board
                       </button>
-                    );
-                  })}
-                </div>
-              ))}
-            </div>
-            {gameOver && showEndOverlay && (
-              <div className={styles.endOverlay} role="dialog" aria-modal="true" aria-label="Game result">
-                <div className={styles.endOverlayCard}>
-                  <h3 className={styles.endOverlayTitle}>{won ? 'You Win!' : 'Game Over!'}</h3>
-                  <p className={styles.endOverlaySubtitle}>
-                    {won
-                      ? `Solved in ${elapsed}s on a ${rows}x${cols} board with ${mines} mines.${unknownBombCount ? ` Hidden bomb count revealed: ${mines}.` : ''}`
-                      : `A mine was triggered. Take a breath and run it back.${unknownBombCount ? ` This board had ${mines} bombs.` : ''}`}
-                  </p>
-                  <div className={styles.endOverlayActions}>
-                    <button type="button" className={styles.overlayButton} onClick={() => setShowEndOverlay(false)}>
-                      Go Back To Board
-                    </button>
-                    <button type="button" className={styles.overlayButtonPrimary} onClick={reset}>
-                      New Game
-                    </button>
-                    <button type="button" className={styles.overlayButton} onClick={() => navigate('/leaderboard')}>
-                      Go To Leaderboard
-                    </button>
+                      <button type="button" className={styles.overlayButtonPrimary} onClick={reset}>
+                        New Game
+                      </button>
+                      <button
+                        type="button"
+                        className={styles.overlayButton}
+                        onClick={() => navigate(`/leaderboard?category=${getLeaderboardCategory(rows, cols, mines)}`)}
+                      >
+                        Go To Leaderboard
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
           {tileSizeConstrained && !gameOver && (
             <p className={styles.boardScaleHint}>
