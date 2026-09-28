@@ -6,9 +6,7 @@
   border-radius: var(--radius-xl);
   border: 1px solid var(--border);
   box-shadow: var(--shadow-soft);
-  background:
-    radial-gradient(120% 120% at 100% 0%, rgba(21, 105, 240, 0.2) 0%, rgba(21, 105, 240, 0) 45%),
-    linear-gradient(150deg, var(--surface-strong), var(--surface));
+  background: linear-gradient(145deg, color-mix(in srgb, var(--primary) 5%, var(--surface-strong)), color-mix(in srgb, var(--accent) 4%, var(--surface)));
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
   gap: 0.95rem;

@@ -1,21 +1,21 @@
 .headerContainer {
-  width: min(1160px, calc(100% - 2rem));
+  width: min(1320px, calc(100% - 2.5rem));
   color: var(--header-link-color);
   display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: stretch;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
   position: fixed;
   top: 0.75rem;
   left: 50%;
   transform: translateX(-50%);
   z-index: 1000;
-  padding: 0.5rem;
-  border-radius: 16px;
+  padding: 0.55rem 0.75rem;
+  border-radius: 18px;
   border: 1px solid var(--header-border);
   background: var(--header-bg);
   box-shadow: var(--header-shadow);
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(18px);
   animation: navSlideDown var(--motion-nav-slide) cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -30,22 +30,40 @@
   }
 }
 
-.mobileNavBar {
+.brand {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  gap: 1rem;
-  padding: 0.2rem 0.35rem;
+  flex: 0 0 auto;
+  gap: 0.62rem;
+  color: var(--header-link-color);
+  text-decoration: none;
+}
+
+.brandMark {
+  width: 1.85rem;
+  height: 1.85rem;
+  border-radius: 9px;
+  background:
+    linear-gradient(90deg, transparent 42%, rgba(255, 255, 255, 0.88) 42% 57%, transparent 57%),
+    linear-gradient(0deg, transparent 42%, rgba(255, 255, 255, 0.88) 42% 57%, transparent 57%),
+    linear-gradient(140deg, var(--primary), var(--primary-strong));
+  box-shadow: 0 3px 10px color-mix(in srgb, var(--primary) 28%, transparent);
+}
+
+.brandName {
+  font-family: 'Sora', sans-serif;
+  font-size: 0.98rem;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
 .menuButton {
+  display: none;
   background: var(--header-button-bg);
   border: 1px solid var(--header-button-border);
   border-radius: 10px;
   cursor: pointer;
   padding: 9px;
-  display: flex;
   align-items: center;
   justify-content: center;
   transition: background var(--motion-nav-quick), transform var(--motion-nav-quick), border-color var(--motion-nav-quick);
@@ -104,18 +122,12 @@
   transform: rotate(-45deg);
 }
 
-.logo {
-  font-family: 'Sora', sans-serif;
-  font-size: 1rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
 .navMenu {
-  margin-top: 0.5rem;
   display: flex;
-  gap: 0.4rem;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 0.18rem;
 }
 
 .navOpen {
@@ -138,10 +150,15 @@
   color: var(--header-link-color);
   text-decoration: none;
   font-weight: 600;
-  font-size: 0.95rem;
-  padding: 0.4rem 0.72rem;
-  border-radius: 999px;
+  font-size: 0.82rem;
+  padding: 0.52rem 0.58rem;
+  border-radius: 10px;
   transition: background var(--motion-nav-quick), color var(--motion-nav-quick), transform var(--motion-nav-quick), box-shadow var(--motion-nav-quick);
+}
+
+.navMenu .navLinkActive {
+  background: var(--header-link-hover-bg);
+  box-shadow: inset 0 -2px 0 var(--primary);
 }
 
 .themeToggle {
@@ -160,18 +177,30 @@
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
 }
 
-@media (max-width: 799px) {
+@media (max-width: 1040px) {
+  .headerContainer {
+    width: calc(100% - 1.25rem);
+    top: 0.45rem;
+    padding: 0.48rem 0.62rem;
+  }
+
+  .menuButton {
+    display: flex;
+    padding: 8px;
+  }
+
   .navMenu {
-    flex-direction: column;
-    gap: 0.45rem;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.25rem;
     background: var(--header-mobile-menu-bg);
     position: absolute;
     top: calc(100% + 0.25rem);
-    left: 0.5rem;
-    right: 0.5rem;
+    left: 0;
+    right: 0;
     z-index: 10;
-    padding: 0.8rem;
-    border-radius: 12px;
+    padding: 0.55rem;
+    border-radius: 14px;
     border: 1px solid var(--header-border);
     overflow: hidden;
     transform-origin: top;
@@ -180,6 +209,17 @@
 
   .navMenu a {
     animation: navItemIn var(--motion-nav-mobile-item) ease both;
+  }
+
+  .navMenu a,
+  .themeToggle {
+    text-align: left;
+    padding: 0.62rem 0.66rem;
+  }
+
+  .themeToggle {
+    grid-column: 1 / -1;
+    text-align: center;
   }
 
   .navMenu a:nth-child(1) { animation-delay: 40ms; }
@@ -204,24 +244,18 @@
   }
 }
 
-@media (min-width: 800px) {
-  .mobileNavBar {
-    display: none;
-  }
-
+@media (min-width: 1041px) {
   .navMenu,
   .navOpen,
   .navClosed {
     display: flex !important;
-    flex-wrap: wrap;
     flex-direction: row;
-    justify-content: center;
-    gap: 0.4rem;
+    justify-content: flex-end;
+    gap: 0.18rem;
     position: static;
     background: none;
     border: 0;
     padding: 0;
-    margin-top: 0;
     opacity: 1;
     transform: none;
     max-height: none;
@@ -231,9 +265,9 @@
   }
 }
 
-@media (max-width: 800px) {
-  .headerContainer {
-    width: calc(100% - 1rem);
-    top: 0.45rem;
+@media (max-width: 1040px) {
+  .headerContainer a,
+  .themeToggle {
+    font-size: 0.8rem;
   }
 }
