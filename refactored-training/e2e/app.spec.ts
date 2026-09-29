@@ -26,7 +26,6 @@ test('primary routes render their main content', async ({ page }) => {
 test('Field Investigator mission can be started and reset', async ({ page }) => {
   await page.goto('./')
 
-  await expect(page.locator('arcgis-layer-list')).toHaveCount(0)
   await expect(page.getByRole('heading', { name: 'The missing field notes' })).toBeVisible()
   await expect(page.getByText('Mission briefing', { exact: true })).toBeVisible()
   await page.getByRole('radio', { name: 'Relaxed' }).check()

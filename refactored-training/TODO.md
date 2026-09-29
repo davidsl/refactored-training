@@ -21,3 +21,13 @@
 - [x] Check mission-panel and map-control layout at narrow mobile sizes and high zoom levels.
 - [x] Add tests that verify every authored target is unique, has a clue, and uses valid geographic coordinates.
 - [x] Add browser coverage for replaying with a different target set and for reduced-motion behavior.
+
+## More Ideas
+
+- [ ] Track best scores separately by region and difficulty instead of sharing one global record.
+- [ ] Add a compact map legend distinguishing recovered notes from revealed notes.
+- [ ] Add a recent-round history with region, difficulty, elapsed time, score, and notes revealed.
+
+## Cleanup
+
+- [x] Remove obsolete layer-list typings and tests, and update the route documentation to match the map game.

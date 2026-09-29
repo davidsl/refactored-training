@@ -9,11 +9,6 @@ type ArcgisMapProps = React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>,
 	zoom?: string | number;
 };
 
-type ArcgisLayerListProps = React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & {
-	showHeading?: string | boolean;
-	visibilityAppearance?: string;
-};
-
 type ArcgisSearchProps = React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & {
 	allPlaceholder?: string;
 	label?: string;
@@ -27,7 +22,6 @@ declare module 'react' {
 	namespace JSX {
 		interface IntrinsicElements {
 			'arcgis-map': ArcgisMapProps;
-			'arcgis-layer-list': ArcgisLayerListProps;
 			'arcgis-search': ArcgisSearchProps;
 			'arcgis-locate': ArcgisLocateProps;
 		}
@@ -38,7 +32,6 @@ declare module 'react/jsx-runtime' {
 	namespace JSX {
 		interface IntrinsicElements {
 			'arcgis-map': ArcgisMapProps;
-			'arcgis-layer-list': ArcgisLayerListProps;
 			'arcgis-search': ArcgisSearchProps;
 			'arcgis-locate': ArcgisLocateProps;
 		}

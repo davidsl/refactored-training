@@ -28,7 +28,7 @@ The backend must be running and its HTTPS certificate trusted by the browser. If
 
 ## Routes
 
-- `/` - ArcGIS map with address/place search, location, and layer controls
+- `/` - Field Investigator map game with regional location packs, search, and location controls
 - `/about` - About page
 - `/game` - Minesweeper and custom board settings
 - `/leaderboard` - Wins, statistics, and board categories
