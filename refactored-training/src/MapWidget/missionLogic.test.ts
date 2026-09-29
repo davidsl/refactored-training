@@ -1,9 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import {
   calculateMissionScore,
+  createMissionTargets,
+  FIELD_NOTE_LOCATIONS,
   formatDistance,
   getNearestTargetDistanceMeters,
   isWithinHitRadius,
+  MISSION_TARGET_COUNT,
 } from './missionLogic';
 
 describe('isWithinHitRadius', () => {
@@ -51,5 +54,22 @@ describe('formatDistance', () => {
 
   it('uses one decimal place for longer distances', () => {
     expect(formatDistance(2_456)).toBe('2.5 km');
+  });
+});
+
+describe('createMissionTargets', () => {
+  it('selects the expected number of unique locations from the pool', () => {
+    const targets = createMissionTargets(() => 0);
+
+    expect(targets).toHaveLength(MISSION_TARGET_COUNT);
+    expect(new Set(targets.map(target => target.id)).size).toBe(MISSION_TARGET_COUNT);
+    expect(targets.every(target => FIELD_NOTE_LOCATIONS.includes(target))).toBe(true);
+  });
+
+  it('can choose a different set for another round', () => {
+    const firstRound = createMissionTargets(() => 0);
+    const secondRound = createMissionTargets(() => 0.99);
+
+    expect(secondRound.map(target => target.id)).not.toEqual(firstRound.map(target => target.id));
   });
 });

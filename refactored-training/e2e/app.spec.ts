@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test'
+import { FIELD_NOTE_LOCATIONS } from '../src/MapWidget/missionLogic.ts'
 
 test('primary routes render their main content', async ({ page }) => {
   const routes = [
@@ -25,11 +26,12 @@ test('primary routes render their main content', async ({ page }) => {
 test('Field Investigator mission can be started and reset', async ({ page }) => {
   await page.goto('./')
 
+  await expect(page.locator('arcgis-layer-list')).toHaveCount(0)
   await expect(page.getByRole('heading', { name: 'The missing field notes' })).toBeVisible()
   await expect(page.getByText('Mission briefing', { exact: true })).toBeVisible()
   await page.getByRole('button', { name: 'Start investigation' }).click()
   await expect(page.getByText('Investigation in progress', { exact: true })).toBeVisible()
-  await expect(page.getByText('Clue 1: Look for the old harbor where the city meets the fjord.')).toBeVisible()
+  await expect(page.getByText(/^Clue 1:/)).toBeVisible()
 
   const mapElement = page.locator('arcgis-map');
   await mapElement.evaluate(async element => {
@@ -40,8 +42,34 @@ test('Field Investigator mission can be started and reset', async ({ page }) => 
 
   await page.mouse.click(mapBounds.x + mapBounds.width * 0.95, mapBounds.y + mapBounds.height * 0.9);
   await expect(page.getByText(/No field note here\. The closest remaining field note is (?:\d+ m|\d+(?:\.\d+)? km) away\./)).toBeVisible();
+  await expect(page.getByTestId('map-click-pulse')).toBeVisible()
+  await expect(page.getByTestId('map-click-pulse')).toHaveCount(0)
 
-  await page.mouse.click(mapBounds.x + mapBounds.width / 2, mapBounds.y + mapBounds.height / 2);
+  const firstClue = await page.getByText(/^Clue 1:/).textContent()
+  const activeTarget = FIELD_NOTE_LOCATIONS.find(target => firstClue?.includes(target.clue))
+  if (!activeTarget) throw new Error('The active clue does not match a mission location.')
+  const targetClickPosition = await mapElement.evaluate(async (element, target) => {
+    const view = (element as HTMLElement & {
+      view: {
+        center: { constructor: new (properties: { x: number; y: number; spatialReference: object }) => object };
+        spatialReference: object;
+        goTo: (target: object, options: { zoom: number }) => Promise<unknown>;
+        toScreen: (point: object) => { x: number; y: number } | null;
+      };
+    }).view
+    const earthRadius = 6_378_137
+    const targetPoint = new view.center.constructor({
+      x: target.longitude * earthRadius * Math.PI / 180,
+      y: earthRadius * Math.log(Math.tan((90 + target.latitude) * Math.PI / 360)),
+      spatialReference: view.spatialReference,
+    })
+    await view.goTo(targetPoint, { zoom: 12 })
+    const screenPoint = view.toScreen(targetPoint)
+    if (!screenPoint) throw new Error('The selected target is not visible.')
+    const bounds = element.getBoundingClientRect()
+    return { x: bounds.left + screenPoint.x, y: bounds.top + screenPoint.y }
+  }, { longitude: activeTarget.longitude, latitude: activeTarget.latitude })
+  await page.mouse.click(targetClickPosition.x, targetClickPosition.y)
   await expect(page.getByText('1 / 3', { exact: true })).toBeVisible();
   await expect(page.getByText('Field note recovered. 2 remaining.')).toBeVisible();
 
