@@ -4,6 +4,105 @@
   position: relative;
 }
 
+.missionPanel {
+  position: absolute;
+  top: 4.75rem;
+  left: 1rem;
+  z-index: 4;
+  display: grid;
+  gap: 0.7rem;
+  width: min(23rem, calc(100% - 2rem));
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent);
+  border-radius: var(--radius-md);
+  background: var(--surface-strong);
+  color: var(--text-strong);
+  box-shadow: var(--shadow-strong);
+  backdrop-filter: blur(12px);
+}
+
+.missionEyebrow {
+  color: var(--primary-strong);
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.missionPanel h1 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.missionObjective,
+.missionClue {
+  font-size: 0.88rem;
+}
+
+.missionClue {
+  padding-left: 0.7rem;
+  border-left: 2px solid var(--accent);
+  color: var(--text-strong);
+}
+
+.missionProgress {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--text-muted);
+  font-size: 0.84rem;
+}
+
+.missionStats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.45rem 0.8rem;
+  padding: 0.55rem 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.missionProgress strong {
+  color: var(--text-strong);
+  font-variant-numeric: tabular-nums;
+}
+
+.missionStatus {
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.missionFeedback {
+  color: var(--text-strong);
+  font-size: 0.86rem;
+}
+
+.missionNote {
+  color: var(--text-muted);
+  font-size: 0.72rem;
+}
+
+.missionButton {
+  justify-self: start;
+  min-height: 2.5rem;
+  padding: 0.55rem 0.85rem;
+  border: 1px solid var(--primary-strong);
+  border-radius: 7px;
+  background: var(--primary-strong);
+  color: var(--surface-strong);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.missionButton:hover {
+  filter: brightness(1.08);
+}
+
+.missionButton:focus-visible {
+  outline: 3px solid var(--focus-outline);
+  outline-offset: 2px;
+}
+
 .sceneView {
   width: 100%;
   height: 100%;
@@ -60,6 +159,22 @@
 }
 
 @media (max-width: 800px) {
+  .missionPanel {
+    top: 4.25rem;
+    left: 0.5rem;
+    gap: 0.55rem;
+    width: min(21rem, calc(100% - 1rem));
+    padding: 0.8rem;
+  }
+
+  .missionStats {
+    gap: 0.35rem 0.55rem;
+  }
+
+  .missionPanel h1 {
+    font-size: 1.05rem;
+  }
+
   .sceneView arcgis-layer-list {
     width: min(17rem, calc(100vw - 2rem));
     margin: 0.5rem;

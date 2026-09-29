@@ -22,6 +22,34 @@ test('primary routes render their main content', async ({ page }) => {
   }
 })
 
+test('Field Investigator mission can be started and reset', async ({ page }) => {
+  await page.goto('./')
+
+  await expect(page.getByRole('heading', { name: 'The missing field notes' })).toBeVisible()
+  await expect(page.getByText('Mission briefing', { exact: true })).toBeVisible()
+  await page.getByRole('button', { name: 'Start investigation' }).click()
+  await expect(page.getByText('Investigation in progress', { exact: true })).toBeVisible()
+  await expect(page.getByText('Clue 1: Look for the old harbor where the city meets the fjord.')).toBeVisible()
+
+  const mapElement = page.locator('arcgis-map');
+  await mapElement.evaluate(async element => {
+    await (element as HTMLElement & { viewOnReady: () => Promise<void> }).viewOnReady();
+  });
+  const mapBounds = await mapElement.boundingBox();
+  if (!mapBounds) throw new Error('The map is not visible.');
+
+  await page.mouse.click(mapBounds.x + mapBounds.width * 0.95, mapBounds.y + mapBounds.height * 0.9);
+  await expect(page.getByText(/No field note here\. The closest remaining field note is (?:\d+ m|\d+(?:\.\d+)? km) away\./)).toBeVisible();
+
+  await page.mouse.click(mapBounds.x + mapBounds.width / 2, mapBounds.y + mapBounds.height / 2);
+  await expect(page.getByText('1 / 3', { exact: true })).toBeVisible();
+  await expect(page.getByText('Field note recovered. 2 remaining.')).toBeVisible();
+
+  await page.getByRole('button', { name: 'Reset mission' }).click()
+  await expect(page.getByText('Mission briefing', { exact: true })).toBeVisible()
+  await expect(page.getByText('0 / 3', { exact: true })).toBeVisible()
+})
+
 test('theme toggle updates the document theme', async ({ page }) => {
   await page.addInitScript(() => localStorage.setItem('refactored-training-theme', 'light'))
   await page.goto('game')
