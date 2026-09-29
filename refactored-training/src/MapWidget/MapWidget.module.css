@@ -17,9 +17,66 @@
   margin: 1rem;
 }
 
+.sceneView arcgis-search {
+  width: min(24rem, calc(100vw - 4rem));
+  margin: 1rem;
+}
+
+.sceneView arcgis-locate {
+  margin: 1rem;
+}
+
+.mapStatus {
+  position: absolute;
+  left: 0.85rem;
+  bottom: 0.85rem;
+  z-index: 5;
+  display: grid;
+  gap: 0.55rem;
+  width: max-content;
+  max-width: calc(100% - 1.7rem);
+  padding: 0.65rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--surface-strong) 94%, transparent);
+  color: var(--text-strong);
+  box-shadow: var(--shadow-soft);
+  font-size: 0.85rem;
+}
+
+.mapStatus p {
+  color: var(--text-strong);
+}
+
+.mapStatus button {
+  justify-self: start;
+  border: 1px solid color-mix(in srgb, var(--primary) 35%, var(--border));
+  border-radius: 8px;
+  padding: 0.4rem 0.65rem;
+  background: color-mix(in srgb, var(--primary) 12%, var(--surface-strong));
+  color: var(--primary-strong);
+  font-weight: 700;
+  cursor: pointer;
+}
+
 @media (max-width: 800px) {
   .sceneView arcgis-layer-list {
     width: min(17rem, calc(100vw - 2rem));
     margin: 0.5rem;
+  }
+
+  .sceneView arcgis-search {
+    width: min(20rem, calc(100vw - 3.5rem));
+    margin: 0.5rem;
+  }
+
+  .sceneView arcgis-locate {
+    margin: 0.5rem;
+  }
+
+  .mapStatus {
+    left: 0.5rem;
+    bottom: 0.5rem;
+    max-width: calc(100% - 1rem);
   }
 }

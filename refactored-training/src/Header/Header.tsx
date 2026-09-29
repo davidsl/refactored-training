@@ -1,6 +1,6 @@
 import styles from './Header.module.css'
 import { Link, NavLink } from 'react-router-dom'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 type Theme = 'light' | 'dark'
 
@@ -22,14 +22,39 @@ const navItems = [
 
 function Header({ theme, onToggleTheme }: HeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false)
+  const headerRef = useRef<HTMLElement | null>(null)
+  const menuButtonRef = useRef<HTMLButtonElement | null>(null)
+
+  useEffect(() => {
+    if (!menuOpen) return;
+
+    function handlePointerDown(event: PointerEvent) {
+      if (headerRef.current?.contains(event.target as Node)) return;
+      setMenuOpen(false)
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key !== 'Escape') return;
+      setMenuOpen(false)
+      menuButtonRef.current?.focus()
+    }
+
+    document.addEventListener('pointerdown', handlePointerDown)
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown)
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [menuOpen])
 
   return (
-    <header className={styles.headerContainer}>
+    <header ref={headerRef} className={styles.headerContainer}>
       <Link className={styles.brand} to="/" onClick={() => setMenuOpen(false)}>
         <span className={styles.brandMark} aria-hidden="true" />
         <span className={styles.brandName}>Training Lab</span>
       </Link>
       <button
+        ref={menuButtonRef}
         type="button"
         className={menuOpen ? `${styles.menuButton} ${styles.menuButtonOpen}` : styles.menuButton}
         onClick={() => setMenuOpen(m => !m)}

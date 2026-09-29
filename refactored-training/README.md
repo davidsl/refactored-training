@@ -1,54 +1,62 @@
-# React + TypeScript + Vite
+# Refactored Training
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A React, TypeScript, and Vite application with an ArcGIS map, Minesweeper, a leaderboard, and several interactive demos and games.
 
-Currently, two official plugins are available:
+## Requirements
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Node.js 22.19 or newer (required by the local HTTPS certificate plugin)
+- npm
 
-## Expanding the ESLint configuration
+## Start locally
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+```sh
+npm ci
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Open the HTTPS URL printed by Vite. The development server uses `vite-plugin-mkcert` to create a locally trusted certificate. On first start, allow the plugin to install its local certificate authority. If the browser still reports a certificate warning, check the Vite output and confirm the local CA is trusted by the current user.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## API configuration
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
+The leaderboard and Minesweeper results use the `GameResults` API. By default, requests go to the same origin. To use a separate backend, create `.env.local` in the project root:
+
+```dotenv
+VITE_API_BASE_URL=https://localhost:7164
 ```
+
+The backend must be running and its HTTPS certificate trusted by the browser. If it is unavailable, the leaderboard shows a retry action and game-result requests surface an error alert.
+
+## Routes
+
+- `/` - ArcGIS map with address/place search, location, and layer controls
+- `/about` - About page
+- `/game` - Minesweeper and custom board settings
+- `/leaderboard` - Wins, statistics, and board categories
+- `/clicking-game` - Serotonin Farm
+- `/spy-game` - Top Secret Spies
+- `/table` - Reusable table demo
+- `/styling-examples` - Component and motion examples
+
+## Checks
+
+```sh
+npm test
+npm run test:e2e
+npm run lint
+npm run build
+```
+
+The unit suite uses Vitest. End-to-end checks use Playwright and start their own Vite server on port `5180`. Install Chromium once if needed:
+
+```sh
+npx playwright install chromium
+```
+
+## Build and deployment
+
+```sh
+npm run build
+npm run preview
+```
+
+The build is configured for deployment under `/refactored-training/`. If deploying at a different path, update `base` in `vite.config.ts` and ensure the host serves the app's fallback page for client-side routes.

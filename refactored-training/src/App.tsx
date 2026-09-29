@@ -40,6 +40,9 @@ function App() {
     const onApiError = (event: Event) => {
       const apiEvent = event as CustomEvent<GameResultsApiErrorDetail>
       const detail = apiEvent.detail
+      const requestUrl = new URL(detail.url, window.location.origin)
+      if (detail.method === 'GET' && requestUrl.pathname.replace(/\/$/, '') === '/GameResults') return
+
       const endpoint = detail.url.replace(window.location.origin, '')
       const statusSuffix = detail.status === null ? '' : ` Status: ${detail.status}.`
       const message = `${detail.message} Endpoint: ${endpoint}.${statusSuffix}`

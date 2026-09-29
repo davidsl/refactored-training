@@ -254,7 +254,45 @@
 
 .tableWrap {
   min-height: 0;
-  overflow: hidden;
+  overflow: auto;
+}
+
+.loadingState {
+  margin: 0;
+  padding: 0.75rem 0.2rem;
+  color: var(--text-muted);
+}
+
+.requestState {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.62rem 0.7rem;
+  border: 1px solid color-mix(in srgb, var(--danger) 34%, var(--border));
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--danger) 8%, var(--surface-strong));
+}
+
+.requestState p {
+  color: var(--danger);
+  font-size: 0.84rem;
+}
+
+.retryButton {
+  flex: 0 0 auto;
+  border: 1px solid color-mix(in srgb, var(--primary) 36%, var(--border));
+  border-radius: 8px;
+  padding: 0.4rem 0.65rem;
+  background: color-mix(in srgb, var(--primary) 10%, var(--surface-strong));
+  color: var(--primary-strong);
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.retryButton:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--primary) 17%, var(--surface-strong));
 }
 
 .rankBadge {
@@ -363,6 +401,8 @@
   .leaderContainer {
     padding: 0.7rem;
     gap: 0.7rem;
+    overflow-x: hidden;
+    overflow-y: auto;
   }
 
   .statisticsSection {

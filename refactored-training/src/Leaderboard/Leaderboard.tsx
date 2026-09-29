@@ -164,6 +164,8 @@ const Leaderboard: React.FC = () => {
   const [leaderboard, setLeaderboard] = React.useState<WinRecord[]>(getLeaderboard());
   const [isLoading, setIsLoading] = React.useState(true);
   const [loadError, setLoadError] = React.useState<string | null>(null);
+  const [clearError, setClearError] = React.useState<string | null>(null);
+  const [reloadVersion, setReloadVersion] = React.useState(0);
   const [selectedCategory, setSelectedCategory] = React.useState<CategoryKey>(() => getInitialCategory(searchParams.get('category')));
   const [showConfirm, setShowConfirm] = React.useState(false);
 
@@ -183,6 +185,7 @@ const Leaderboard: React.FC = () => {
           .sort((a, b) => a.time - b.time);
 
         setLeaderboard(wins);
+  setClearError(null);
       } catch (error) {
         if (cancelled) return;
         setLoadError('Unable to load leaderboard results from the server.');
@@ -199,7 +202,7 @@ const Leaderboard: React.FC = () => {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [reloadVersion]);
 
   // Categorize wins
   const categorized = {
@@ -219,6 +222,7 @@ const Leaderboard: React.FC = () => {
   const selectedStats = computeStats(selectedWins);
   const selectedWinShare =
     overallStats.wins > 0 ? Math.round((selectedStats.wins / overallStats.wins) * 100) : 0;
+  const requestError = clearError ?? loadError;
 
   function renderTable(wins: WinRecord[]) {
     const rows: LeaderboardRow[] = wins.map((win, i) => ({
@@ -246,8 +250,9 @@ const Leaderboard: React.FC = () => {
       setLeaderboard([]);
       setShowConfirm(false);
       setLoadError(null);
+      setClearError(null);
     } catch (error) {
-      setLoadError('Unable to clear leaderboard records on the server.');
+      setClearError('Unable to clear leaderboard records on the server.');
       console.error('Failed to clear leaderboard', error);
     }
   }
@@ -258,6 +263,18 @@ const Leaderboard: React.FC = () => {
         <div>
           <h3 className={styles.leaderTitle}>Leaderboard</h3>
           <p className={styles.leaderSubtitle}>Track your best Minesweeper runs by board type.</p>
+          {requestError && (
+            <div className={styles.requestState} role="alert">
+              <p>{requestError}</p>
+              <button
+                className={styles.retryButton}
+                type="button"
+                onClick={() => setReloadVersion(version => version + 1)}
+              >
+                {clearError ? 'Reload records' : 'Retry'}
+              </button>
+            </div>
+          )}
         </div>
         <button
           className={styles.clearButton}
@@ -351,8 +368,9 @@ const Leaderboard: React.FC = () => {
               <p>{selectedMeta.description}</p>
             </div>
             <div className={styles.tableWrap}>
-              {isLoading ? <p>Loading leaderboard...</p> : renderTable(selectedWins)}
-              {loadError ? <p>{loadError}</p> : null}
+              {isLoading ? (
+                <p className={styles.loadingState} role="status">Loading leaderboard...</p>
+              ) : loadError ? null : renderTable(selectedWins)}
             </div>
           </div>
         </section>

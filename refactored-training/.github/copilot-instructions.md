@@ -13,5 +13,5 @@
 ## Changes and verification
 - Keep changes scoped to the requested behavior and preserve existing public component and route behavior unless the task requires otherwise.
 - Use the existing scripts to verify changes: `npm run lint` and `npm run build`.
-- There is currently no test script in `package.json`. If a focused test is added later, use the project's chosen test tooling and document its command.
+- Run `npm test` for the Vitest unit suite and `npm run test:e2e` for Playwright browser checks. Focused unit tests live alongside source files as `*.test.ts`.
 - Do not add dependencies, generated files, or unrelated refactors unless they are needed for the request.

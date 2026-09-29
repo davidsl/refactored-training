@@ -1,23 +1,81 @@
 import { useState, useEffect, useRef } from 'react';
-import type { MouseEvent } from 'react';
+import type { KeyboardEvent, MouseEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from './Minesweeper.module.css';
+import {
+  calculateScore,
+  generateBoard,
+  getCustomBoardValidationError,
+  getGameOutcome,
+  MAX_CUSTOM_COLS as CUSTOM_MAX_COLS,
+  MAX_CUSTOM_ROWS as CUSTOM_MAX_ROWS,
+  MIN_CUSTOM_DIMENSION,
+} from './minesweeperLogic';
+import type { Board, Position, PreReveal } from './minesweeperLogic';
 import { ACTIVE_MOTION_PRESET, MOTION_DELAY_PRESETS } from '../motionPreset';
 import ConfirmModal from '../Leaderboard/ConfirmModal';
 import { createGameResult } from '../api/gameResultsApi';
 
-type Cell = {
-  mine: boolean;
-  revealed: boolean;
-  adjacent: number;
-  flagged: boolean;
+type MinesweeperSettings = {
+  rows: number;
+  cols: number;
+  mines: number;
+  draftRows: number;
+  draftCols: number;
+  draftMines: number;
+  unknownBombCount: boolean;
 };
 
-type Board = Cell[][];
+const MINESWEEPER_SETTINGS_KEY = 'refactored-training-minesweeper-settings';
+const DEFAULT_MINESWEEPER_SETTINGS: MinesweeperSettings = {
+  rows: 8,
+  cols: 8,
+  mines: 10,
+  draftRows: 30,
+  draftCols: 30,
+  draftMines: 150,
+  unknownBombCount: false,
+};
 
-type PreReveal = { r: number; c: number } | null;
+function readMinesweeperSettings(): MinesweeperSettings {
+  try {
+    const rawSettings = window.localStorage.getItem(MINESWEEPER_SETTINGS_KEY);
+    if (!rawSettings) return DEFAULT_MINESWEEPER_SETTINGS;
 
-type Position = { r: number; c: number };
+    const savedSettings = JSON.parse(rawSettings) as Partial<MinesweeperSettings>;
+    const rows = Number(savedSettings.rows);
+    const cols = Number(savedSettings.cols);
+    const mines = Number(savedSettings.mines);
+    const draftRows = Number(savedSettings.draftRows);
+    const draftCols = Number(savedSettings.draftCols);
+    const draftMines = Number(savedSettings.draftMines);
+
+    if (getCustomBoardValidationError(rows, cols, mines) !== null) {
+      return DEFAULT_MINESWEEPER_SETTINGS;
+    }
+
+    const hasValidDraft = getCustomBoardValidationError(draftRows, draftCols, draftMines) === null;
+    return {
+      rows,
+      cols,
+      mines,
+      draftRows: hasValidDraft ? draftRows : rows,
+      draftCols: hasValidDraft ? draftCols : cols,
+      draftMines: hasValidDraft ? draftMines : mines,
+      unknownBombCount: savedSettings.unknownBombCount === true,
+    };
+  } catch {
+    return DEFAULT_MINESWEEPER_SETTINGS;
+  }
+}
+
+function saveMinesweeperSettings(settings: MinesweeperSettings): void {
+  try {
+    window.localStorage.setItem(MINESWEEPER_SETTINGS_KEY, JSON.stringify(settings));
+  } catch {
+    return;
+  }
+}
 
 function getDifficultyLabel(rows: number, cols: number, mines: number): string {
   if (rows === 8 && cols === 8 && mines === 10) return 'Beginner';
@@ -34,55 +92,6 @@ function getLeaderboardCategory(rows: number, cols: number, mines: number): stri
   return 'Custom';
 }
 
-function generateBoard(rows: number, cols: number, mines: number): { board: Board; preReveal: PreReveal } {
-  const board: Board = Array.from({ length: rows }, () =>
-    Array.from({ length: cols }, () => ({ mine: false, revealed: false, adjacent: 0, flagged: false }))
-  );
-  let minesPlaced = 0;
-  while (minesPlaced < mines) {
-    const r = Math.floor(Math.random() * rows);
-    const c = Math.floor(Math.random() * cols);
-    if (!board[r][c].mine) {
-      board[r][c] = { ...board[r][c], mine: true };
-      minesPlaced++;
-    }
-  }
-  for (let r = 0; r < rows; r++) {
-    for (let c = 0; c < cols; c++) {
-      if (board[r][c].mine) continue;
-      let count = 0;
-      for (let dr = -1; dr <= 1; dr++) {
-        for (let dc = -1; dc <= 1; dc++) {
-          if (dr === 0 && dc === 0) continue;
-          const nr = r + dr, nc = c + dc;
-          if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && board[nr][nc].mine) count++;
-        }
-      }
-      board[r][c] = { ...board[r][c], adjacent: count };
-    }
-  }
-  // Pick a random free (adjacent === 0) non-mine tile for preReveal
-  const freeTiles: { r: number; c: number }[] = [];
-  const nonMineTiles: { r: number; c: number }[] = [];
-  for (let r = 0; r < rows; r++) {
-    for (let c = 0; c < cols; c++) {
-      if (!board[r][c].mine) {
-        nonMineTiles.push({ r, c });
-        if (board[r][c].adjacent === 0) {
-          freeTiles.push({ r, c });
-        }
-      }
-    }
-  }
-  let preReveal: PreReveal = null;
-  if (freeTiles.length > 0) {
-    preReveal = freeTiles[Math.floor(Math.random() * freeTiles.length)];
-  } else if (nonMineTiles.length > 0) {
-    preReveal = nonMineTiles[Math.floor(Math.random() * nonMineTiles.length)];
-  }
-  return { board, preReveal };
-}
-
 function cloneBoard(board: Board): Board {
   return board.map(row => row.map(cell => ({ ...cell })));
 }
@@ -95,21 +104,13 @@ function getRandomBombCount(rows: number, cols: number): number {
   return Math.floor(Math.random() * (maxRecommended - minRecommended + 1)) + minRecommended;
 }
 
-function calculateScore(rows: number, cols: number, mines: number, elapsed: number, won: boolean): number {
-  if (!won) return 0;
-  const cells = rows * cols;
-  const mineDensity = mines / cells;
-  return Math.max(0, Math.round(cells * 12 * (1 + 2.5 * Math.sqrt(mineDensity)) - elapsed * 3));
-}
-
 function Minesweeper() {
   const navigate = useNavigate();
   const motion = MOTION_DELAY_PRESETS[ACTIVE_MOTION_PRESET];
-  const CUSTOM_MAX_ROWS = 50;
-  const CUSTOM_MAX_COLS = 30;
-  const CUSTOM_DEFAULT_ROWS = 30;
-  const CUSTOM_DEFAULT_COLS = 30;
-  const CUSTOM_DEFAULT_MINES = 150;
+  const [initialSettings] = useState(readMinesweeperSettings);
+  const CUSTOM_DEFAULT_ROWS = DEFAULT_MINESWEEPER_SETTINGS.draftRows;
+  const CUSTOM_DEFAULT_COLS = DEFAULT_MINESWEEPER_SETTINGS.draftCols;
+  const CUSTOM_DEFAULT_MINES = DEFAULT_MINESWEEPER_SETTINGS.draftMines;
   const TILE_GAP = 0;
   const BOARD_PADDING = 10;
   const BOARD_PADDING_TALL = 6;
@@ -117,16 +118,16 @@ function Minesweeper() {
   const TILE_MIN_TALL = 9;
   const TILE_MAX = 48;
   const TILE_READABLE_THRESHOLD = 18;
-  const [rows, setRows] = useState(8);
-  const [cols, setCols] = useState(8);
-  const [mines, setMines] = useState(10);
-  const [draftRows, setDraftRows] = useState(CUSTOM_DEFAULT_ROWS);
-  const [draftCols, setDraftCols] = useState(CUSTOM_DEFAULT_COLS);
-  const [draftMines, setDraftMines] = useState(CUSTOM_DEFAULT_MINES);
-  const [unknownBombCount, setUnknownBombCount] = useState(false);
+  const [rows, setRows] = useState(initialSettings.rows);
+  const [cols, setCols] = useState(initialSettings.cols);
+  const [mines, setMines] = useState(initialSettings.mines);
+  const [draftRows, setDraftRows] = useState(initialSettings.draftRows);
+  const [draftCols, setDraftCols] = useState(initialSettings.draftCols);
+  const [draftMines, setDraftMines] = useState(initialSettings.draftMines);
+  const [unknownBombCount, setUnknownBombCount] = useState(initialSettings.unknownBombCount);
   const [showCustomize, setShowCustomize] = useState(false);
 
-  const initialGame = generateBoard(8, 8, 10);
+  const [initialGame] = useState(() => generateBoard(initialSettings.rows, initialSettings.cols, initialSettings.mines));
   const [boardState, setBoard] = useState<Board>(initialGame.board);
   const [preReveal, setPreReveal] = useState<PreReveal>(initialGame.preReveal);
   const [gameOver, setGameOver] = useState(false);
@@ -141,13 +142,18 @@ function Minesweeper() {
   const [timerActive, setTimerActive] = useState(false);
   const [boardAnimKey, setBoardAnimKey] = useState(0);
   const [boardViewport, setBoardViewport] = useState({ width: 0, height: 0 });
+  const [focusedCell, setFocusedCell] = useState<Position>({ r: 0, c: 0 });
   const timerRef = useRef<number | null>(null);
   const boardFrameRef = useRef<HTMLDivElement | null>(null);
   const pendingConfirmActionRef = useRef<(() => void) | null>(null);
   const resultPersistedRef = useRef(false);
-  const customBoardTooSmall = draftRows < 5 || draftCols < 5;
+  const customBoardError = getCustomBoardValidationError(draftRows, draftCols, draftMines);
   const hasGameStarted = timerActive || elapsed > 0 || boardState.some(row => row.some(cell => cell.revealed || cell.flagged));
   const currentScore = calculateScore(rows, cols, mines, elapsed, won);
+
+  useEffect(() => {
+    saveMinesweeperSettings({ rows, cols, mines, draftRows, draftCols, draftMines, unknownBombCount });
+  }, [rows, cols, mines, draftRows, draftCols, draftMines, unknownBombCount]);
 
   function startNewGame(nextRows: number, nextCols: number, nextMines: number) {
     const { board, preReveal } = generateBoard(nextRows, nextCols, nextMines);
@@ -162,6 +168,7 @@ function Minesweeper() {
     setMovesCount(0);
     setTimerActive(false);
     setBoardAnimKey(v => v + 1);
+    setFocusedCell({ r: 0, c: 0 });
     resultPersistedRef.current = false;
   }
 
@@ -182,9 +189,7 @@ function Minesweeper() {
       setRows(nextRows);
       setCols(nextCols);
       setMines(nextMines);
-      setDraftRows(nextRows);
-      setDraftCols(nextCols);
-      setDraftMines(nextMines);
+      setUnknownBombCount(false);
       startNewGame(nextRows, nextCols, nextMines);
     });
   }
@@ -203,7 +208,7 @@ function Minesweeper() {
     const draftMaxMines = Math.max(1, nextRows * nextCols - 1);
     const sanitizedDraftMines = Math.max(1, Math.min(draftMaxMines, Number(proposedMines)));
 
-    if (nextRows < 5 || nextCols < 5) {
+    if (getCustomBoardValidationError(nextRows, nextCols, sanitizedDraftMines) === 'dimensions') {
       setDraftRows(nextRows);
       setDraftCols(nextCols);
       setDraftMines(sanitizedDraftMines);
@@ -215,6 +220,7 @@ function Minesweeper() {
     const nextMines = useUnknownBombCount
       ? getRandomBombCount(nextRows, nextCols)
       : Math.max(1, Math.min(maxMines, Number(proposedMines)));
+    if (getCustomBoardValidationError(nextRows, nextCols, nextMines) !== null) return;
 
     requestStartNewGame(selectionLabel, () => {
       setRows(nextRows);
@@ -369,7 +375,8 @@ function Minesweeper() {
           }
         }
       }
-      if (bombTriggered) {
+      const outcome = getGameOutcome(newBoard, bombTriggered);
+      if (outcome === 'lost') {
         // Reveal all bombs and wrong flags, as in direct bomb click
         const wrongs: { r: number; c: number }[] = [];
         for (let row = 0; row < rows; row++) {
@@ -392,14 +399,7 @@ function Minesweeper() {
         return;
       }
       setBoard(newBoard);
-      // Check win condition
-      let allRevealed = true;
-      for (let row = 0; row < rows; row++) {
-        for (let col = 0; col < cols; col++) {
-          if (!newBoard[row][col].mine && !newBoard[row][col].revealed) allRevealed = false;
-        }
-      }
-      if (allRevealed) {
+      if (outcome === 'won') {
         setTimerActive(false);
         setGameOver(true);
         setWon(true);
@@ -458,19 +458,15 @@ function Minesweeper() {
       setWrongFlags(wrongs);
       setExplodedBomb({ r, c });
       setTimerActive(false);
-      setGameOver(true);
+      const outcome = getGameOutcome(newBoard, true);
+      setGameOver(outcome === 'lost');
+      setWon(outcome === 'won');
       setShowEndOverlay(true);
       return;
     }
     flood(r, c);
     setBoard(newBoard);
-    let allRevealed = true;
-    for (let row = 0; row < rows; row++) {
-      for (let col = 0; col < cols; col++) {
-        if (!newBoard[row][col].mine && !newBoard[row][col].revealed) allRevealed = false;
-      }
-    }
-    if (allRevealed) {
+    if (getGameOutcome(newBoard) === 'won') {
       setTimerActive(false);
       setGameOver(true);
       setWon(true);
@@ -478,13 +474,66 @@ function Minesweeper() {
     }
   }
 
-  function flagCell(e: MouseEvent<HTMLButtonElement>, r: number, c: number) {
-    e.preventDefault();
+  function toggleFlagCell(r: number, c: number) {
     if (gameOver || boardState[r][c].revealed) return;
     const newBoard = cloneBoard(boardState);
     newBoard[r][c].flagged = !newBoard[r][c].flagged;
     setBoard(newBoard);
     setMovesCount(count => count + 1);
+  }
+
+  function flagCell(e: MouseEvent<HTMLButtonElement>, r: number, c: number) {
+    e.preventDefault();
+    toggleFlagCell(r, c);
+  }
+
+  function focusCell(rowIndex: number, columnIndex: number) {
+    const nextPosition = {
+      r: Math.max(0, Math.min(rows - 1, rowIndex)),
+      c: Math.max(0, Math.min(cols - 1, columnIndex)),
+    };
+    setFocusedCell(nextPosition);
+    boardFrameRef.current
+      ?.querySelector<HTMLButtonElement>(`[data-tile-index="${nextPosition.r * cols + nextPosition.c}"]`)
+      ?.focus();
+  }
+
+  function handleCellKeyDown(event: KeyboardEvent<HTMLButtonElement>, rowIndex: number, columnIndex: number) {
+    let nextRow = rowIndex;
+    let nextColumn = columnIndex;
+
+    switch (event.key) {
+      case 'ArrowUp':
+        nextRow--;
+        break;
+      case 'ArrowDown':
+        nextRow++;
+        break;
+      case 'ArrowLeft':
+        nextColumn--;
+        break;
+      case 'ArrowRight':
+        nextColumn++;
+        break;
+      case 'Home':
+        nextColumn = 0;
+        if (event.ctrlKey) nextRow = 0;
+        break;
+      case 'End':
+        nextColumn = cols - 1;
+        if (event.ctrlKey) nextRow = rows - 1;
+        break;
+      case 'f':
+      case 'F':
+        event.preventDefault();
+        toggleFlagCell(rowIndex, columnIndex);
+        return;
+      default:
+        return;
+    }
+
+    event.preventDefault();
+    focusCell(nextRow, nextColumn);
   }
 
   function reset() {
@@ -555,13 +604,7 @@ function Minesweeper() {
                 }
                 onClick={() => {
                   setShowCustomize(true);
-                  setUnknownBombCount(false);
-                  applyDraftSettings({
-                    rows: CUSTOM_DEFAULT_ROWS,
-                    cols: CUSTOM_DEFAULT_COLS,
-                    mines: CUSTOM_DEFAULT_MINES,
-                    unknownBombCount: false,
-                  }, 'Custom');
+                  applyDraftSettings(undefined, 'Custom');
                 }}
               >
                 Custom Game
@@ -630,8 +673,12 @@ function Minesweeper() {
                 />
                 Start with unknown number of bombs
               </label>
-              {customBoardTooSmall && (
-                <p className={styles.customValidationMessage}>Rows and columns lower than 5 are not possible.</p>
+              {customBoardError && (
+                <p className={styles.customValidationMessage}>
+                  {customBoardError === 'dimensions'
+                    ? `Rows must be between ${MIN_CUSTOM_DIMENSION} and ${CUSTOM_MAX_ROWS}; columns between ${MIN_CUSTOM_DIMENSION} and ${CUSTOM_MAX_COLS}.`
+                    : 'Bombs must leave at least one safe tile.'}
+                </p>
               )}
             </form>
           )}
@@ -648,7 +695,7 @@ function Minesweeper() {
                 <span className={styles.statusValue}>⏱ {elapsed}s</span>
               </div>
             </div>
-            <p className={styles.instructions}>Right click to flag. Click revealed cells to chord nearby safe tiles.</p>
+            <p className={styles.instructions}>Use arrow keys to move, Enter or Space to reveal, F to flag, or right click. Click revealed cells to chord nearby safe tiles.</p>
           </section>
         </aside>
 
@@ -680,6 +727,10 @@ function Minesweeper() {
                   (preferTallBoardViewport ? ' ' + styles.boardWrapperTall : '') +
                   (preferVeryTallBoardMode ? ' ' + styles.boardWrapperVeryTall : '')
                 }
+                role="grid"
+                aria-label="Minesweeper board. Use arrow keys to move, Enter or Space to reveal, and F to flag."
+                aria-rowcount={rows}
+                aria-colcount={cols}
                 key={boardAnimKey}
                 onContextMenu={e => e.preventDefault()}
               >
@@ -687,6 +738,8 @@ function Minesweeper() {
                   <div
                     key={r}
                     className={styles.boardRow}
+                    role="row"
+                    aria-rowindex={r + 1}
                     style={{ animationDelay: `${Math.min(r * motion.mineRowStepMs, motion.mineRowMaxMs)}ms` }}
                   >
                     {row.map((cell, c) => {
@@ -697,52 +750,75 @@ function Minesweeper() {
                         r * motion.mineTileRowWeightMs + c * motion.mineTileColWeightMs,
                         motion.mineTileMaxMs
                       );
-                      return (
-                        <button
-                          key={c}
-                          className={
-                            (cell.revealed ? styles.revealedTile : isPreReveal ? styles.preRevealTile : styles.tile) +
-                            (isExplodedBomb ? ' ' + styles.explodedBombTile : '') +
-                            (isWrongFlag ? ' ' + styles.wrongFlagTile : '')
-                          }
-                          style={{
-                            width: computedTileSize,
-                            height: computedTileSize,
-                            fontSize: tileFontSize,
-                            color: cell.mine
-                              ? '#ff6b6b'
-                              : isWrongFlag
-                                ? '#ff4455'
-                                : cell.adjacent === 1 ? '#5ba3ff'
-                                : cell.adjacent === 2 ? '#4dcc7a'
-                                : cell.adjacent === 3 ? '#ff6b6b'
-                                : cell.adjacent === 4 ? '#a07bff'
-                                : cell.adjacent === 5 ? '#ff9944'
-                                : cell.adjacent === 6 ? '#44ddcc'
-                                : cell.adjacent === 7 ? '#e0c06a'
-                                : cell.adjacent === 8 ? '#aabbd0'
-                                : '#c8daf5',
-                            animationDelay: cell.revealed || isPreReveal ? `${tileDelay}ms` : undefined,
-                          }}
-                          data-tile-index={r * cols + c}
-                          onClick={() => reveal(r, c)}
-                          onContextMenu={e => flagCell(e, r, c)}
-                          disabled={gameOver}
-                        >
-                          {cell.revealed
+                      const accessibleStatus = isExplodedBomb
+                        ? 'Exploded mine'
+                        : isWrongFlag
+                          ? 'Incorrectly flagged safe cell, revealed'
+                          : cell.revealed
                             ? cell.mine
-                              ? isExplodedBomb
-                                ? '💥'
-                                : '💣'
-                              : isWrongFlag
-                                ? '❌'
-                                : cell.adjacent > 0
-                                  ? cell.adjacent
-                                  : ''
+                              ? 'Mine, revealed'
+                              : cell.adjacent === 0
+                                ? 'Empty safe cell, revealed'
+                                : `${cell.adjacent} adjacent ${cell.adjacent === 1 ? 'mine' : 'mines'}, revealed`
                             : cell.flagged
-                              ? '🚩'
-                              : ''}
-                        </button>
+                              ? 'Flagged, hidden'
+                              : isPreReveal
+                                ? 'Guaranteed-safe starting cell, hidden'
+                                : 'Hidden';
+                      return (
+                        <div key={c} className={styles.boardCell} role="gridcell" aria-colindex={c + 1}>
+                          <button
+                            type="button"
+                            className={
+                              (cell.revealed ? styles.revealedTile : isPreReveal ? styles.preRevealTile : styles.tile) +
+                              (isExplodedBomb ? ' ' + styles.explodedBombTile : '') +
+                              (isWrongFlag ? ' ' + styles.wrongFlagTile : '')
+                            }
+                            style={{
+                              width: computedTileSize,
+                              height: computedTileSize,
+                              fontSize: tileFontSize,
+                              color: cell.mine
+                                ? '#ff6b6b'
+                                : isWrongFlag
+                                  ? '#ff4455'
+                                  : cell.adjacent === 1 ? '#5ba3ff'
+                                  : cell.adjacent === 2 ? '#4dcc7a'
+                                  : cell.adjacent === 3 ? '#ff6b6b'
+                                  : cell.adjacent === 4 ? '#a07bff'
+                                  : cell.adjacent === 5 ? '#ff9944'
+                                  : cell.adjacent === 6 ? '#44ddcc'
+                                  : cell.adjacent === 7 ? '#e0c06a'
+                                  : cell.adjacent === 8 ? '#aabbd0'
+                                  : '#c8daf5',
+                              animationDelay: cell.revealed || isPreReveal ? `${tileDelay}ms` : undefined,
+                            }}
+                            data-tile-index={r * cols + c}
+                            aria-label={`Row ${r + 1}, column ${c + 1}: ${accessibleStatus}`}
+                            aria-pressed={cell.flagged}
+                            aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight Home End F"
+                            tabIndex={focusedCell.r === r && focusedCell.c === c ? 0 : -1}
+                            onFocus={() => setFocusedCell({ r, c })}
+                            onKeyDown={event => handleCellKeyDown(event, r, c)}
+                            onClick={() => reveal(r, c)}
+                            onContextMenu={e => flagCell(e, r, c)}
+                            disabled={gameOver}
+                          >
+                            {cell.revealed
+                              ? cell.mine
+                                ? isExplodedBomb
+                                  ? '💥'
+                                  : '💣'
+                                : isWrongFlag
+                                  ? '❌'
+                                  : cell.adjacent > 0
+                                    ? cell.adjacent
+                                    : ''
+                              : cell.flagged
+                                ? '🚩'
+                                : ''}
+                          </button>
+                        </div>
                       );
                     })}
                   </div>
